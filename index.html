@@ -3,40 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kevin's Programs</title>
+    <title>PURE IT BOWLING TOOLS</title>
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 75px;
-            background: #f5f5f5;
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ececec, #d9d9d9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
         }
 
-        .button {
-            display: inline-block;
-            margin: 15px;
-            padding: 18px 35px;
-            background: #ff7a00;
+        .card {
+            width: 90%;
+            max-width: 520px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 12px 30px rgba(0,0,0,.15);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #f58220;
             color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-size: 20px;
-            font-weight: bold;
+            text-align: center;
+            padding: 28px 20px;
         }
 
-        .button:hover {
-            background: #d86500;
+        .header h1 {
+            margin: 0;
+            font-size: 2rem;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+
+        .header p {
+            margin-top: 10px;
+            font-size: .95rem;
+            opacity: .9;
+        }
+
+        .menu {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .menu a {
+            display: block;
+            text-decoration: none;
+            background: #f7f7f7;
+            color: #333;
+            padding: 18px;
+            border-radius: 10px;
+            border: 2px solid #e2e2e2;
+            text-align: center;
+            font-size: 1.15rem;
+            font-weight: 600;
+            transition: all .2s ease;
+        }
+
+        .menu a:hover {
+            background: #f58220;
+            color: white;
+            border-color: #f58220;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(245,130,32,.25);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #777;
+            font-size: .85rem;
+            border-top: 1px solid #eee;
+            background: #fafafa;
         }
     </style>
 </head>
+
 <body>
 
-    <h1>Kevin's Bowling Tools</h1>
+<div class="card">
 
-    <a class="button" href="./ImageFrame/">
-        Image Frame
-    </a>
+    <div class="header">
+        <h1>PURE IT BOWLING TOOLS</h1>
+        <p>Select a tool to launch</p>
+    </div>
+
+    <div class="menu">
+        <a href="./ImageFrame/" target="_blank">Image Frame</a>
+        <a href="./NewReleaseFlyerBuilder/" target="_blank">New Release Flyer Builder</a>
+    </div>
+
+    <div class="footer">
+        © Pure It Bowling
+    </div>
+
+</div>
 
 </body>
 </html>
