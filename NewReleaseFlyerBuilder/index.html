@@ -781,4 +781,1288 @@ function initColorControls() {
   wirePopover();
 
   document.getElementById('linkPBColors').addEventListener('change', function(e) {
-    if (e.target
+    if (e.target.checked) setColor('pColor', colorState.pColor);
+  });
+  document.getElementById('linkHighlightPColors').addEventListener('change', function(e) {
+    if (e.target.checked) setColor('pColor', colorState.pColor);
+  });
+
+  document.getElementById('calloutBgOpacity').addEventListener('input', function(e) {
+    calloutBgOpacity = parseInt(e.target.value, 10);
+    document.getElementById('calloutBgOpacityVal').textContent = calloutBgOpacity + '%';
+  });
+}
+
+/* ---- Logo slot uploads ---- */
+
+const STACK_TARGET = 2;
+
+function syncColumnLayout(n) {
+  // Shrinking: drop any indices that no longer exist, then drop any
+  // columns that end up empty.
+  columnLayout = columnLayout
+    .map(function(col) { return col.filter(function(idx) { return idx < n; }); })
+    .filter(function(col) { return col.length > 0; });
+
+  const placed = new Set();
+  columnLayout.forEach(function(col) { col.forEach(function(idx) { placed.add(idx); }); });
+
+  // Growing: fill the last column up to STACK_TARGET images before
+  // starting a brand-new column (e.g. 6 images -> three columns, two
+  // high, filled left to right). Existing custom arrangements are left
+  // alone — only newly added images follow this fill order.
+  for (let i = 0; i < n; i++) {
+    if (placed.has(i)) continue;
+    const lastCol = columnLayout[columnLayout.length - 1];
+    if (lastCol && lastCol.length < STACK_TARGET) {
+      lastCol.push(i);
+    } else {
+      columnLayout.push([i]);
+    }
+  }
+}
+
+function findColumnOfSlot(slotIdx) {
+  for (let c = 0; c < columnLayout.length; c++) {
+    const pos = columnLayout[c].indexOf(slotIdx);
+    if (pos !== -1) return { col: c, pos: pos };
+  }
+  return null;
+}
+
+function renderSlots() {
+  let n = parseInt(document.getElementById('slotCount').value, 10);
+  if (!n || n < 1) n = 1;
+  if (n > 12) n = 12;
+  document.getElementById('slotCount').value = n;
+
+  const newImages = [];
+  for (let i = 0; i < n; i++) newImages.push(slotImages[i] || null);
+  slotImages = newImages;
+
+  syncColumnLayout(n);
+  renderLayoutBoard();
+}
+
+function createLayoutSlotEl(slotIdx, colIdx, rowIdx) {
+  const card = document.createElement('div');
+  card.className = 'layout-slot';
+  card.draggable = true;
+  card.dataset.slotIndex = slotIdx;
+
+  const myGroup = findGroupForSlot(slotIdx);
+  const myAnchor = myGroup ? groupAnchor(myGroup) : slotIdx;
+  const myGroupIsAnchor = !myGroup || myAnchor === slotIdx;
+  const myGroupHidden = myGroup && !myGroupIsAnchor;
+  if (myGroupHidden) card.classList.add('merge-hidden');
+
+  card.addEventListener('dragstart', function(e) {
+    draggedSlotIndex = slotIdx;
+    card.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(slotIdx));
+  });
+  card.addEventListener('dragend', function() {
+    card.classList.remove('dragging');
+    draggedSlotIndex = null;
+    document.querySelectorAll('.drag-over').forEach(function(el) { el.classList.remove('drag-over'); });
+  });
+
+  const handle = document.createElement('div');
+  handle.className = 'drag-handle';
+  handle.textContent = '⠿';
+  card.appendChild(handle);
+
+  const label = document.createElement('div');
+  label.className = 'slot-label';
+  label.textContent = 'Image ' + (slotIdx + 1);
+  card.appendChild(label);
+
+  const zone = document.createElement('div');
+  zone.className = 'upload-zone';
+
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.addEventListener('change', function(e) { handleSlotUpload(slotIdx, e); });
+
+  if (slotImages[slotIdx]) {
+    const thumb = document.createElement('img');
+    thumb.src = slotImages[slotIdx].src;
+    thumb.className = 'preview-thumb';
+    zone.appendChild(thumb);
+  }
+
+  const labelSpan = document.createElement('div');
+  labelSpan.className = 'upload-label';
+  labelSpan.innerHTML = slotImages[slotIdx] ? '<span>Change image</span>' : '<span>Click to upload</span>';
+
+  zone.appendChild(input);
+  zone.appendChild(labelSpan);
+  card.appendChild(zone);
+
+  if (myGroupHidden) {
+    const badge = document.createElement('div');
+    badge.className = 'merge-hidden-badge';
+    badge.textContent = 'Hidden on flyer — merged into Image ' + (myAnchor + 1);
+    card.appendChild(badge);
+  }
+
+  if (myGroupIsAnchor && myGroup && myGroup.slots.length > 1) {
+    const note = document.createElement('div');
+    note.className = 'merge-anchor-note';
+    const noteText = document.createElement('span');
+    noteText.textContent = '⬒ Merged (' + myGroup.slots.length + ' images)';
+    note.appendChild(noteText);
+    const splitBtn = document.createElement('button');
+    splitBtn.type = 'button';
+    splitBtn.className = 'merge-ghost-undo';
+    splitBtn.textContent = '×';
+    splitBtn.title = 'Split this merge';
+    splitBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      mergeGroups = mergeGroups.filter(function(g) { return g !== myGroup; });
+      renderLayoutBoard();
+    });
+    note.appendChild(splitBtn);
+    card.appendChild(note);
+  }
+
+  if (myGroupIsAnchor) {
+    const bounds = myGroup ? getGroupBounds(myGroup) : { minCol: colIdx, maxCol: colIdx, minRow: rowIdx, maxRow: rowIdx };
+    const dirLabel = { left: 'to the left', right: 'to the right', up: 'above', down: 'below' };
+
+    function addDirButton(dir, testCol, testRow, trigger) {
+      if (!columnLayout[testCol] || columnLayout[testCol][testRow] === undefined) return;
+      const otherSlot = columnLayout[testCol][testRow];
+      const active = !!(myGroup && myGroup.slots.indexOf(otherSlot) !== -1);
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'merge-btn merge-btn-' + dir + (active ? ' active' : '');
+      btn.textContent = (dir === 'up' || dir === 'down') ? '↕' : '⟷';
+      btn.title = active ? 'Merged — click to split' : 'Merge with the image ' + dirLabel[dir];
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        trigger();
+      });
+      card.appendChild(btn);
+    }
+
+    // Only show the "right" and "down" buttons (never "left"/"up") so each
+    // boundary between two images gets exactly one merge button, sitting
+    // between them, instead of a duplicate pointing back from each side.
+    // Every possible merge is still reachable this way, since the anchor on
+    // the left/top side of any boundary can always initiate it.
+    addDirButton('right', bounds.maxCol + 1, bounds.minRow, function() {
+      mergeOrSplit(slotIdx, columnLayout[bounds.maxCol + 1][bounds.minRow]);
+    });
+    addDirButton('down', bounds.minCol, bounds.maxRow + 1, function() {
+      mergeOrSplit(slotIdx, columnLayout[bounds.minCol][bounds.maxRow + 1]);
+    });
+  }
+
+  return card;
+}
+
+function renderLayoutBoard() {
+  validateMergeGroups();
+
+  const board = document.getElementById('layoutBoard');
+  board.innerHTML = '';
+
+  function makeGap(insertIndex) {
+    const gap = document.createElement('div');
+    gap.className = 'col-gap';
+    gap.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      gap.classList.add('drag-over');
+    });
+    gap.addEventListener('dragleave', function() { gap.classList.remove('drag-over'); });
+    gap.addEventListener('drop', function(e) {
+      e.preventDefault();
+      gap.classList.remove('drag-over');
+      if (draggedSlotIndex === null) return;
+      const sourceLoc = findColumnOfSlot(draggedSlotIndex);
+      if (!sourceLoc) return;
+      const sourceColArray = columnLayout[sourceLoc.col];
+      sourceColArray.splice(sourceColArray.indexOf(draggedSlotIndex), 1);
+      let idx = insertIndex;
+      if (sourceColArray.length === 0) {
+        const removedIdx = columnLayout.indexOf(sourceColArray);
+        columnLayout.splice(removedIdx, 1);
+        if (removedIdx < idx) idx -= 1;
+      }
+      columnLayout.splice(idx, 0, [draggedSlotIndex]);
+      draggedSlotIndex = null;
+      renderLayoutBoard();
+    });
+    return gap;
+  }
+
+  board.appendChild(makeGap(0));
+
+  columnLayout.forEach(function(colArray, colIdx) {
+    const colEl = document.createElement('div');
+    colEl.className = 'layout-col';
+
+    colEl.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      colEl.classList.add('drag-over');
+    });
+    colEl.addEventListener('dragleave', function() { colEl.classList.remove('drag-over'); });
+    colEl.addEventListener('drop', function(e) {
+      e.preventDefault();
+      colEl.classList.remove('drag-over');
+      if (draggedSlotIndex === null) return;
+
+      const slotEls = Array.from(colEl.querySelectorAll('.layout-slot'));
+      let insertPos = slotEls.length;
+      for (let i = 0; i < slotEls.length; i++) {
+        const r = slotEls[i].getBoundingClientRect();
+        if (e.clientY < r.top + r.height / 2) { insertPos = i; break; }
+      }
+
+      const sourceLoc = findColumnOfSlot(draggedSlotIndex);
+      if (!sourceLoc) return;
+      const sourceColArray = columnLayout[sourceLoc.col];
+
+      if (sourceColArray === colArray) {
+        const pos = sourceColArray.indexOf(draggedSlotIndex);
+        sourceColArray.splice(pos, 1);
+        const adj = insertPos > pos ? insertPos - 1 : insertPos;
+        sourceColArray.splice(adj, 0, draggedSlotIndex);
+      } else {
+        sourceColArray.splice(sourceColArray.indexOf(draggedSlotIndex), 1);
+        if (sourceColArray.length === 0) {
+          columnLayout.splice(columnLayout.indexOf(sourceColArray), 1);
+        }
+        colArray.splice(insertPos, 0, draggedSlotIndex);
+      }
+      draggedSlotIndex = null;
+      renderLayoutBoard();
+    });
+
+    colArray.forEach(function(slotIdx, rowIdx) {
+      colEl.appendChild(createLayoutSlotEl(slotIdx, colIdx, rowIdx));
+    });
+
+    board.appendChild(colEl);
+    board.appendChild(makeGap(colIdx + 1));
+  });
+
+  renderBorderBoard();
+}
+
+function createHToggle(slotIdx, isOn, gridCol, gridRow) {
+  const ht = document.createElement('div');
+  ht.className = 'border-h-toggle' + (isOn ? ' on' : '');
+  ht.style.gridColumn = String(gridCol);
+  ht.style.gridRow = String(gridRow);
+  ht.title = 'Toggle border below image ' + (slotIdx + 1);
+  ht.innerHTML = '<div class="bar"></div>';
+  ht.addEventListener('click', function() {
+    const b = getSlotBorders(slotIdx);
+    b.bottom = !b.bottom;
+    renderBorderBoard();
+  });
+  return ht;
+}
+
+function createVToggle(slotIdx, isOn, gridCol, gridRow) {
+  const vt = document.createElement('div');
+  vt.className = 'border-v-toggle' + (isOn ? ' on' : '');
+  vt.style.gridColumn = String(gridCol);
+  vt.style.gridRow = String(gridRow);
+  vt.title = 'Toggle border to the right of image ' + (slotIdx + 1);
+  vt.innerHTML = '<div class="bar"></div>';
+  vt.addEventListener('click', function() {
+    const b = getSlotBorders(slotIdx);
+    b.right = !b.right;
+    renderBorderBoard();
+  });
+  return vt;
+}
+
+function renderBorderBoard() {
+  validateMergeGroups();
+
+  const board = document.getElementById('borderBoard');
+  board.innerHTML = '';
+
+  const numCols = columnLayout.length;
+  const maxRows = Math.max.apply(null, columnLayout.map(function(c) { return c.length; }));
+
+  const colTemplate = [];
+  for (let c = 0; c < numCols; c++) {
+    colTemplate.push('34px');
+    if (c < numCols - 1) colTemplate.push('10px');
+  }
+  const rowTemplate = [];
+  for (let r = 0; r < maxRows; r++) {
+    rowTemplate.push('34px');
+    if (r < maxRows - 1) rowTemplate.push('10px');
+  }
+  board.style.gridTemplateColumns = colTemplate.join(' ');
+  board.style.gridTemplateRows = rowTemplate.join(' ');
+
+  columnLayout.forEach(function(colArray, colIdx) {
+    colArray.forEach(function(slotIdx, rowIdx) {
+      const group = findGroupForSlot(slotIdx);
+      if (group && groupAnchor(group) !== slotIdx) return;
+
+      const bounds = group ? getGroupBounds(group) : { minCol: colIdx, maxCol: colIdx, minRow: rowIdx, maxRow: rowIdx };
+      const isMerged = !!group && group.slots.length > 1;
+      const gridCol = bounds.minCol * 2 + 1;
+      const gridRow = bounds.minRow * 2 + 1;
+      const colSpanTracks = 2 * (bounds.maxCol - bounds.minCol + 1) - 1;
+      const rowSpanTracks = 2 * (bounds.maxRow - bounds.minRow + 1) - 1;
+
+      const box = document.createElement('div');
+      box.className = 'border-cell' + (isMerged ? ' border-cell-merged' : '');
+      box.textContent = (isMerged ? '⬒ ' : '') + String(slotIdx + 1);
+      if (isMerged) box.title = 'Merged banner image (Image ' + (slotIdx + 1) + ')';
+      box.style.gridColumn = colSpanTracks > 1 ? gridCol + ' / span ' + colSpanTracks : String(gridCol);
+      box.style.gridRow = rowSpanTracks > 1 ? gridRow + ' / span ' + rowSpanTracks : String(gridRow);
+      board.appendChild(box);
+
+      const bs = getSlotBorders(slotIdx);
+
+      if (bounds.maxRow < colArray.length - 1) {
+        const ht = createHToggle(slotIdx, bs.bottom, gridCol, gridRow + rowSpanTracks);
+        if (colSpanTracks > 1) {
+          ht.classList.add('border-h-toggle-wide');
+          ht.style.gridColumn = gridCol + ' / span ' + colSpanTracks;
+        }
+        board.appendChild(ht);
+      }
+      if (bounds.maxCol < numCols - 1) {
+        const vt = createVToggle(slotIdx, bs.right, gridCol + colSpanTracks, gridRow);
+        if (rowSpanTracks > 1) {
+          vt.classList.add('border-v-toggle-tall');
+          vt.style.gridRow = gridRow + ' / span ' + rowSpanTracks;
+        }
+        board.appendChild(vt);
+      }
+    });
+  });
+}
+
+function setAllBorders(state) {
+  columnLayout.forEach(function(colArray) {
+    colArray.forEach(function(slotIdx) {
+      const b = getSlotBorders(slotIdx);
+      b.right = state;
+      b.bottom = state;
+    });
+  });
+  renderBorderBoard();
+}
+
+function handleSlotUpload(idx, e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const img = new Image();
+    img.onload = function() {
+      slotImages[idx] = img;
+      renderLayoutBoard();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ---- Background image upload ---- */
+
+function handleBackgroundUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const img = new Image();
+    img.onload = function() {
+      backgroundImage = img;
+      selectedLibraryBg = null; // an upload supersedes any library pick
+      renderBackgroundPreview();
+      updateLibrarySelectionHighlight();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function renderBackgroundPreview() {
+  const btn = document.getElementById('bgUploadBtn');
+  const preview = document.getElementById('bgUploadPreview');
+  const removeWrap = document.getElementById('removeBackgroundWrap');
+  const isCustomUpload = backgroundImage && !selectedLibraryBg;
+  if (isCustomUpload) {
+    preview.src = backgroundImage.src;
+    preview.style.display = 'block';
+    btn.textContent = 'Change my upload';
+  } else {
+    preview.style.display = 'none';
+    btn.textContent = 'Upload my own image';
+  }
+  removeWrap.style.display = backgroundImage ? 'block' : 'none';
+}
+
+function updateLibrarySelectionHighlight() {
+  document.querySelectorAll('.bg-library-thumb').forEach(function(el) {
+    el.classList.toggle('selected', el.dataset.filename === selectedLibraryBg);
+  });
+}
+
+function loadLibraryBackground(filename) {
+  const img = new Image();
+  img.crossOrigin = 'anonymous'; // harmless same-origin on GitHub Pages; needed if this file is ever opened from elsewhere
+  img.onload = function() {
+    backgroundImage = img;
+    selectedLibraryBg = filename;
+    updateLibrarySelectionHighlight();
+    renderBackgroundPreview();
+  };
+  img.onerror = function() {
+    const status = document.getElementById('bgLibraryStatus');
+    if (status) { status.textContent = 'Couldn\'t load "' + filename + '".'; status.style.display = 'block'; }
+  };
+  img.src = BG_LIBRARY_BASE + encodeURIComponent(filename);
+}
+
+function renderBackgroundLibraryGrid(filenames) {
+  const grid = document.getElementById('bgLibraryGrid');
+  const status = document.getElementById('bgLibraryStatus');
+  grid.innerHTML = '';
+  if (!filenames.length) {
+    status.textContent = 'No background images found yet.';
+    status.style.display = 'block';
+    return;
+  }
+  status.style.display = 'none';
+  filenames.forEach(function(filename) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'bg-library-thumb';
+    btn.dataset.filename = filename;
+    const img = document.createElement('img');
+    img.src = BG_LIBRARY_BASE + encodeURIComponent(filename);
+    img.alt = filename;
+    btn.appendChild(img);
+    const label = document.createElement('div');
+    label.className = 'bg-library-label';
+    label.textContent = filename.replace(/\.[^.]+$/, '').replace(/^Pure It Flyer Background - /i, '');
+    btn.appendChild(label);
+    btn.addEventListener('click', function() { loadLibraryBackground(filename); });
+    grid.appendChild(btn);
+  });
+  updateLibrarySelectionHighlight();
+}
+
+const BG_IMAGE_EXT_RE = /\.(png|jpe?g|gif|webp)$/i;
+
+function renderBackgroundLibrary() {
+  // Show the known fallback list immediately so the UI isn't empty while
+  // the live folder listing loads, then swap in the live result if it
+  // succeeds — that way newly-added images show up without any code change.
+  renderBackgroundLibraryGrid(BG_LIBRARY_FALLBACK);
+  fetch(BG_LIBRARY_API)
+    .then(function(res) { if (!res.ok) throw new Error('GitHub API request failed'); return res.json(); })
+    .then(function(items) {
+      const names = items
+        .filter(function(item) { return item.type === 'file' && BG_IMAGE_EXT_RE.test(item.name); })
+        .map(function(item) { return item.name; });
+      if (names.length) renderBackgroundLibraryGrid(names);
+    })
+    .catch(function() {
+      // Fallback list is already showing — nothing further to do.
+    });
+}
+
+function initBackgroundControls() {
+  document.getElementById('backgroundInput').addEventListener('change', handleBackgroundUpload);
+  document.getElementById('removeBackgroundLink').addEventListener('click', function(e) {
+    e.preventDefault();
+    backgroundImage = null;
+    selectedLibraryBg = null;
+    document.getElementById('backgroundInput').value = '';
+    renderBackgroundPreview();
+    updateLibrarySelectionHighlight();
+  });
+  document.getElementById('darkModeToggle').addEventListener('change', function(e) {
+    toggleDarkMode(e.target.checked);
+  });
+  // One click opens the file picker immediately — no separate tab/section
+  // to switch into first.
+  document.getElementById('bgUploadBtn').addEventListener('click', function() {
+    document.getElementById('backgroundInput').click();
+  });
+  renderBackgroundLibrary();
+  document.getElementById('backgroundOpacity').addEventListener('input', function(e) {
+    backgroundImageOpacity = parseInt(e.target.value, 10);
+    document.getElementById('backgroundOpacityVal').textContent = backgroundImageOpacity + '%';
+  });
+}
+
+// Draws `img` into the full DESIGN_W x DESIGN_H canvas area, cropping
+// (never stretching/distorting) so it fills the page edge-to-edge — the
+// same behavior as CSS `background-size: cover`.
+function drawBackgroundCover(ctx, img, W, H) {
+  const imgRatio = img.naturalWidth / img.naturalHeight;
+  const canvasRatio = W / H;
+  let sx, sy, sw, sh;
+  if (imgRatio > canvasRatio) {
+    sh = img.naturalHeight;
+    sw = sh * canvasRatio;
+    sx = (img.naturalWidth - sw) / 2;
+    sy = 0;
+  } else {
+    sw = img.naturalWidth;
+    sh = sw / canvasRatio;
+    sx = 0;
+    sy = (img.naturalHeight - sh) / 2;
+  }
+  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
+}
+
+function val(id, fallback) {
+  const v = document.getElementById(id).value.trim();
+  return v || fallback;
+}
+
+function fitText(ctx, text, x, y, maxW, fontStr, minSize) {
+  const match = fontStr.match(/(\d+)px/);
+  if (!match) { ctx.font = fontStr; ctx.fillText(text, x, y); return; }
+  let size = parseInt(match[1], 10);
+  const min = minSize || 10;
+  while (size >= min) {
+    ctx.font = fontStr.replace(/\d+px/, size + 'px');
+    if (ctx.measureText(text).width <= maxW) break;
+    size -= 1;
+  }
+  ctx.fillText(text, x, y);
+}
+
+// Solves for the font size that makes `text` measure exactly `targetWidth`
+// at the given fontStr's family/weight (the numeric px size in fontStr is
+// just a probe value — measurement scales linearly with font size, so one
+// sample is enough to solve for the exact size, no search loop needed).
+function fitFontSizeToWidth(ctx, text, fontStr, targetWidth) {
+  const match = fontStr.match(/(\d+)px/);
+  const probeSize = match ? parseInt(match[1], 10) : 100;
+  ctx.font = fontStr.replace(/\d+px/, probeSize + 'px');
+  const probeWidth = ctx.measureText(text).width;
+  if (probeWidth <= 0) return probeSize;
+  return probeSize * (targetWidth / probeWidth);
+}
+
+// Renders one line of body copy with the word "FREE" (if present) rendered
+// bold and in the highlight/accent color while the rest of the line keeps
+// the regular description font/color — used for the callout's "FREE
+// standard drilling" emphasis. textAlign is assumed to be 'left'.
+function drawLineWithFreeHighlight(ctx, line, x, y, normalFont, normalColor, boldFont, highlightColor) {
+  const idx = line.indexOf('FREE');
+  if (idx === -1) {
+    ctx.font = normalFont;
+    ctx.fillStyle = normalColor;
+    ctx.fillText(line, x, y);
+    return;
+  }
+  const before = line.slice(0, idx);
+  const word = 'FREE';
+  const after = line.slice(idx + word.length);
+  let cx = x;
+  ctx.font = normalFont;
+  ctx.fillStyle = normalColor;
+  ctx.fillText(before, cx, y);
+  cx += ctx.measureText(before).width;
+  ctx.font = boldFont;
+  ctx.fillStyle = highlightColor;
+  ctx.fillText(word, cx, y);
+  cx += ctx.measureText(word).width;
+  ctx.font = normalFont;
+  ctx.fillStyle = normalColor;
+  ctx.fillText(after, cx, y);
+}
+
+function wrapText(ctx, text, maxWidth) {
+  const words = text.split(' ');
+  const lines = [];
+  let cur = '';
+  for (let i = 0; i < words.length; i++) {
+    const w = words[i];
+    const test = cur ? cur + ' ' + w : w;
+    if (ctx.measureText(test).width > maxWidth && cur) {
+      lines.push(cur);
+      cur = w;
+    } else {
+      cur = test;
+    }
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+
+function drawContain(ctx, img, cx, cy, cw, ch, padRatio) {
+  padRatio = padRatio || 0.82;
+  const maxW = cw * padRatio, maxH = ch * padRatio;
+  const ar = img.naturalWidth / img.naturalHeight;
+  let dw = maxW, dh = dw / ar;
+  if (dh > maxH) { dh = maxH; dw = dh * ar; }
+  ctx.drawImage(img, cx + (cw - dw) / 2, cy + (ch - dh) / 2, dw, dh);
+}
+
+function drawRecoloredLayer(ctx, img, color, dx, dy, dw, dh) {
+  if (!img.complete || img.naturalWidth === 0) return;
+  const off = document.createElement('canvas');
+  off.width = img.naturalWidth;
+  off.height = img.naturalHeight;
+  const octx = off.getContext('2d');
+  octx.drawImage(img, 0, 0);
+  octx.globalCompositeOperation = 'source-in';
+  octx.fillStyle = color;
+  octx.fillRect(0, 0, off.width, off.height);
+  ctx.drawImage(off, dx, dy, dw, dh);
+}
+
+function polyPath(ctx, pts) {
+  ctx.beginPath();
+  ctx.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+  ctx.closePath();
+}
+
+// Small, seeded pseudo-random generator so textures/scratches look identical
+// every time the same flyer is regenerated (no visual "jitter" between runs).
+function seededRandom(seed) {
+  let s = seed % 2147483647;
+  if (s <= 0) s += 2147483646;
+  return function() {
+    s = (s * 16807) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+// A faint, whole-canvas brushed-steel texture: long, mostly-horizontal
+// hairlines with tiny random waviness, plus a handful of light diagonal
+// scratches. Kept very low-opacity so it reads as texture, not pattern, and
+// never competes with the type sitting on top of it.
+function drawBrushedMetalTexture(ctx, W, H) {
+  const rand = seededRandom(20260704);
+  ctx.save();
+
+  ctx.globalAlpha = 0.05;
+  ctx.strokeStyle = '#9a9a96';
+  ctx.lineWidth = 1;
+  const rows = Math.round(H / 3.2);
+  for (let i = 0; i < rows; i++) {
+    const yy = (i / rows) * H + (rand() - 0.5) * 2;
+    ctx.beginPath();
+    ctx.moveTo(0, yy);
+    ctx.lineTo(W * 0.3, yy + (rand() - 0.5) * 3);
+    ctx.lineTo(W * 0.68, yy + (rand() - 0.5) * 3);
+    ctx.lineTo(W, yy + (rand() - 0.5) * 2);
+    ctx.stroke();
+  }
+
+  ctx.globalAlpha = 0.07;
+  ctx.strokeStyle = '#c9c8c4';
+  for (let i = 0; i < 26; i++) {
+    const x0 = rand() * W, y0 = rand() * H * 0.9;
+    const len = 90 + rand() * 220;
+    const ang = -0.35 + rand() * 0.15;
+    ctx.lineWidth = 0.6 + rand() * 0.8;
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x0 + Math.cos(ang) * len, y0 + Math.sin(ang) * len);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// Torn-edge flame/ember corner streaks — matches the reference image's
+// dramatic, high-energy motif (jagged silhouette, layered diagonal color
+// bands, hairline shine, scattered ember sparks trailing off the edge).
+function drawCornerStreaks(ctx, W, H, accentColor) {
+  const wedge = [[0,0],[430,0],[360,55],[400,95],[270,110],[320,165],[150,155],[190,205],[30,190],[0,270]];
+
+  function drawOne() {
+    const g = ctx.createLinearGradient(0, 0, 430, 270);
+    g.addColorStop(0, '#000000');
+    g.addColorStop(0.7, '#151210');
+    g.addColorStop(1, 'rgba(242,241,239,0)');
+    ctx.save();
+    ctx.globalAlpha = 0.92;
+    polyPath(ctx, wedge);
+    ctx.fillStyle = g;
+    ctx.fill();
+    ctx.restore();
+
+    ctx.save();
+    polyPath(ctx, wedge);
+    ctx.clip();
+
+    ctx.save(); ctx.globalAlpha = 0.8;
+    polyPath(ctx, [[0,42],[340,270],[320,300],[0,72]]);
+    ctx.fillStyle = '#7a2110'; ctx.fill();
+    ctx.restore();
+
+    ctx.save(); ctx.globalAlpha = 0.92;
+    polyPath(ctx, [[10,10],[275,175],[260,196],[0,40]]);
+    ctx.fillStyle = '#ff5a1f'; ctx.fill();
+    ctx.restore();
+
+    ctx.save(); ctx.globalAlpha = 0.85;
+    polyPath(ctx, [[30,0],[245,128],[234,146],[22,22]]);
+    ctx.fillStyle = '#ff9a3f'; ctx.fill();
+    ctx.restore();
+
+    ctx.save(); ctx.globalAlpha = 0.8;
+    polyPath(ctx, [[55,0],[175,72],[168,86],[50,16]]);
+    ctx.fillStyle = '#ffd98a'; ctx.fill();
+    ctx.restore();
+
+    ctx.save();
+    ctx.globalAlpha = 0.35;
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(14, 7); ctx.lineTo(255, 150); ctx.stroke();
+    ctx.restore();
+
+    ctx.save();
+    ctx.globalAlpha = 0.3;
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, 55); ctx.lineTo(120, 128); ctx.stroke();
+    ctx.restore();
+
+    ctx.restore();
+
+    const sparks = [
+      { pts: [[385,188],[393,185],[389,197]], color: '#ffffff', alpha: 0.55 },
+      { pts: [[345,215],[354,211],[349,226]], color: '#ff9a3f', alpha: 0.6 },
+      { pts: [[410,175],[418,172],[414,184]], color: '#ffd98a', alpha: 0.5 },
+      { pts: [[440,140],[447,137],[443,148]], color: '#ff5a1f', alpha: 0.4 }
+    ];
+    for (let i = 0; i < sparks.length; i++) {
+      const s = sparks[i];
+      ctx.save();
+      ctx.globalAlpha = s.alpha;
+      polyPath(ctx, s.pts);
+      ctx.fillStyle = s.color;
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  drawOne();
+  ctx.save();
+  ctx.translate(W, 0);
+  ctx.scale(-1, 1);
+  drawOne();
+  ctx.restore();
+}
+
+// Renders a string in true small-caps: characters that were originally
+// lowercase are drawn as uppercase glyphs at a reduced size, characters that
+// were already uppercase/digits/punctuation stay full-size — matching how a
+// real small-caps type treatment reads. Supports extra letter tracking.
+// Returns the total rendered width so callers can center other elements
+// (like the flanking rule lines) around it.
+function drawSmallCaps(ctx, text, cx, y, fontStr, tracking, centered) {
+  const sizeMatch = fontStr.match(/(\d+)px/);
+  const baseSize = sizeMatch ? parseInt(sizeMatch[1], 10) : 20;
+  const smallSize = Math.round(baseSize * 0.78);
+  tracking = tracking || 0;
+
+  const chars = text.split('').map(function(ch) {
+    const isLower = ch >= 'a' && ch <= 'z';
+    return { ch: ch.toUpperCase(), size: isLower ? smallSize : baseSize };
+  });
+
+  function widthOf(size, ch) {
+    ctx.font = fontStr.replace(/\d+px/, size + 'px');
+    return ctx.measureText(ch).width;
+  }
+
+  let total = 0;
+  const widths = chars.map(function(c) {
+    const w = widthOf(c.size, c.ch);
+    total += w + tracking;
+    return w;
+  });
+  total -= tracking;
+
+  const prevAlign = ctx.textAlign;
+  ctx.textAlign = 'left';
+  let x = centered ? cx - total / 2 : cx;
+  for (let i = 0; i < chars.length; i++) {
+    ctx.font = fontStr.replace(/\d+px/, chars[i].size + 'px');
+    // No vertical offset needed: canvas fillText always sits glyphs on the
+    // same baseline regardless of font size, which is exactly the alignment
+    // real small caps want (smaller letters just don't reach as high).
+    ctx.fillText(chars[i].ch, x, y);
+    x += widths[i] + tracking;
+  }
+  ctx.textAlign = prevAlign;
+  return total;
+}
+
+// A very light, deterministic grunge pass over a headline string — punches
+// tiny holes only where the letterforms themselves are (never in the
+// background or the gaps between letters), giving a subtle distressed edge
+// without needing an external texture image. Built as: render the text to an
+// offscreen canvas, intersect it with a field of random speck circles
+// ('destination-in', so only overlap survives), then subtract that
+// intersection from the already-drawn headline on the main canvas
+// ('destination-out') — the net effect is a scattering of tiny erosions
+// confined strictly to the ink of the letters.
+function drawDistressOverlay(ctx, text, cx, y, fontStr) {
+  const sizeMatch = fontStr.match(/(\d+)px/);
+  const fontSize = sizeMatch ? parseInt(sizeMatch[1], 10) : 40;
+  ctx.font = fontStr;
+  ctx.textAlign = 'center';
+  const w = Math.ceil(ctx.measureText(text).width) + 20;
+  const h = Math.ceil(fontSize * 1.5);
+  const baselineY = h * 0.75;
+
+  const off = document.createElement('canvas');
+  off.width = w; off.height = h;
+  const octx = off.getContext('2d');
+  octx.font = fontStr;
+  octx.textAlign = 'center';
+  octx.fillStyle = '#000';
+  octx.fillText(text, w / 2, baselineY);
+
+  const rand = seededRandom(text.length * 9973 + Math.round(y));
+  octx.globalCompositeOperation = 'destination-in';
+  const speckCount = Math.round(w / 2.6);
+  for (let i = 0; i < speckCount; i++) {
+    const sx = rand() * w, sy = rand() * h;
+    const r = 0.6 + rand() * 2.6;
+    octx.globalAlpha = 1;
+    octx.beginPath();
+    octx.arc(sx, sy, r, 0, Math.PI * 2);
+    octx.fillStyle = '#000';
+    octx.fill();
+  }
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.globalAlpha = 0.85;
+  ctx.drawImage(off, cx - w / 2, y - baselineY);
+  ctx.restore();
+}
+
+// Draws one headline line with the aggressive, dynamic treatment the
+// reference image uses: a forward italic-style slant (sheared around the
+// line's own baseline center so it stays centered), a drop shadow for
+// punch/depth, and the distressed-edge speckling on top.
+function drawSlantedHeadlineLine(ctx, text, cx, y, maxW, fontStr, color) {
+  const SLANT = 0.16;
+  ctx.save();
+  ctx.translate(cx, y);
+  ctx.transform(1, 0, -SLANT, 1, 0, 0);
+  ctx.translate(-cx, -y);
+
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.35)';
+  ctx.shadowBlur = 10;
+  ctx.shadowOffsetX = 4;
+  ctx.shadowOffsetY = 6;
+  ctx.fillStyle = color;
+  fitText(ctx, text, cx, y, maxW, fontStr, 30);
+  ctx.restore();
+
+  drawDistressOverlay(ctx, text, cx, y, fontStr);
+  ctx.restore();
+}
+
+async function generateFlyer() {
+  // The @import above only makes these fonts available for CSS — it doesn't
+  // make the browser actually download them, because nothing in the visible
+  // page HTML is styled with them (only the canvas draws with them). Without
+  // an explicit load(), document.fonts.ready resolves immediately without
+  // ever fetching Bebas Neue/Montserrat/etc., and fillText silently falls
+  // back to a generic system font. Forcing a load() for every family+weight
+  // actually used below guarantees they're in place before we draw.
+  if (document.fonts && document.fonts.load) {
+    const fontSpecs = [
+      '400 40px "Bebas Neue"',
+      '500 40px "Montserrat"', '600 40px "Montserrat"', '700 40px "Montserrat"',
+      '800 40px "Montserrat"', '900 40px "Montserrat"',
+      '900 40px "Anton"',
+      '900 40px "Archivo Black"',
+      '500 40px "Oswald"', '600 40px "Oswald"', '700 40px "Oswald"',
+      '700 40px "Barlow Condensed"', '900 40px "Barlow Condensed"'
+    ];
+    try {
+      await Promise.all(fontSpecs.map(function(spec) { return document.fonts.load(spec); }));
+    } catch (e) {}
+  }
+  if (document.fonts && document.fonts.ready) {
+    try { await document.fonts.ready; } catch (e) {}
+  }
+
+  const headline1 = val('headline1', 'NEW RELEASES');
+  const headline2 = val('headline2', 'HAVE ARRIVED');
+  const tagline   = val('tagline', 'THE LATEST. THE HOTTEST. THE MOST INNOVATIVE.');
+  const fitLine1  = val('fitLine1', 'YOUR NEW BALL DESERVES');
+  const fitLine2  = val('fitLine2', 'A PROFESSIONAL FIT.');
+  const fitDesc   = val('fitDesc', 'Pre-order from Pure It Bowling and receive FREE standard drilling.');
+  const finePrint = val('finePrint', 'Grips, slugs & interchangeable thumb systems additional.');
+  const footerUrl = val('footerUrl', 'PUREITBOWLING.COM').toUpperCase();
+
+  const n = slotImages.length || 1;
+  syncColumnLayout(n);
+  const numCols = columnLayout.length;
+  const maxStack = Math.max.apply(null, columnLayout.map(function(c) { return c.length; }));
+
+  const DESIGN_W = 1100;
+  const PAD_X = 70;
+  const canvas = document.getElementById('flyerCanvas');
+  const SCALE = 2;
+
+  canvas.width = DESIGN_W * SCALE;
+  canvas.height = 2000 * SCALE;
+  let ctx = canvas.getContext('2d');
+  ctx.setTransform(SCALE, 0, 0, SCALE, 0, 0);
+
+  // Callout box spec (given for a 1080px-wide reference canvas) — every
+  // measurement below is ported to our own DESIGN_W with one uniform scale
+  // factor so nothing gets stretched out of proportion relative to the rest.
+  // Per the spec's literal colors are intentionally NOT used (existing
+  // colorState is used instead throughout), and the box intentionally keeps
+  // its own transparent-by-default + opacity-slider behavior rather than
+  // the spec's "no transparency" rule, since that's a feature added earlier
+  // at explicit request.
+  const CB_SCALE = DESIGN_W / 1080;
+  const CB_WIDTH = 920 * CB_SCALE;
+  const CB_HEIGHT = 172 * CB_SCALE;
+  const CB_RADIUS = 22 * CB_SCALE;
+  const CB_BORDER_W = 4 * CB_SCALE;
+  const CB_PAD_TOP = 24 * CB_SCALE;
+  const CB_PAD_BOTTOM = 24 * CB_SCALE;
+  const CB_PAD_LEFT = 34 * CB_SCALE;
+  const CB_PAD_RIGHT = 34 * CB_SCALE;
+  const CB_ICON_COL_W = 170 * CB_SCALE;
+  const CB_ICON_GAP = 46 * CB_SCALE;
+  const CB_ICON_DIAM = 154 * CB_SCALE;
+  const CB_TEXT_COL_W = 636 * CB_SCALE;
+  const CB_H1_SIZE = 42 * CB_SCALE;
+  const CB_H1_TRACKING = 8 * CB_SCALE;
+  const CB_H1_GAP = 4 * CB_SCALE;
+  const CB_H2_SIZE = 49 * CB_SCALE;
+  const CB_H2_TRACKING = 4 * CB_SCALE;
+  const CB_H2_GAP = 10 * CB_SCALE;
+  const CB_BODY_SIZE = 30 * CB_SCALE;
+  const CB_BODY_LINE_HEIGHT = CB_BODY_SIZE * 1.10;
+
+  ctx.font = "500 " + Math.round(CB_BODY_SIZE) + "px 'Montserrat', 'Oswald', sans-serif";
+  const descLines = wrapText(ctx, fitDesc, CB_TEXT_COL_W);
+
+  // Solve the two headline lines' font sizes purely from the available
+  // width — the reference flyer's headline reads big and bold, but it still
+  // leaves a clear, deliberate side margin (that's where the corner flame
+  // graphics live), not a flush edge-to-edge fit. A literal quarter-inch
+  // margin at this large a font size reads as basically no margin at all, so
+  // horizontal fitting uses a wider, dedicated side margin while the
+  // quarter-inch is kept for the tighter top/bottom padding within the band.
+  // The natural height that results becomes the headline band's height
+  // (HEADLINE_H below), so the band grows to fit the headline instead of the
+  // headline shrinking to fit a fixed band.
+  const QUARTER_INCH = (DESIGN_W / 8.5) / 4;
+  const HEADLINE_SIDE_PAD = (DESIGN_W / 8.5) * 0.75; // 3/4" left/right margin around the headline
+  const headlineFontFamily = "400 100px 'Bebas Neue', 'Anton', 'Arial Narrow', sans-serif";
+  const headlineMaxW = DESIGN_W - 2 * HEADLINE_SIDE_PAD;
+  const CAP_RATIO = 0.72; // approx cap-height as a fraction of em size for this typeface
+  const LINE_GAP = QUARTER_INCH * 0.3;
+
+  const hSize1 = fitFontSizeToWidth(ctx, headline1, headlineFontFamily, headlineMaxW);
+  const hSize2 = fitFontSizeToWidth(ctx, headline2, headlineFontFamily, headlineMaxW);
+
+  const HEADER_H = 200;
+  const HEADLINE_H = 2 * QUARTER_INCH + hSize1 * CAP_RATIO + LINE_GAP + hSize2 * CAP_RATIO;
+  const TAGLINE_H = 66;
+  const GRID_TOP_GAP = 38;
+  const FITBOX_GAP = 38;
+  const FITBOX_H = CB_HEIGHT; // fixed per spec — content is constrained to fit inside, not the other way around
+  // Fine print sized up to match, with just enough gap above (to the box)
+  // and below (to the footer) to keep it from touching either — no extra
+  // decorative whitespace.
+  const FINEPRINT_SIZE = 20;
+  const FINEPRINT_GAP = 8;
+  const FINEPRINT_H = Math.round(FINEPRINT_SIZE * 1.2);
+  const FOOTER_GAP = 10;
+  const FOOTER_H = 86;
+
+  // Always lock the page to 8.5" x 11" (portrait letter) proportions, no matter
+  // how the image columns are stacked — the image area flexes to fill whatever
+  // space is left over after every other fixed-height section is accounted for.
+  const DESIGN_H = Math.round(DESIGN_W * (11 / 8.5));
+
+  const FIXED_H = HEADER_H + HEADLINE_H + TAGLINE_H + GRID_TOP_GAP
+                + FITBOX_GAP + FITBOX_H + FINEPRINT_GAP + FINEPRINT_H
+                + FOOTER_GAP + FOOTER_H;
+
+  const MIN_ROW_H = 90;
+  let GRID_H = DESIGN_H - FIXED_H;
+  if (GRID_H < MIN_ROW_H * maxStack) GRID_H = MIN_ROW_H * maxStack;
+
+  canvas.width = DESIGN_W * SCALE;
+  canvas.height = Math.round(DESIGN_H) * SCALE;
+  ctx = canvas.getContext('2d');
+  ctx.setTransform(SCALE, 0, 0, SCALE, 0, 0);
+
+  // Background: the plain fallback fill (light or dark depending on the mode
+  // toggle) always goes down first, then the uploaded image is cropped to
+  // fill the page edge to edge and drawn on top at its chosen opacity — so
+  // dialing the slider down fades the image toward that fallback fill
+  // instead of just going to nothing.
+  ctx.fillStyle = isDarkMode ? '#161616' : '#ffffff';
+  ctx.fillRect(0, 0, DESIGN_W, DESIGN_H);
+  if (backgroundImage && backgroundImage.complete && backgroundImage.naturalWidth > 0 && backgroundImageOpacity > 0) {
+    ctx.save();
+    ctx.globalAlpha = backgroundImageOpacity / 100;
+    drawBackgroundCover(ctx, backgroundImage, DESIGN_W, DESIGN_H);
+    ctx.restore();
+  }
+
+  let y = 15;
+  if (pIconLayerImg.complete && pIconLayerImg.naturalWidth > 0) {
+    const logoH = 170, logoW = logoH * (pIconLayerImg.naturalWidth / pIconLayerImg.naturalHeight);
+    const lx = DESIGN_W / 2 - logoW / 2, ly = y;
+    drawRecoloredLayer(ctx, pIconLayerImg, colorState.pColor, lx, ly, logoW, logoH);
+    drawRecoloredLayer(ctx, pureItLayerImg, colorState.pureItColor, lx, ly, logoW, logoH);
+    drawRecoloredLayer(ctx, bowlingLayerImg, colorState.bowlingColor, lx, ly, logoW, logoH);
+  }
+
+  // Font sizes (hSize1/hSize2) and layout constants (QUARTER_INCH,
+  // headlineMaxW, CAP_RATIO, LINE_GAP) were already solved above, before
+  // HEADLINE_H was set — just place the baselines within that band here.
+  ctx.textAlign = 'center';
+  const line1Baseline = HEADER_H + QUARTER_INCH + hSize1 * CAP_RATIO;
+  const line2Baseline = line1Baseline + LINE_GAP + hSize2 * CAP_RATIO;
+
+  drawSlantedHeadlineLine(ctx, headline1, DESIGN_W/2, line1Baseline, headlineMaxW, "400 " + Math.round(hSize1) + "px 'Bebas Neue', 'Anton', 'Arial Narrow', sans-serif", colorState.headline1Color);
+  drawSlantedHeadlineLine(ctx, headline2, DESIGN_W/2, line2Baseline, headlineMaxW, "400 " + Math.round(hSize2) + "px 'Bebas Neue', 'Anton', 'Arial Narrow', sans-serif", colorState.headline2Color);
+
+  y = HEADER_H + HEADLINE_H;
+  const taglineY = y + TAGLINE_H / 2;
+  ctx.fillStyle = colorState.taglineColor;
+  ctx.textAlign = 'center';
+  const taglineW = drawSmallCaps(ctx, tagline, DESIGN_W/2, taglineY + 7, "800 21px 'Montserrat', 'Oswald', sans-serif", 5, true);
+  ctx.strokeStyle = colorState.highlightColor; ctx.lineWidth = 3;
+  const lineGap = 22, lineLen = 80;
+  ctx.beginPath();
+  ctx.moveTo(DESIGN_W/2 - taglineW/2 - lineGap - lineLen, taglineY);
+  ctx.lineTo(DESIGN_W/2 - taglineW/2 - lineGap, taglineY);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(DESIGN_W/2 + taglineW/2 + lineGap, taglineY);
+  ctx.lineTo(DESIGN_W/2 + taglineW/2 + lineGap + lineLen, taglineY);
+  ctx.stroke();
+
+  y = HEADER_H + HEADLINE_H + TAGLINE_H + GRID_TOP_GAP;
+  const gridX = PAD_X, gridY = y, gridW = DESIGN_W - 2 * PAD_X;
+  const cellW = gridW / numCols;
+  validateMergeGroups();
+
+  columnLayout.forEach(function(colArray, colIdx) {
+    const cellX = gridX + colIdx * cellW;
+    const cellH = GRID_H / colArray.length;
+
+    colArray.forEach(function(slotIdx, rowIdx) {
+      // Non-anchor members of a merge group aren't drawn on their own — they're
+      // covered by the anchor image, widened/heightened to span the whole block.
+      const group = findGroupForSlot(slotIdx);
+      if (group && groupAnchor(group) !== slotIdx) return;
+
+      const bounds = group ? getGroupBounds(group) : { minCol: colIdx, maxCol: colIdx, minRow: rowIdx, maxRow: rowIdx };
+      const cellY = gridY + bounds.minRow * cellH;
+      const drawW = cellW * (bounds.maxCol - bounds.minCol + 1);
+      const drawH = cellH * (bounds.maxRow - bounds.minRow + 1);
+
+      const img = slotImages[slotIdx];
+      if (img) {
+        drawContain(ctx, img, cellX, cellY, drawW, drawH);
+      }
+
+      const b = getSlotBorders(slotIdx);
+      const BORDER_GAP = 14; // keeps border lines from touching at corners
+      const BORDER_W = 2;
+      // Draw borders as filled rectangles rather than stroked lines. A stroked
+      // line's on-screen weight depends on where its centerline falls relative
+      // to the pixel grid, and horizontal vs. vertical lines land differently
+      // (cellW divides evenly into whole pixels far more often than cellH
+      // does), which made the two look like different thicknesses/sharpness
+      // even at matching lineWidth. A fillRect has no centerline ambiguity —
+      // both directions render identically.
+      ctx.fillStyle = colorState.highlightColor;
+      if (bounds.maxCol < numCols - 1 && b.right) {
+        const vx = Math.round(cellX + drawW - BORDER_W / 2);
+        const vy0 = Math.round(cellY + BORDER_GAP);
+        const vy1 = Math.round(cellY + drawH - BORDER_GAP);
+        ctx.fillRect(vx, vy0, BORDER_W, vy1 - vy0);
+      }
+      if (bounds.maxRow < colArray.length - 1 && b.bottom) {
+        const hy = Math.round(cellY + drawH - BORDER_W / 2);
+        const hx0 = Math.round(cellX + BORDER_GAP);
+        const hx1 = Math.round(cellX + drawW - BORDER_GAP);
+        ctx.fillRect(hx0, hy, hx1 - hx0, BORDER_W);
+      }
+    });
+  });
+
+  y = gridY + GRID_H + FITBOX_GAP;
+  const fbX = (DESIGN_W - CB_WIDTH) / 2, fbY = y, fbW = CB_WIDTH, fbH = CB_HEIGHT, radius = CB_RADIUS;
+  function fitboxPath() {
+    ctx.beginPath();
+    ctx.moveTo(fbX + radius, fbY);
+    ctx.arcTo(fbX + fbW, fbY, fbX + fbW, fbY + fbH, radius);
+    ctx.arcTo(fbX + fbW, fbY + fbH, fbX, fbY + fbH, radius);
+    ctx.arcTo(fbX, fbY + fbH, fbX, fbY, radius);
+    ctx.arcTo(fbX, fbY, fbX + fbW, fbY, radius);
+    ctx.closePath();
+  }
+  // Transparent by default (opacity 0) so whatever's behind the callout —
+  // the uploaded flyer background — shows through. The user can pick a fill
+  // color and dial in opacity with the callout-box-only slider.
+  if (calloutBgOpacity > 0) {
+    const cbRgb = hexToRgb(colorState.calloutBgColor);
+    fitboxPath();
+    ctx.fillStyle = 'rgba(' + cbRgb.r + ',' + cbRgb.g + ',' + cbRgb.b + ',' + (calloutBgOpacity / 100) + ')';
+    ctx.fill();
+  }
+  fitboxPath();
+  ctx.strokeStyle = colorState.highlightColor; ctx.lineWidth = CB_BORDER_W;
+  ctx.stroke();
+
+  // Icon column: a fixed-width column holding a centered circle — the icon
+  // never moves regardless of how much text is in the two columns beside it.
+  const iconColX = fbX + CB_PAD_LEFT;
+  const iconCx = iconColX + CB_ICON_COL_W / 2, iconCy = fbY + fbH / 2, iconR = CB_ICON_DIAM / 2;
+  ctx.beginPath(); ctx.arc(iconCx, iconCy, iconR, 0, Math.PI * 2);
+  ctx.strokeStyle = colorState.highlightColor; ctx.lineWidth = CB_BORDER_W; ctx.stroke();
+
+  // Drill icon glyph — a simple vertical power-drill silhouette (bit, chuck,
+  // body, trigger, tapered handle), proportioned roughly 84 wide x 104 tall
+  // within the circle, per spec.
+  ctx.save();
+  const glyphW = 84 * CB_SCALE, glyphH = 104 * CB_SCALE;
+  ctx.translate(iconCx - glyphW / 2, iconCy - glyphH / 2);
+  ctx.strokeStyle = colorState.highlightColor;
+  ctx.lineWidth = 2.4 * CB_SCALE;
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(42 * CB_SCALE, 0); ctx.lineTo(42 * CB_SCALE, 16 * CB_SCALE);
+  ctx.stroke();
+  ctx.strokeRect(30 * CB_SCALE, 16 * CB_SCALE, 24 * CB_SCALE, 18 * CB_SCALE);
+  ctx.strokeRect(14 * CB_SCALE, 34 * CB_SCALE, 56 * CB_SCALE, 34 * CB_SCALE);
+  ctx.strokeRect(58 * CB_SCALE, 50 * CB_SCALE, 10 * CB_SCALE, 16 * CB_SCALE);
+  ctx.beginPath();
+  ctx.moveTo(28 * CB_SCALE, 68 * CB_SCALE);
+  ctx.lineTo(56 * CB_SCALE, 68 * CB_SCALE);
+  ctx.lineTo(50 * CB_SCALE, 104 * CB_SCALE);
+  ctx.lineTo(34 * CB_SCALE, 104 * CB_SCALE);
+  ctx.closePath();
+  ctx.stroke();
+  ctx.restore();
+
+  // Text column begins exactly the spec'd gap to the right of the icon
+  // column, and is capped to the spec'd max width no matter what.
+  const textX = iconColX + CB_ICON_COL_W + CB_ICON_GAP;
+  const calloutLineMaxW = CB_TEXT_COL_W;
+
+  // The whole text block (headline1 + gap + headline2 + gap + body) is
+  // centered vertically as a group within the box, per the spec's
+  // alignment rules — matching how the icon is centered too.
+  const bodyBlockH = descLines.length * CB_BODY_LINE_HEIGHT;
+  const totalContentH = CB_H1_SIZE + CB_H1_GAP + CB_H2_SIZE + CB_H2_GAP + bodyBlockH;
+  let ty = fbY + (fbH - totalContentH) / 2;
+
+  ctx.textAlign = 'left';
+  ctx.fillStyle = colorState.fitLine1Color;
+  // letterSpacing is set before fitText's internal measureText calls, so its
+  // shrink-to-fit check already accounts for the extra tracking width. The
+  // spec size (42px) is the starting/max size, but guaranteeing the text
+  // never overflows the box takes priority over the spec's "no more than
+  // 5% shrink" preference — a bold, tracked 23-character line at 42px needs
+  // more headroom than 5% to actually fit a 636px column, so the floor here
+  // is much lower to make sure it always does.
+  if ('letterSpacing' in ctx) ctx.letterSpacing = CB_H1_TRACKING + 'px';
+  fitText(ctx, fitLine1, textX, ty + CB_H1_SIZE * CAP_RATIO, calloutLineMaxW, "800 " + Math.round(CB_H1_SIZE) + "px 'Montserrat', 'Archivo Black', sans-serif", 16);
+  if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+  ty += CB_H1_SIZE + CB_H1_GAP;
+
+  ctx.fillStyle = colorState.fitLine2Color;
+  if ('letterSpacing' in ctx) ctx.letterSpacing = CB_H2_TRACKING + 'px';
+  fitText(ctx, fitLine2, textX, ty + CB_H2_SIZE * CAP_RATIO, calloutLineMaxW, "800 " + Math.round(CB_H2_SIZE) + "px 'Montserrat', 'Archivo Black', sans-serif", 16);
+  if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+  ty += CB_H2_SIZE + CB_H2_GAP;
+
+  // Body copy: regular description color/weight, except the word "FREE"
+  // which renders bold in the highlight/accent color.
+  const bodyFont = "500 " + Math.round(CB_BODY_SIZE) + "px 'Montserrat', 'Oswald', sans-serif";
+  const bodyBoldFont = "800 " + Math.round(CB_BODY_SIZE) + "px 'Montserrat', 'Archivo Black', sans-serif";
+  for (let i = 0; i < descLines.length; i++) {
+    const lineY = ty + CB_BODY_SIZE * 0.75 + i * CB_BODY_LINE_HEIGHT;
+    // "FREE" matches "A PROFESSIONAL FIT." (fitLine2Color) rather than the
+    // general highlight color, so the two stay in sync if that's changed.
+    drawLineWithFreeHighlight(ctx, descLines[i], textX, lineY, bodyFont, colorState.fitDescColor, bodyBoldFont, colorState.fitLine2Color);
+  }
+
+  y = fbY + fbH + FINEPRINT_GAP;
+  ctx.textAlign = 'center';
+  ctx.fillStyle = colorState.finePrintColor;
+  fitText(ctx, finePrint, DESIGN_W / 2, y + Math.round(FINEPRINT_SIZE * 1.07), DESIGN_W - 100, "500 " + FINEPRINT_SIZE + "px 'Montserrat', 'Oswald', sans-serif", 15);
+
+  y = y + FINEPRINT_H + FOOTER_GAP;
+  const footerCx = DESIGN_W / 2, footerCy = y + FOOTER_H / 2, footerR = DESIGN_W / 2;
+  const footerGrad = ctx.createRadialGradient(footerCx, footerCy, 0, footerCx, footerCy, footerR);
+  footerGrad.addColorStop(0, lightenColor(colorState.highlightColor, 0.25));
+  footerGrad.addColorStop(0.55, colorState.highlightColor);
+  footerGrad.addColorStop(1, darkenColor(colorState.highlightColor, 0.25));
+  ctx.fillStyle = footerGrad;
+  ctx.fillRect(0, y, DESIGN_W, FOOTER_H);
+
+  const FOOTER_FONT_SIZE = 40; // large condensed lettering to fill FOOTER_H
+  const footerScale = FOOTER_FONT_SIZE / 26;
+  ctx.font = "400 " + FOOTER_FONT_SIZE + "px 'Bebas Neue', 'Archivo Black', 'Arial Black', sans-serif";
+  if ('letterSpacing' in ctx) ctx.letterSpacing = '3px';
+  const footerTextW = ctx.measureText(footerUrl).width;
+  if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+  const gx = DESIGN_W / 2 - footerTextW / 2 - 26 * footerScale, gy = y + FOOTER_H / 2;
+  ctx.save();
+  ctx.strokeStyle = colorState.footerTextColor; ctx.lineWidth = 1.6 * footerScale;
+  ctx.beginPath(); ctx.arc(gx, gy, 11 * footerScale, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(gx, gy, 5 * footerScale, 11 * footerScale, 0, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(gx - 11 * footerScale, gy); ctx.lineTo(gx + 11 * footerScale, gy); ctx.stroke();
+  ctx.restore();
+
+  ctx.fillStyle = colorState.footerTextColor;
+  ctx.textAlign = 'center';
+  if ('letterSpacing' in ctx) ctx.letterSpacing = '3px';
+  ctx.fillText(footerUrl, DESIGN_W / 2 + 12 * footerScale, y + FOOTER_H / 2 + 9 * footerScale);
+  if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+
+  document.getElementById('cardWrap').style.display = 'block';
+  const dlBtn = document.getElementById('dlBtn');
+  dlBtn.href = canvas.toDataURL('image/png');
+  document.getElementById('cardWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+  renderSlots();
+  initColorControls();
+  initBackgroundControls();
+  document.getElementById('allBordersOn').addEventListener('click', function(e) {
+    e.preventDefault();
+    setAllBorders(true);
+  });
+  document.getElementById('allBordersOff').addEventListener('click', function(e) {
+    e.preventDefault();
+    setAllBorders(false);
+  });
+});
+</script>
+</body>
+</html>
