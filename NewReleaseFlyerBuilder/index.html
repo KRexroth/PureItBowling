@@ -30,6 +30,9 @@
   .ig label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#aaa;}
   .ig input{border:1px solid #ddd;border-radius:5px;padding:7px 8px;font-size:14px;font-family:'Barlow',sans-serif;background:#fff;color:#111;width:100%;}
   .ig input:focus{outline:none;border-color:#EF4123;}
+  .ig input[readonly]{background:#f2f2f2;color:#777;cursor:default;}
+  .ig select{border:1px solid #ddd;border-radius:5px;padding:7px 8px;font-size:14px;font-family:'Barlow',sans-serif;background:#fff;color:#111;width:100%;}
+  .ig select:focus{outline:none;border-color:#EF4123;}
 
   .controls-bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;background:#fff;border-radius:10px;padding:12px 14px;margin-bottom:10px;border:1px solid #e0e0e0;}
   .ctrl-group{display:flex;align-items:center;gap:7px;}
@@ -276,8 +279,19 @@
       <div class="swatch-holder" id="swatch_finePrintColor"></div>
     </div>
     <div class="text-row">
-      <div class="ig"><label>Footer Text</label><input type="text" id="footerUrl" value="PUREITBOWLING.COM"/></div>
+      <div class="ig"><label>Footer Text</label><input type="text" id="footerUrl" value="PUREITBOWLING.COM | 114D East Main Street Ephrata, PA 17522 | (717) 679-8225" readonly/></div>
       <div class="swatch-holder" id="swatch_footerTextColor"></div>
+    </div>
+    <div class="text-row">
+      <div class="ig">
+        <label>Footer Background Style</label>
+        <select id="footerBgGradientMode">
+          <option value="solid">Solid (Default)</option>
+          <option value="center">Radiate From Center</option>
+          <option value="left">Radiate From Left</option>
+          <option value="right">Radiate From Right</option>
+        </select>
+      </div>
     </div>
   </div>
 </div>
@@ -508,6 +522,10 @@ const colorDefaults = {
 let colorState = Object.assign({}, colorDefaults);
 let isDarkMode = false;
 let calloutBgOpacity = 0; // 0-100; 0 = fully transparent (the default)
+// How the footer bar's background is filled: a flat solid highlight color,
+// or a radial "glow" gradient anchored at the center/left/right edge that
+// fades outward from that point. The footer text/icon always stay solid.
+let footerBgGradientMode = 'solid';
 
 // Fields that are meant to be plain black/white "default text" (as opposed to
 // the orange brand accents like headline2Color/fitLine2Color/pColor/
@@ -790,6 +808,10 @@ function initColorControls() {
   document.getElementById('calloutBgOpacity').addEventListener('input', function(e) {
     calloutBgOpacity = parseInt(e.target.value, 10);
     document.getElementById('calloutBgOpacityVal').textContent = calloutBgOpacity + '%';
+  });
+
+  document.getElementById('footerBgGradientMode').addEventListener('change', function(e) {
+    footerBgGradientMode = e.target.value;
   });
 }
 
@@ -1425,6 +1447,53 @@ function drawRecoloredLayer(ctx, img, color, dx, dy, dw, dh) {
   ctx.drawImage(off, dx, dy, dw, dh);
 }
 
+// Finds the tight bounding box of the non-transparent pixels in an image
+// (used to crop the "P" icon layer down to just its glyph, trimming off the
+// transparent padding that surrounds it in the full logo canvas). Cached per
+// image so the pixel scan only ever runs once.
+const layerBBoxCache = new WeakMap();
+function getOpaqueBBox(img) {
+  if (!img.complete || img.naturalWidth === 0) return null;
+  if (layerBBoxCache.has(img)) return layerBBoxCache.get(img);
+  const off = document.createElement('canvas');
+  off.width = img.naturalWidth;
+  off.height = img.naturalHeight;
+  const octx = off.getContext('2d');
+  octx.drawImage(img, 0, 0);
+  const data = octx.getImageData(0, 0, off.width, off.height).data;
+  let minX = off.width, minY = off.height, maxX = 0, maxY = 0, found = false;
+  for (let py = 0; py < off.height; py++) {
+    for (let px = 0; px < off.width; px++) {
+      const a = data[(py * off.width + px) * 4 + 3];
+      if (a > 10) {
+        found = true;
+        if (px < minX) minX = px;
+        if (px > maxX) maxX = px;
+        if (py < minY) minY = py;
+        if (py > maxY) maxY = py;
+      }
+    }
+  }
+  const bbox = found ? { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 } : null;
+  layerBBoxCache.set(img, bbox);
+  return bbox;
+}
+
+// Draws a recolored layer, cropped to a source rect (typically the result of
+// getOpaqueBBox) rather than the full image canvas.
+function drawRecoloredLayerCropped(ctx, img, color, srcRect, dx, dy, dw, dh) {
+  if (!img.complete || img.naturalWidth === 0 || !srcRect) return;
+  const off = document.createElement('canvas');
+  off.width = img.naturalWidth;
+  off.height = img.naturalHeight;
+  const octx = off.getContext('2d');
+  octx.drawImage(img, 0, 0);
+  octx.globalCompositeOperation = 'source-in';
+  octx.fillStyle = color;
+  octx.fillRect(0, 0, off.width, off.height);
+  ctx.drawImage(off, srcRect.x, srcRect.y, srcRect.w, srcRect.h, dx, dy, dw, dh);
+}
+
 function polyPath(ctx, pts) {
   ctx.beginPath();
   ctx.moveTo(pts[0][0], pts[0][1]);
@@ -1709,7 +1778,9 @@ async function generateFlyer() {
   const fitLine2  = val('fitLine2', 'A PROFESSIONAL FIT.');
   const fitDesc   = val('fitDesc', 'Pre-order from Pure It Bowling and receive FREE standard drilling.');
   const finePrint = val('finePrint', 'Grips, slugs & interchangeable thumb systems additional.');
-  const footerUrl = val('footerUrl', 'PUREITBOWLING.COM').toUpperCase();
+  // Not forced to uppercase anymore — the footer line is now a fixed,
+  // uneditable address string with its own intentional mixed case.
+  const footerUrl = val('footerUrl', 'PUREITBOWLING.COM | 114D East Main Street Ephrata, PA 17522 | (717) 679-8225');
 
   const n = slotImages.length || 1;
   syncColumnLayout(n);
@@ -1746,7 +1817,7 @@ async function generateFlyer() {
   const CB_ICON_COL_W = 170 * CB_SCALE;
   const CB_ICON_GAP = 46 * CB_SCALE;
   const CB_ICON_DIAM = 154 * CB_SCALE;
-  const CB_TEXT_COL_W = 636 * CB_SCALE;
+  const CB_TEXT_COL_W = CB_WIDTH - CB_PAD_LEFT - CB_PAD_RIGHT - CB_ICON_COL_W - CB_ICON_GAP;
   const CB_H1_SIZE = 42 * CB_SCALE;
   const CB_H1_TRACKING = 8 * CB_SCALE;
   const CB_H1_GAP = 4 * CB_SCALE;
@@ -1936,36 +2007,32 @@ async function generateFlyer() {
   ctx.strokeStyle = colorState.highlightColor; ctx.lineWidth = CB_BORDER_W;
   ctx.stroke();
 
-  // Icon column: a fixed-width column holding a centered circle — the icon
+  // Icon column: a fixed-width column holding the centered "P" icon — it
   // never moves regardless of how much text is in the two columns beside it.
+  // (No circle outline anymore — just the icon glyph itself, same position.)
   const iconColX = fbX + CB_PAD_LEFT;
-  const iconCx = iconColX + CB_ICON_COL_W / 2, iconCy = fbY + fbH / 2, iconR = CB_ICON_DIAM / 2;
-  ctx.beginPath(); ctx.arc(iconCx, iconCy, iconR, 0, Math.PI * 2);
-  ctx.strokeStyle = colorState.highlightColor; ctx.lineWidth = CB_BORDER_W; ctx.stroke();
+  const iconCx = iconColX + CB_ICON_COL_W / 2, iconCy = fbY + fbH / 2;
 
-  // Drill icon glyph — a simple vertical power-drill silhouette (bit, chuck,
-  // body, trigger, tapered handle), proportioned roughly 84 wide x 104 tall
-  // within the circle, per spec.
-  ctx.save();
-  const glyphW = 84 * CB_SCALE, glyphH = 104 * CB_SCALE;
-  ctx.translate(iconCx - glyphW / 2, iconCy - glyphH / 2);
-  ctx.strokeStyle = colorState.highlightColor;
-  ctx.lineWidth = 2.4 * CB_SCALE;
-  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  ctx.beginPath();
-  ctx.moveTo(42 * CB_SCALE, 0); ctx.lineTo(42 * CB_SCALE, 16 * CB_SCALE);
-  ctx.stroke();
-  ctx.strokeRect(30 * CB_SCALE, 16 * CB_SCALE, 24 * CB_SCALE, 18 * CB_SCALE);
-  ctx.strokeRect(14 * CB_SCALE, 34 * CB_SCALE, 56 * CB_SCALE, 34 * CB_SCALE);
-  ctx.strokeRect(58 * CB_SCALE, 50 * CB_SCALE, 10 * CB_SCALE, 16 * CB_SCALE);
-  ctx.beginPath();
-  ctx.moveTo(28 * CB_SCALE, 68 * CB_SCALE);
-  ctx.lineTo(56 * CB_SCALE, 68 * CB_SCALE);
-  ctx.lineTo(50 * CB_SCALE, 104 * CB_SCALE);
-  ctx.lineTo(34 * CB_SCALE, 104 * CB_SCALE);
-  ctx.closePath();
-  ctx.stroke();
-  ctx.restore();
+  // "P" icon from the Pure It Bowling logo — cropped to just the glyph
+  // (transparent padding trimmed off) and centered inside the icon circle.
+  // The glyph itself (not the circle around it) is tied to the logo's own
+  // "P" Icon Color, so the two stay in sync if that's changed.
+  const pBBox = getOpaqueBBox(pIconLayerImg);
+  if (pBBox) {
+    const pIconBoxSize = CB_ICON_DIAM * 0.80;
+    const pAspect = pBBox.w / pBBox.h;
+    let pDrawW, pDrawH;
+    if (pAspect >= 1) { pDrawW = pIconBoxSize; pDrawH = pIconBoxSize / pAspect; }
+    else { pDrawH = pIconBoxSize; pDrawW = pIconBoxSize * pAspect; }
+    // The glyph's own ink isn't evenly distributed within its bounding box
+    // (it has solid strokes running the full left edge but only touches the
+    // right edge briefly near the top), so a pure bbox-center placement reads
+    // as hugging the left/top of the circle with a visible gap on the right.
+    // A small optical nudge right/down balances the margins visually.
+    const pCx = iconCx + CB_ICON_DIAM * 0.05, pCy = iconCy + CB_ICON_DIAM * 0.02;
+    const pDx = pCx - pDrawW / 2, pDy = pCy - pDrawH / 2;
+    drawRecoloredLayerCropped(ctx, pIconLayerImg, colorState.pColor, pBBox, pDx, pDy, pDrawW, pDrawH);
+  }
 
   // Text column begins exactly the spec'd gap to the right of the icon
   // column, and is capped to the spec'd max width no matter what.
@@ -2016,21 +2083,56 @@ async function generateFlyer() {
   fitText(ctx, finePrint, DESIGN_W / 2, y + Math.round(FINEPRINT_SIZE * 1.07), DESIGN_W - 100, "500 " + FINEPRINT_SIZE + "px 'Montserrat', 'Oswald', sans-serif", 15);
 
   y = y + FINEPRINT_H + FOOTER_GAP;
-  const footerCx = DESIGN_W / 2, footerCy = y + FOOTER_H / 2, footerR = DESIGN_W / 2;
-  const footerGrad = ctx.createRadialGradient(footerCx, footerCy, 0, footerCx, footerCy, footerR);
-  footerGrad.addColorStop(0, lightenColor(colorState.highlightColor, 0.25));
-  footerGrad.addColorStop(0.55, colorState.highlightColor);
-  footerGrad.addColorStop(1, darkenColor(colorState.highlightColor, 0.25));
-  ctx.fillStyle = footerGrad;
+  const footerCy = y + FOOTER_H / 2;
+  // Footer bar background: solid highlight color, or a radial "glow"
+  // gradient anchored at the center/left/right edge per footerBgGradientMode
+  // (the light source sits at that anchor point and fades outward).
+  let footerBgFillStyle = colorState.highlightColor;
+  if (footerBgGradientMode && footerBgGradientMode !== 'solid') {
+    const anchorX = footerBgGradientMode === 'left' ? 0 : footerBgGradientMode === 'right' ? DESIGN_W : DESIGN_W / 2;
+    const footerBgR = footerBgGradientMode === 'center' ? DESIGN_W / 2 : DESIGN_W;
+    const footerGrad = ctx.createRadialGradient(anchorX, footerCy, 0, anchorX, footerCy, footerBgR);
+    footerGrad.addColorStop(0, lightenColor(colorState.highlightColor, 0.25));
+    footerGrad.addColorStop(0.55, colorState.highlightColor);
+    footerGrad.addColorStop(1, darkenColor(colorState.highlightColor, 0.25));
+    footerBgFillStyle = footerGrad;
+  }
+  ctx.fillStyle = footerBgFillStyle;
   ctx.fillRect(0, y, DESIGN_W, FOOTER_H);
 
-  const FOOTER_FONT_SIZE = 40; // large condensed lettering to fill FOOTER_H
+  // Footer font size is solved from the available width (same idea as the
+  // headline) rather than a fixed 40px, since the footer line now carries a
+  // full address instead of just a short URL and needs to keep fitting no
+  // matter how long that text is. The pin icon sits ahead of the text as
+  // part of the same measured unit, so both are solved together: the
+  // icon-and-gaps footprint scales as 49*scale alongside the text width
+  // (see the gx/textCenterX layout below) for a total span of
+  // textW + 49*scale, which is linear in font size and can be solved with a
+  // single probe measurement.
+  const FOOTER_SIDE_PAD = 50;
+  const footerAvailW = DESIGN_W - FOOTER_SIDE_PAD * 2;
+  const FOOTER_FONT_FAMILY = "'Bebas Neue', 'Archivo Black', 'Arial Black', sans-serif";
+  const FOOTER_PROBE_SIZE = 100;
+  ctx.font = "400 " + FOOTER_PROBE_SIZE + "px " + FOOTER_FONT_FAMILY;
+  const probeScale = FOOTER_PROBE_SIZE / 26;
+  if ('letterSpacing' in ctx) ctx.letterSpacing = (3 * probeScale) + 'px';
+  const probeTextW = ctx.measureText(footerUrl).width;
+  if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+  const probeSpan = probeTextW + 49 * probeScale;
+  let FOOTER_FONT_SIZE = FOOTER_PROBE_SIZE * (footerAvailW / probeSpan);
+  FOOTER_FONT_SIZE = Math.max(14, Math.min(40, FOOTER_FONT_SIZE));
+
   const footerScale = FOOTER_FONT_SIZE / 26;
-  ctx.font = "400 " + FOOTER_FONT_SIZE + "px 'Bebas Neue', 'Archivo Black', 'Arial Black', sans-serif";
-  if ('letterSpacing' in ctx) ctx.letterSpacing = '3px';
+  ctx.font = "400 " + FOOTER_FONT_SIZE + "px " + FOOTER_FONT_FAMILY;
+  if ('letterSpacing' in ctx) ctx.letterSpacing = (3 * footerScale) + 'px';
   const footerTextW = ctx.measureText(footerUrl).width;
   if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
   const gx = DESIGN_W / 2 - footerTextW / 2 - 26 * footerScale, gy = y + FOOTER_H / 2;
+  const textCenterX = DESIGN_W / 2 + 12 * footerScale;
+
+  // Pin icon and footer text always render in the plain, solid Footer Text
+  // Color — the gradient option only ever applies to the footer bar's
+  // background (see footerBgFillStyle above).
   ctx.save();
   ctx.strokeStyle = colorState.footerTextColor; ctx.lineWidth = 1.6 * footerScale;
   ctx.beginPath(); ctx.arc(gx, gy, 11 * footerScale, 0, Math.PI * 2); ctx.stroke();
@@ -2040,8 +2142,8 @@ async function generateFlyer() {
 
   ctx.fillStyle = colorState.footerTextColor;
   ctx.textAlign = 'center';
-  if ('letterSpacing' in ctx) ctx.letterSpacing = '3px';
-  ctx.fillText(footerUrl, DESIGN_W / 2 + 12 * footerScale, y + FOOTER_H / 2 + 9 * footerScale);
+  if ('letterSpacing' in ctx) ctx.letterSpacing = (3 * footerScale) + 'px';
+  ctx.fillText(footerUrl, textCenterX, y + FOOTER_H / 2 + 9 * footerScale);
   if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
 
   document.getElementById('cardWrap').style.display = 'block';
