@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pure It Bowling — Flyer Generator</title>
+<!-- GoatCounter: privacy-friendly pageview/unique-visitor analytics.
+     Backend-only stats for the site owner — dashboard lives at
+     https://pureitbowlingnewflyer.goatcounter.com and isn't linked from
+     anywhere in this page. -->
+<script data-goatcounter="https://pureitbowlingnewflyer.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@500;600;700;800;900&family=Anton&family=Archivo+Black&family=Oswald:wght@500;600;700&family=Barlow+Condensed:wght@700;900&family=Barlow:wght@500;700&display=swap');
   *{box-sizing:border-box;margin:0;padding:0;}
@@ -38,6 +43,8 @@
   .ctrl-group{display:flex;align-items:center;gap:7px;}
   .ctrl-group label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#888;white-space:nowrap;}
   .ctrl-group input[type="number"]{border:1px solid #ddd;border-radius:5px;padding:5px 8px;font-size:13px;font-family:'Barlow',sans-serif;background:#fff;color:#111;width:64px;}
+  .ctrl-btn{border:1px solid #ddd;border-radius:5px;background:#fafafa;color:#777;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:6px 12px;cursor:pointer;white-space:nowrap;font-family:'Barlow',sans-serif;}
+  .ctrl-btn:hover{border-color:#EF4123;color:#EF4123;}
   .ctrl-hint{font-size:11px;color:#999;}
 
   .slot-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#aaa;}
@@ -47,7 +54,9 @@
   .slot-mode-btn:hover{border-color:#EF4123;color:#EF4123;}
   .slot-mode-btn.active{background:#EF4123;border-color:#EF4123;color:#fff;}
   .slot-text-panel{display:flex;flex-direction:column;gap:6px;}
-  .slot-text-input{width:100%;border:1px solid #ddd;border-radius:5px;padding:7px 8px;font-size:13px;font-family:'Barlow',sans-serif;background:#fff;color:#111;}
+  .slot-text-input{width:100%;border:1px solid #ddd;border-radius:5px;padding:7px 8px;font-size:13px;font-family:'Barlow',sans-serif;background:#fff;color:#111;resize:vertical;line-height:1.35;}
+  .slot-text-input:focus{outline:none;border-color:#EF4123;}
+  .slot-text-align{width:100%;border:1px solid #ddd;border-radius:5px;padding:6px 4px;font-size:11px;font-family:'Barlow',sans-serif;background:#fff;color:#111;flex:1;}
   .slot-text-input:focus{outline:none;border-color:#EF4123;}
   .slot-text-color-row{display:flex;align-items:center;gap:6px;}
   .slot-text-color-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#aaa;}
@@ -157,7 +166,7 @@
   .color-swatch{width:38px;height:38px;padding:0;border:1px solid #ddd;border-radius:7px;cursor:pointer;flex-shrink:0;box-shadow:inset 0 0 0 2px #fff;}
   .color-swatch:hover{border-color:#EF4123;}
 
-  .color-popover{display:none;position:absolute;z-index:1000;background:#fff;border:1px solid #ddd;border-radius:9px;box-shadow:0 10px 30px rgba(0,0,0,0.18);padding:14px;width:210px;}
+  .color-popover{display:none;position:absolute;z-index:1000;background:#fff;border:1px solid #ddd;border-radius:9px;box-shadow:0 10px 30px rgba(0,0,0,0.18);padding:14px;width:230px;max-width:calc(100vw - 20px);}
   .popover-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
   .popover-header span{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#888;}
   .popover-close{border:none;background:none;font-size:19px;line-height:1;color:#bbb;cursor:pointer;padding:0;}
@@ -165,6 +174,16 @@
   .popover-hint{font-size:10.5px;color:#999;margin:-8px 0 12px;line-height:1.4;}
   .popover-body{display:flex;flex-direction:column;gap:10px;}
   .popover-body input[type="color"]{width:100%;height:40px;padding:0;border:1px solid #ddd;border-radius:6px;cursor:pointer;background:none;}
+
+  /* Custom saturation/value square + hue slider — a self-drawn picker
+     (rather than the native input[type=color]) so it looks and behaves
+     identically on desktop and mobile, instead of handing off to whatever
+     picker UI the phone's OS happens to show. */
+  .sv-square{position:relative;width:100%;aspect-ratio:1/1;border-radius:8px;cursor:pointer;touch-action:none;background-color:#FF0000;background-image:linear-gradient(to top, #000, rgba(0,0,0,0)), linear-gradient(to right, #fff, rgba(255,255,255,0));box-shadow:inset 0 0 0 1px rgba(0,0,0,0.12);}
+  .sv-cursor{position:absolute;width:18px;height:18px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.45);transform:translate(-50%,-50%);pointer-events:none;top:0;left:0;}
+  .hue-slider{position:relative;width:100%;height:20px;border-radius:10px;cursor:pointer;touch-action:none;background:linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);box-shadow:inset 0 0 0 1px rgba(0,0,0,0.12);}
+  .hue-cursor{position:absolute;top:50%;width:20px;height:20px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.45);transform:translate(-50%,-50%);pointer-events:none;left:0;background:transparent;}
+
   .hex-field{display:flex;flex-direction:column;gap:3px;}
   .hex-field label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#bbb;}
   .hex-input{width:100%;border:1px solid #ddd;border-radius:5px;padding:7px 8px;font-size:13px;font-family:'Barlow',sans-serif;text-transform:uppercase;}
@@ -288,9 +307,19 @@
   <div class="card-body">
     <div class="ctrl-group" style="margin-bottom:8px;">
       <label for="slotCount">Features</label>
-      <input type="number" id="slotCount" min="1" max="12" value="6" onchange="renderSlots()">
+      <input type="number" id="slotCount" min="1" max="12" value="4" onchange="renderSlots()">
     </div>
     <div class="ctrl-hint" style="margin-bottom:14px;">Choose how many feature spaces the flyer should have. For each one, add text, upload an image, or choose one from the library. Drag features to rearrange the layout — stack two or more in a column to make it narrower, or leave a column with just one to make it wider and taller.</div>
+
+    <div class="ctrl-group" style="margin-bottom:6px; flex-wrap:wrap;">
+      <label for="gridCols">Columns</label>
+      <input type="number" id="gridCols" min="1" max="12" value="2">
+      <label for="gridRows">Rows</label>
+      <input type="number" id="gridRows" min="1" max="12" value="2">
+      <button type="button" class="ctrl-btn" id="applyGridBtn">Arrange</button>
+    </div>
+    <div class="ctrl-hint" style="margin-bottom:14px;">Prefer typing exact numbers instead of dragging? Set columns and rows here and click Arrange. This replaces the current layout and clears any merges (extra columns are added automatically if there isn't room for everything).</div>
+
     <div class="layout-board" id="layoutBoard"></div>
 
     <div class="ctrl-hint" style="margin-top:16px;margin-bottom:8px;">Click any line below to show or hide that specific border between two features. <a href="#" id="allBordersOn">Show all</a> &middot; <a href="#" id="allBordersOff">Hide all</a></div>
@@ -372,7 +401,12 @@
   </div>
   <div class="popover-hint" id="popoverHint" style="display:none;"></div>
   <div class="popover-body">
-    <input type="color" id="popoverPicker"/>
+    <div class="sv-square" id="svSquare">
+      <div class="sv-cursor" id="svCursor"></div>
+    </div>
+    <div class="hue-slider" id="hueSlider">
+      <div class="hue-cursor" id="hueCursor"></div>
+    </div>
     <div class="hex-field">
       <label>Hex</label>
       <input type="text" id="popoverHex" class="hex-input" maxlength="7"/>
@@ -409,6 +443,7 @@ let slotImages = [];
 let slotModes = [];
 let slotTexts = [];
 let slotTextColors = [];
+let slotTextAligns = []; // 'top' | 'center' (default) | 'bottom' — vertical alignment of text-mode slots
 let columnLayout = [];
 let draggedSlotIndex = null;
 let slotBorders = {};
@@ -657,6 +692,39 @@ function rgbToHex(r, g, b) {
   return '#' + h(r) + h(g) + h(b);
 }
 
+// HSV <-> RGB conversions for the custom saturation/value square + hue
+// slider color picker (h: 0-360, s/v: 0-1).
+function rgbToHsv(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  const d = max - min;
+  let h = 0;
+  if (d !== 0) {
+    if (max === r) h = ((g - b) / d) % 6;
+    else if (max === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    h *= 60;
+    if (h < 0) h += 360;
+  }
+  const s = max === 0 ? 0 : d / max;
+  const v = max;
+  return { h: h, s: s, v: v };
+}
+
+function hsvToRgb(h, s, v) {
+  const c = v * s;
+  const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+  const m = v - c;
+  let r = 0, g = 0, b = 0;
+  if (h < 60) { r = c; g = x; b = 0; }
+  else if (h < 120) { r = x; g = c; b = 0; }
+  else if (h < 180) { r = 0; g = c; b = x; }
+  else if (h < 240) { r = 0; g = x; b = c; }
+  else if (h < 300) { r = x; g = 0; b = c; }
+  else { r = c; g = 0; b = x; }
+  return { r: (r + m) * 255, g: (g + m) * 255, b: (b + m) * 255 };
+}
+
 function lightenColor(hex, amt) {
   const rgb = hexToRgb(hex);
   return rgbToHex(
@@ -708,14 +776,88 @@ function updateSwatch(key, hex) {
   if (sw) sw.style.background = hex;
 }
 
+// Current HSV of the open popover's SV-square/hue-slider widget. Kept as
+// its own state (rather than always re-deriving from the hex on every
+// update) because hue is undefined/arbitrary once saturation or value hits
+// zero — re-deriving on every drag tick would make the hue slider randomly
+// snap around whenever you drag to the edge of the square.
+let pickerHsv = { h: 0, s: 0, v: 0 };
+// Set while the SV-square/hue-slider itself is driving a color change, so
+// populatePopover() knows to skip re-deriving pickerHsv from the resulting
+// hex (see above) and only sync the hex/RGB text fields.
+let suppressPickerHsvSync = false;
+
+function updatePickerCursors() {
+  document.getElementById('svSquare').style.backgroundColor = 'hsl(' + pickerHsv.h + ',100%,50%)';
+  const svCursor = document.getElementById('svCursor');
+  svCursor.style.left = (pickerHsv.s * 100) + '%';
+  svCursor.style.top = ((1 - pickerHsv.v) * 100) + '%';
+  document.getElementById('hueCursor').style.left = (pickerHsv.h / 360 * 100) + '%';
+}
+
 function populatePopover(hex) {
   hex = hex.toUpperCase();
   const rgb = hexToRgb(hex);
-  document.getElementById('popoverPicker').value = hex;
   document.getElementById('popoverHex').value = hex;
   document.getElementById('popover_r').value = rgb.r;
   document.getElementById('popover_g').value = rgb.g;
   document.getElementById('popover_b').value = rgb.b;
+  if (!suppressPickerHsvSync) {
+    pickerHsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+    updatePickerCursors();
+  }
+}
+
+// Applies the current pickerHsv (after a drag on the square or slider) as
+// the popover's color, without letting the resulting setColor()/hex
+// round-trip reset the hue we're mid-drag on.
+function applyPickerHsv() {
+  updatePickerCursors();
+  if (!currentPopoverKey) return;
+  const rgb = hsvToRgb(pickerHsv.h, pickerHsv.s, pickerHsv.v);
+  const hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+  suppressPickerHsvSync = true;
+  setColor(currentPopoverKey, hex);
+  suppressPickerHsvSync = false;
+}
+
+function setHsvFromSvPointer(clientX, clientY) {
+  const rect = document.getElementById('svSquare').getBoundingClientRect();
+  let s = (clientX - rect.left) / rect.width;
+  let v = 1 - (clientY - rect.top) / rect.height;
+  pickerHsv.s = Math.max(0, Math.min(1, s));
+  pickerHsv.v = Math.max(0, Math.min(1, v));
+  applyPickerHsv();
+}
+
+function setHueFromSliderPointer(clientX) {
+  const rect = document.getElementById('hueSlider').getBoundingClientRect();
+  let h = (clientX - rect.left) / rect.width;
+  pickerHsv.h = Math.max(0, Math.min(1, h)) * 360;
+  applyPickerHsv();
+}
+
+// Pointer Events unify mouse/touch/pen in one code path, so the square and
+// slider drag identically on desktop and mobile — nothing here depends on
+// which device or browser is showing it.
+function bindPickerDrag(el, onMove) {
+  let dragging = false;
+  el.addEventListener('pointerdown', function(e) {
+    dragging = true;
+    el.setPointerCapture(e.pointerId);
+    onMove(e.clientX, e.clientY);
+    e.preventDefault();
+  });
+  el.addEventListener('pointermove', function(e) {
+    if (dragging) onMove(e.clientX, e.clientY);
+  });
+  el.addEventListener('pointerup', function() { dragging = false; });
+  el.addEventListener('pointercancel', function() { dragging = false; });
+}
+
+function initSvHuePicker() {
+  bindPickerDrag(document.getElementById('svSquare'), function(x, y) { setHsvFromSvPointer(x, y); });
+  bindPickerDrag(document.getElementById('hueSlider'), function(x) { setHueFromSliderPointer(x); });
 }
 
 function updateColorUI(key, hex) {
@@ -759,7 +901,7 @@ function findColorDef(key) {
 function positionPopover(triggerEl) {
   const pop = document.getElementById('colorPopover');
   const rect = triggerEl.getBoundingClientRect();
-  const popW = 210;
+  const popW = pop.offsetWidth || 230;
   let left = rect.left + window.scrollX;
   const maxLeft = document.documentElement.scrollWidth - popW - 10;
   if (left > maxLeft) left = Math.max(10, maxLeft);
@@ -824,9 +966,7 @@ function buildLabeledSwatch(def) {
 }
 
 function wirePopover() {
-  document.getElementById('popoverPicker').addEventListener('input', function(e) {
-    if (currentPopoverKey) setColor(currentPopoverKey, e.target.value);
-  });
+  initSvHuePicker();
   document.getElementById('popoverHex').addEventListener('change', function(e) {
     if (!currentPopoverKey) return;
     const v = e.target.value.trim();
@@ -928,6 +1068,42 @@ function syncColumnLayout(n) {
   }
 }
 
+// Lets someone type an exact grid shape instead of dragging. Fills
+// column-major (down each column, then across) using "Rows" as the stack
+// height per column — the same fill order syncColumnLayout already uses,
+// just driven by an explicit number instead of the fixed STACK_TARGET. If
+// there are more features than Columns x Rows can hold, extra columns are
+// added automatically beyond what was requested so nothing gets dropped.
+function applyGridLayout() {
+  let cols = parseInt(document.getElementById('gridCols').value, 10);
+  let rows = parseInt(document.getElementById('gridRows').value, 10);
+  if (!cols || cols < 1) cols = 1;
+  if (!rows || rows < 1) rows = 1;
+  cols = Math.min(cols, 12);
+  rows = Math.min(rows, 12);
+  document.getElementById('gridCols').value = cols;
+  document.getElementById('gridRows').value = rows;
+
+  const n = slotImages.length;
+  const newLayout = [];
+  let col = [];
+  for (let i = 0; i < n; i++) {
+    col.push(i);
+    if (col.length >= rows) {
+      newLayout.push(col);
+      col = [];
+    }
+  }
+  if (col.length) newLayout.push(col);
+
+  columnLayout = newLayout;
+  // The old merge geometry was computed against the previous layout and
+  // won't line up with the new one, so clear it rather than leave stale
+  // merges pointing at the wrong neighbors.
+  mergeGroups = [];
+  renderLayoutBoard();
+}
+
 function findColumnOfSlot(slotIdx) {
   for (let c = 0; c < columnLayout.length; c++) {
     const pos = columnLayout[c].indexOf(slotIdx);
@@ -946,6 +1122,7 @@ function renderSlots() {
   const newModes = [];
   const newTexts = [];
   const newTextColors = [];
+  const newTextAligns = [];
   for (let i = 0; i < n; i++) {
     newImages.push(slotImages[i] || null);
     // No default mode — nothing is pre-selected/highlighted until the user
@@ -953,11 +1130,13 @@ function renderSlots() {
     newModes.push(slotModes[i] || null);
     newTexts.push(slotTexts[i] || '');
     newTextColors.push(slotTextColors[i] || '#161616');
+    newTextAligns.push(slotTextAligns[i] || 'center');
   }
   slotImages = newImages;
   slotModes = newModes;
   slotTexts = newTexts;
   slotTextColors = newTextColors;
+  slotTextAligns = newTextAligns;
 
   syncColumnLayout(n);
   renderLayoutBoard();
@@ -1039,10 +1218,10 @@ function createLayoutSlotEl(slotIdx, colIdx, rowIdx) {
     const textPanel = document.createElement('div');
     textPanel.className = 'slot-text-panel';
 
-    const textInput = document.createElement('input');
-    textInput.type = 'text';
+    const textInput = document.createElement('textarea');
     textInput.className = 'slot-text-input';
-    textInput.placeholder = 'Feature text';
+    textInput.placeholder = 'Feature text (multiple lines OK)';
+    textInput.rows = 3;
     textInput.value = slotTexts[slotIdx] || '';
     textInput.addEventListener('mousedown', function(e) { e.stopPropagation(); });
     textInput.addEventListener('click', function(e) { e.stopPropagation(); });
@@ -1068,6 +1247,33 @@ function createLayoutSlotEl(slotIdx, colIdx, rowIdx) {
     colorRow.appendChild(colorLabel);
     colorRow.appendChild(colorInput);
     textPanel.appendChild(colorRow);
+
+    const alignRow = document.createElement('div');
+    alignRow.className = 'slot-text-color-row';
+    const alignLabel = document.createElement('span');
+    alignLabel.className = 'slot-text-color-label';
+    alignLabel.textContent = 'Align';
+    const alignSelect = document.createElement('select');
+    alignSelect.className = 'slot-text-align';
+    [
+      { v: 'top', label: 'Top' },
+      { v: 'center', label: 'Center' },
+      { v: 'bottom', label: 'Bottom' }
+    ].forEach(function(opt) {
+      const o = document.createElement('option');
+      o.value = opt.v;
+      o.textContent = opt.label;
+      if ((slotTextAligns[slotIdx] || 'center') === opt.v) o.selected = true;
+      alignSelect.appendChild(o);
+    });
+    alignSelect.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+    alignSelect.addEventListener('click', function(e) { e.stopPropagation(); });
+    alignSelect.addEventListener('change', function(e) {
+      slotTextAligns[slotIdx] = e.target.value;
+    });
+    alignRow.appendChild(alignLabel);
+    alignRow.appendChild(alignSelect);
+    textPanel.appendChild(alignRow);
 
     card.appendChild(textPanel);
   } else if (mode === 'library') {
@@ -1836,15 +2042,34 @@ function drawContain(ctx, img, cx, cy, cw, ch, padRatio) {
 // Feature slots set to "Add Text" instead of an image. Wraps to multiple
 // lines at the starting size, then shrinks (re-wrapping each time) until the
 // whole block fits both the width and the height, down to minSize.
-function drawTextContain(ctx, text, cx, cy, cw, ch, color, padRatio) {
+// Splits on explicit newlines first (so intentional line breaks the user
+// typed are always respected as hard breaks, including blank lines),
+// wrapping each paragraph independently to fit maxWidth.
+function wrapMultilineText(ctx, text, maxWidth) {
+  const paragraphs = text.split('\n');
+  let lines = [];
+  paragraphs.forEach(function(p) {
+    if (p === '') { lines.push(''); return; }
+    lines = lines.concat(wrapText(ctx, p, maxWidth));
+  });
+  return lines;
+}
+
+// Draws `text` within a cx/cy/cw/ch box — used for Feature slots set to
+// "Add Text" instead of an image. Respects explicit line breaks the user
+// typed, additionally auto-wrapping any line that's too wide, then shrinks
+// (re-wrapping each time) until the whole block fits, down to minSize.
+// `align` is 'top' | 'center' (default) | 'bottom'.
+function drawTextContain(ctx, text, cx, cy, cw, ch, color, align, padRatio) {
   padRatio = padRatio || 0.86;
+  align = align || 'center';
   const maxW = cw * padRatio, maxH = ch * padRatio;
   const family = "'Montserrat', 'Oswald', sans-serif";
   const maxSize = 34, minSize = 12;
   let size = maxSize, lines = [], lineHeight = 0;
   while (size >= minSize) {
     ctx.font = "700 " + size + "px " + family;
-    lines = wrapText(ctx, text, maxW);
+    lines = wrapMultilineText(ctx, text, maxW);
     lineHeight = size * 1.18;
     const blockH = lines.length * lineHeight;
     const widestLine = lines.reduce(function(w, l) { return Math.max(w, ctx.measureText(l).width); }, 0);
@@ -1855,7 +2080,12 @@ function drawTextContain(ctx, text, cx, cy, cw, ch, color, padRatio) {
   ctx.fillStyle = color;
   ctx.textAlign = 'center';
   const blockH = lines.length * lineHeight;
-  let ly = cy + (ch - blockH) / 2 + lineHeight * 0.78;
+  const padY = (ch - maxH) / 2; // half of the padding padRatio leaves top/bottom
+  let blockTop;
+  if (align === 'top') blockTop = cy + padY;
+  else if (align === 'bottom') blockTop = cy + ch - padY - blockH;
+  else blockTop = cy + (ch - blockH) / 2;
+  let ly = blockTop + lineHeight * 0.78;
   lines.forEach(function(line) {
     ctx.fillText(line, cx + cw / 2, ly);
     ly += lineHeight;
@@ -2174,6 +2404,13 @@ function drawSlantedHeadlineLine(ctx, text, cx, y, maxW, fontStr, color) {
 }
 
 async function generateFlyer() {
+  // Backend-only usage signal: counts actual "Generate Flyer" clicks as a
+  // GoatCounter event, separate from plain pageviews, so the dashboard can
+  // tell how many visits turned into someone actually using the tool.
+  if (window.goatcounter && window.goatcounter.count) {
+    window.goatcounter.count({ path: 'generate-flyer', title: 'Generate Flyer clicked', event: true });
+  }
+
   // The @import above only makes these fonts available for CSS — it doesn't
   // make the browser actually download them, because nothing in the visible
   // page HTML is styled with them (only the canvas draws with them). Without
@@ -2382,7 +2619,7 @@ async function generateFlyer() {
 
       if (slotModes[slotIdx] === 'text') {
         if (slotTexts[slotIdx]) {
-          drawTextContain(ctx, slotTexts[slotIdx], cellX, cellY, drawW, drawH, slotTextColors[slotIdx] || '#161616');
+          drawTextContain(ctx, slotTexts[slotIdx], cellX, cellY, drawW, drawH, slotTextColors[slotIdx] || '#161616', slotTextAligns[slotIdx] || 'center');
         }
       } else {
         const img = slotImages[slotIdx];
@@ -2583,6 +2820,7 @@ window.addEventListener('DOMContentLoaded', function() {
     e.preventDefault();
     setAllBorders(false);
   });
+  document.getElementById('applyGridBtn').addEventListener('click', applyGridLayout);
 });
 </script>
 </body>
