@@ -51,12 +51,34 @@
 
   .bg-upload-btn{width:100%;border:1px solid #ddd;border-radius:8px;padding:9px;background:#fafafa;color:#777;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;font-family:'Barlow',sans-serif;}
   .bg-upload-btn:hover{border-color:#EF4123;color:#EF4123;}
+  .bg-btn-row{display:flex;gap:8px;}
+  .bg-btn-row .bg-upload-btn{flex:1;}
   .bg-library-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(84px,1fr));gap:8px;margin-bottom:6px;}
   .bg-library-thumb{position:relative;border:2px solid #e6e6e6;border-radius:8px;overflow:hidden;cursor:pointer;aspect-ratio:8.5/11;background:#f5f5f5;padding:0;}
   .bg-library-thumb.selected{border-color:#EF4123;}
   .bg-library-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
   .bg-library-thumb .bg-library-label{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.55);color:#fff;font-size:8.5px;padding:3px 4px;text-align:center;line-height:1.2;}
   .bg-library-status{margin-top:2px;}
+  .bg-selected-preview{display:flex;align-items:center;gap:10px;margin-top:10px;padding:8px;border:1px solid #eee;border-radius:8px;background:#fafafa;}
+  .bg-selected-preview img{width:44px;height:56px;object-fit:cover;border-radius:5px;border:1px solid #ddd;flex-shrink:0;}
+  .bg-selected-label{font-size:11px;color:#666;font-weight:600;word-break:break-word;}
+
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:2000;align-items:center;justify-content:center;padding:20px;}
+  .modal-overlay.open{display:flex;}
+  .modal-box{background:#fff;border-radius:12px;padding:16px;width:100%;max-width:560px;max-height:82vh;overflow-y:auto;box-shadow:0 20px 50px rgba(0,0,0,0.3);}
+  .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .modal-header h3{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#333;}
+  .modal-close{border:none;background:none;font-size:22px;line-height:.8;color:#bbb;cursor:pointer;padding:0;}
+  .modal-close:hover{color:#666;}
+
+  .img-library-breadcrumb{font-size:11px;color:#999;margin-bottom:10px;}
+  .img-library-breadcrumb a{color:#EF4123;font-weight:700;text-decoration:none;cursor:pointer;}
+  .img-library-breadcrumb a:hover{text-decoration:underline;}
+  .img-library-folder{display:flex;align-items:center;justify-content:center;background:#fafafa;}
+  .img-library-folder-label{font-size:12px;font-weight:700;color:#555;text-align:center;padding:8px;word-break:break-word;}
+  .slot-library-link{margin-top:6px;text-align:center;font-size:10.5px;}
+  .slot-library-link a{color:#EF4123;font-weight:700;text-decoration:none;cursor:pointer;}
+  .slot-library-link a:hover{text-decoration:underline;}
 
   .layout-hint{font-size:11px;color:#999;margin-bottom:10px;line-height:1.5;}
   .layout-board{display:flex;align-items:stretch;gap:0;min-height:120px;overflow-x:auto;padding-bottom:4px;}
@@ -203,14 +225,18 @@
       <label for="darkModeToggle">Dark mode (swaps the default black/white text colors)</label>
     </div>
 
-    <div class="ctrl-hint" style="margin-bottom:10px;">Choose a pre-made background below, or upload your own. Either way it's cropped to fill the full 8.5"&times;11" page.</div>
+    <div class="ctrl-hint" style="margin-bottom:10px;">Choose a pre-made background from the library, or upload your own. Either way it's cropped to fill the full 8.5"&times;11" page.</div>
 
-    <div class="bg-library-grid" id="bgLibraryGrid"></div>
-    <div class="ctrl-hint bg-library-status" id="bgLibraryStatus">Loading backgrounds&hellip;</div>
-
-    <button type="button" class="bg-upload-btn" id="bgUploadBtn" style="margin-top:10px;">Upload my own image</button>
+    <div class="bg-btn-row">
+      <button type="button" class="bg-upload-btn" id="openBgLibraryBtn">Backgrounds Library</button>
+      <button type="button" class="bg-upload-btn" id="bgUploadBtn">Upload My Own Image</button>
+    </div>
     <input type="file" id="backgroundInput" accept="image/*" style="display:none;"/>
-    <img id="bgUploadPreview" class="preview-thumb" style="display:none; margin-top:8px;"/>
+
+    <div class="bg-selected-preview" id="bgSelectedPreview" style="display:none;">
+      <img id="bgUploadPreview"/>
+      <div class="bg-selected-label" id="bgPreviewLabel"></div>
+    </div>
 
     <div class="ctrl-hint" id="removeBackgroundWrap" style="margin-top:8px; display:none;"><a href="#" id="removeBackgroundLink">Remove background image</a></div>
 
@@ -218,6 +244,29 @@
       <label>Background Image Opacity <span id="backgroundOpacityVal" style="color:#bbb;">100%</span></label>
       <input type="range" id="backgroundOpacity" min="0" max="100" value="100"/>
     </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="bgLibraryModalOverlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Backgrounds Library</h3>
+      <button type="button" class="modal-close" id="bgLibraryModalClose">&times;</button>
+    </div>
+    <div class="bg-library-grid" id="bgLibraryGrid"></div>
+    <div class="ctrl-hint bg-library-status" id="bgLibraryStatus">Loading backgrounds&hellip;</div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="imgLibraryModalOverlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Images Library</h3>
+      <button type="button" class="modal-close" id="imgLibraryModalClose">&times;</button>
+    </div>
+    <div class="img-library-breadcrumb" id="imgLibraryBreadcrumb"></div>
+    <div class="bg-library-grid" id="imgLibraryGrid"></div>
+    <div class="ctrl-hint bg-library-status" id="imgLibraryStatus">Loading images&hellip;</div>
   </div>
 </div>
 
@@ -358,6 +407,21 @@ const BG_LIBRARY_FALLBACK = [
   'Pure It Flyer Background - Dark One Corner.png',
   'Pure It Flyer Background - Light One Corner.png'
 ];
+
+// Product image library: a whole folder tree (Images/, with subfolders and
+// sub-subfolders) hosted alongside the flyer generator on GitHub. Since the
+// GitHub Contents API only lists one directory level at a time, the full
+// tree is fetched in one shot via the git "trees" API (?recursive=1), then
+// parsed into a nested {folders:{}, files:[]} structure locally so the
+// popup can browse it breadcrumb-style without any further network calls.
+const IMG_LIBRARY_BASE = 'https://krexroth.github.io/PureItBowling/NewReleaseFlyerBuilder/Images/';
+const IMG_LIBRARY_REPO_API = 'https://api.github.com/repos/krexroth/PureItBowling';
+const IMG_LIBRARY_ROOT_PATH = 'NewReleaseFlyerBuilder/Images/';
+
+let imageLibraryTree = null;        // nested {folders:{name:node}, files:[filename,...]}, rooted at Images/
+let imageLibraryLoadPromise = null; // in-flight/cached fetch, so we only ever hit the API once per session
+let imageLibraryPath = [];          // breadcrumb: array of folder names from the Images root
+let imageLibraryTargetSlot = null;  // which "Image N" slot the modal is currently filling
 
 // A merge combines a rectangular block of images (1 row tall x 2+ columns
 // wide, 2+ rows tall x 1 column, or both at once) into one picture that
@@ -923,6 +987,18 @@ function createLayoutSlotEl(slotIdx, colIdx, rowIdx) {
   zone.appendChild(labelSpan);
   card.appendChild(zone);
 
+  const libraryLink = document.createElement('div');
+  libraryLink.className = 'slot-library-link';
+  const libA = document.createElement('a');
+  libA.href = '#';
+  libA.textContent = 'Choose from library';
+  libA.addEventListener('click', function(e) {
+    e.preventDefault();
+    openImgLibraryModal(slotIdx);
+  });
+  libraryLink.appendChild(libA);
+  card.appendChild(libraryLink);
+
   if (myGroupHidden) {
     const badge = document.createElement('div');
     badge.className = 'merge-hidden-badge';
@@ -1195,6 +1271,184 @@ function handleSlotUpload(idx, e) {
   reader.readAsDataURL(file);
 }
 
+/* ---- Product Images library (folder tree browsed from a shared popup) ---- */
+
+// Fetches the whole repo's file tree once (caching the in-flight/resolved
+// promise so repeat opens of the popup don't refetch), then builds a nested
+// folder structure scoped to just the Images/ subtree.
+function fetchImageLibraryTree() {
+  if (imageLibraryLoadPromise) return imageLibraryLoadPromise;
+  imageLibraryLoadPromise = fetch(IMG_LIBRARY_REPO_API)
+    .then(function(res) { if (!res.ok) throw new Error('repo info request failed'); return res.json(); })
+    .then(function(repoInfo) {
+      const branch = repoInfo.default_branch || 'main';
+      return fetch(IMG_LIBRARY_REPO_API + '/git/trees/' + encodeURIComponent(branch) + '?recursive=1');
+    })
+    .then(function(res) { if (!res.ok) throw new Error('tree request failed'); return res.json(); })
+    .then(function(data) {
+      const root = { folders: {}, files: [] };
+      (data.tree || []).forEach(function(entry) {
+        if (entry.type !== 'blob') return;
+        if (entry.path.indexOf(IMG_LIBRARY_ROOT_PATH) !== 0) return;
+        const rel = entry.path.slice(IMG_LIBRARY_ROOT_PATH.length);
+        if (!rel || !BG_IMAGE_EXT_RE.test(rel)) return;
+        const parts = rel.split('/');
+        const filename = parts.pop();
+        let node = root;
+        parts.forEach(function(folder) {
+          if (!node.folders[folder]) node.folders[folder] = { folders: {}, files: [] };
+          node = node.folders[folder];
+        });
+        node.files.push(filename);
+      });
+      imageLibraryTree = root;
+      return root;
+    });
+  return imageLibraryLoadPromise;
+}
+
+function getImageLibraryNode(path) {
+  let node = imageLibraryTree;
+  for (let i = 0; i < path.length && node; i++) node = node.folders[path[i]];
+  return node;
+}
+
+// Renders the breadcrumb trail + the folders/images grid for the current
+// imageLibraryPath. Folders are clickable to drill in; images are clickable
+// to fill the target slot.
+function renderImageLibraryView() {
+  const status = document.getElementById('imgLibraryStatus');
+  const grid = document.getElementById('imgLibraryGrid');
+  const crumbEl = document.getElementById('imgLibraryBreadcrumb');
+  grid.innerHTML = '';
+  crumbEl.innerHTML = '';
+
+  const rootCrumb = document.createElement('a');
+  rootCrumb.href = '#';
+  rootCrumb.textContent = 'Images';
+  rootCrumb.addEventListener('click', function(e) {
+    e.preventDefault();
+    imageLibraryPath = [];
+    renderImageLibraryView();
+  });
+  crumbEl.appendChild(rootCrumb);
+  imageLibraryPath.forEach(function(folder, i) {
+    crumbEl.appendChild(document.createTextNode(' / '));
+    const a = document.createElement('a');
+    a.href = '#';
+    a.textContent = folder;
+    a.addEventListener('click', function(e) {
+      e.preventDefault();
+      imageLibraryPath = imageLibraryPath.slice(0, i + 1);
+      renderImageLibraryView();
+    });
+    crumbEl.appendChild(a);
+  });
+
+  if (!imageLibraryTree) {
+    status.textContent = 'Loading images…';
+    status.style.display = 'block';
+    return;
+  }
+
+  const node = getImageLibraryNode(imageLibraryPath);
+  if (!node) {
+    status.textContent = 'Folder not found.';
+    status.style.display = 'block';
+    return;
+  }
+
+  const folderNames = Object.keys(node.folders).sort();
+  const fileNames = node.files.slice().sort();
+
+  if (!folderNames.length && !fileNames.length) {
+    status.textContent = 'No images in this folder.';
+    status.style.display = 'block';
+    return;
+  }
+  status.style.display = 'none';
+
+  folderNames.forEach(function(name) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'bg-library-thumb img-library-folder';
+    const label = document.createElement('div');
+    label.className = 'img-library-folder-label';
+    label.textContent = '📁 ' + name;
+    btn.appendChild(label);
+    btn.addEventListener('click', function() {
+      imageLibraryPath = imageLibraryPath.concat([name]);
+      renderImageLibraryView();
+    });
+    grid.appendChild(btn);
+  });
+
+  fileNames.forEach(function(filename) {
+    const relPath = imageLibraryPath.concat([filename]).join('/');
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'bg-library-thumb';
+    const img = document.createElement('img');
+    img.src = IMG_LIBRARY_BASE + relPath.split('/').map(encodeURIComponent).join('/');
+    img.alt = filename;
+    btn.appendChild(img);
+    const lbl = document.createElement('div');
+    lbl.className = 'bg-library-label';
+    lbl.textContent = filename.replace(/\.[^.]+$/, '');
+    btn.appendChild(lbl);
+    btn.addEventListener('click', function() { loadImageIntoSlot(relPath); });
+    grid.appendChild(btn);
+  });
+}
+
+function loadImageIntoSlot(relPath) {
+  if (imageLibraryTargetSlot === null) return;
+  const slotIdx = imageLibraryTargetSlot;
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = function() {
+    slotImages[slotIdx] = img;
+    renderLayoutBoard();
+    closeImgLibraryModal();
+  };
+  img.onerror = function() {
+    const status = document.getElementById('imgLibraryStatus');
+    if (status) { status.textContent = 'Couldn\'t load "' + relPath + '".'; status.style.display = 'block'; }
+  };
+  img.src = IMG_LIBRARY_BASE + relPath.split('/').map(encodeURIComponent).join('/');
+}
+
+function openImgLibraryModal(slotIdx) {
+  imageLibraryTargetSlot = slotIdx;
+  imageLibraryPath = [];
+  document.getElementById('imgLibraryModalOverlay').classList.add('open');
+  renderImageLibraryView();
+  if (!imageLibraryTree) {
+    fetchImageLibraryTree().then(function() {
+      renderImageLibraryView();
+    }).catch(function() {
+      const status = document.getElementById('imgLibraryStatus');
+      status.textContent = 'Could not load the images library. Check your connection or the repo path.';
+      status.style.display = 'block';
+    });
+  }
+}
+
+function closeImgLibraryModal() {
+  document.getElementById('imgLibraryModalOverlay').classList.remove('open');
+  imageLibraryTargetSlot = null;
+}
+
+function initImageLibraryControls() {
+  document.getElementById('imgLibraryModalClose').addEventListener('click', closeImgLibraryModal);
+  document.getElementById('imgLibraryModalOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeImgLibraryModal();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeImgLibraryModal();
+  });
+}
+
 /* ---- Background image upload ---- */
 
 function handleBackgroundUpload(e) {
@@ -1216,17 +1470,23 @@ function handleBackgroundUpload(e) {
 
 function renderBackgroundPreview() {
   const btn = document.getElementById('bgUploadBtn');
+  const previewWrap = document.getElementById('bgSelectedPreview');
   const preview = document.getElementById('bgUploadPreview');
+  const previewLabel = document.getElementById('bgPreviewLabel');
   const removeWrap = document.getElementById('removeBackgroundWrap');
   const isCustomUpload = backgroundImage && !selectedLibraryBg;
-  if (isCustomUpload) {
+
+  if (backgroundImage) {
     preview.src = backgroundImage.src;
-    preview.style.display = 'block';
-    btn.textContent = 'Change my upload';
+    previewWrap.style.display = 'flex';
+    previewLabel.textContent = isCustomUpload
+      ? 'Your uploaded image'
+      : 'Selected: ' + selectedLibraryBg.replace(/\.[^.]+$/, '');
   } else {
-    preview.style.display = 'none';
-    btn.textContent = 'Upload my own image';
+    previewWrap.style.display = 'none';
   }
+
+  btn.textContent = isCustomUpload ? 'Change My Upload' : 'Upload My Own Image';
   removeWrap.style.display = backgroundImage ? 'block' : 'none';
 }
 
@@ -1244,12 +1504,21 @@ function loadLibraryBackground(filename) {
     selectedLibraryBg = filename;
     updateLibrarySelectionHighlight();
     renderBackgroundPreview();
+    closeBgLibraryModal();
   };
   img.onerror = function() {
     const status = document.getElementById('bgLibraryStatus');
     if (status) { status.textContent = 'Couldn\'t load "' + filename + '".'; status.style.display = 'block'; }
   };
   img.src = BG_LIBRARY_BASE + encodeURIComponent(filename);
+}
+
+function openBgLibraryModal() {
+  document.getElementById('bgLibraryModalOverlay').classList.add('open');
+}
+
+function closeBgLibraryModal() {
+  document.getElementById('bgLibraryModalOverlay').classList.remove('open');
 }
 
 function renderBackgroundLibraryGrid(filenames) {
@@ -1273,7 +1542,10 @@ function renderBackgroundLibraryGrid(filenames) {
     btn.appendChild(img);
     const label = document.createElement('div');
     label.className = 'bg-library-label';
-    label.textContent = filename.replace(/\.[^.]+$/, '').replace(/^Pure It Flyer Background - /i, '');
+    // Displayed name is just the filename with its extension stripped —
+    // whatever you name the file in the BackgroundImages folder is exactly
+    // what shows up here, no other transformation.
+    label.textContent = filename.replace(/\.[^.]+$/, '');
     btn.appendChild(label);
     btn.addEventListener('click', function() { loadLibraryBackground(filename); });
     grid.appendChild(btn);
@@ -1302,6 +1574,15 @@ function renderBackgroundLibrary() {
 }
 
 function initBackgroundControls() {
+  document.getElementById('openBgLibraryBtn').addEventListener('click', openBgLibraryModal);
+  document.getElementById('bgLibraryModalClose').addEventListener('click', closeBgLibraryModal);
+  document.getElementById('bgLibraryModalOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeBgLibraryModal(); // click on the dark backdrop closes it
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeBgLibraryModal();
+  });
+
   document.getElementById('backgroundInput').addEventListener('change', handleBackgroundUpload);
   document.getElementById('removeBackgroundLink').addEventListener('click', function(e) {
     e.preventDefault();
@@ -2103,12 +2384,8 @@ async function generateFlyer() {
   // Footer font size is solved from the available width (same idea as the
   // headline) rather than a fixed 40px, since the footer line now carries a
   // full address instead of just a short URL and needs to keep fitting no
-  // matter how long that text is. The pin icon sits ahead of the text as
-  // part of the same measured unit, so both are solved together: the
-  // icon-and-gaps footprint scales as 49*scale alongside the text width
-  // (see the gx/textCenterX layout below) for a total span of
-  // textW + 49*scale, which is linear in font size and can be solved with a
-  // single probe measurement.
+  // matter how long that text is. Text width scales linearly with font size,
+  // so a single probe measurement is enough to solve for it directly.
   const FOOTER_SIDE_PAD = 50;
   const footerAvailW = DESIGN_W - FOOTER_SIDE_PAD * 2;
   const FOOTER_FONT_FAMILY = "'Bebas Neue', 'Archivo Black', 'Arial Black', sans-serif";
@@ -2118,32 +2395,20 @@ async function generateFlyer() {
   if ('letterSpacing' in ctx) ctx.letterSpacing = (3 * probeScale) + 'px';
   const probeTextW = ctx.measureText(footerUrl).width;
   if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
-  const probeSpan = probeTextW + 49 * probeScale;
-  let FOOTER_FONT_SIZE = FOOTER_PROBE_SIZE * (footerAvailW / probeSpan);
+  let FOOTER_FONT_SIZE = FOOTER_PROBE_SIZE * (footerAvailW / probeTextW);
   FOOTER_FONT_SIZE = Math.max(14, Math.min(40, FOOTER_FONT_SIZE));
 
   const footerScale = FOOTER_FONT_SIZE / 26;
   ctx.font = "400 " + FOOTER_FONT_SIZE + "px " + FOOTER_FONT_FAMILY;
-  if ('letterSpacing' in ctx) ctx.letterSpacing = (3 * footerScale) + 'px';
-  const footerTextW = ctx.measureText(footerUrl).width;
-  if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
-  const gx = DESIGN_W / 2 - footerTextW / 2 - 26 * footerScale, gy = y + FOOTER_H / 2;
-  const textCenterX = DESIGN_W / 2 + 12 * footerScale;
 
-  // Pin icon and footer text always render in the plain, solid Footer Text
-  // Color — the gradient option only ever applies to the footer bar's
-  // background (see footerBgFillStyle above).
-  ctx.save();
-  ctx.strokeStyle = colorState.footerTextColor; ctx.lineWidth = 1.6 * footerScale;
-  ctx.beginPath(); ctx.arc(gx, gy, 11 * footerScale, 0, Math.PI * 2); ctx.stroke();
-  ctx.beginPath(); ctx.ellipse(gx, gy, 5 * footerScale, 11 * footerScale, 0, 0, Math.PI * 2); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(gx - 11 * footerScale, gy); ctx.lineTo(gx + 11 * footerScale, gy); ctx.stroke();
-  ctx.restore();
-
+  // Footer text always renders in the plain, solid Footer Text Color — the
+  // gradient option only ever applies to the footer bar's background (see
+  // footerBgFillStyle above). No icon anymore, so the text is simply
+  // centered in the bar.
   ctx.fillStyle = colorState.footerTextColor;
   ctx.textAlign = 'center';
   if ('letterSpacing' in ctx) ctx.letterSpacing = (3 * footerScale) + 'px';
-  ctx.fillText(footerUrl, textCenterX, y + FOOTER_H / 2 + 9 * footerScale);
+  ctx.fillText(footerUrl, DESIGN_W / 2, y + FOOTER_H / 2 + 9 * footerScale);
   if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
 
   document.getElementById('cardWrap').style.display = 'block';
@@ -2156,6 +2421,7 @@ window.addEventListener('DOMContentLoaded', function() {
   renderSlots();
   initColorControls();
   initBackgroundControls();
+  initImageLibraryControls();
   document.getElementById('allBordersOn').addEventListener('click', function(e) {
     e.preventDefault();
     setAllBorders(true);
