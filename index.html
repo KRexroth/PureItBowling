@@ -1,114 +1,122 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PURE IT BOWLING TOOLS</title>
-
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #ececec, #d9d9d9);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            color: #333;
-        }
-
-        .card {
-            width: 90%;
-            max-width: 520px;
-            background: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 12px 30px rgba(0,0,0,.15);
-            overflow: hidden;
-        }
-
-        .header {
-            background: #f58220;
-            color: white;
-            text-align: center;
-            padding: 28px 20px;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 2rem;
-            letter-spacing: 2px;
-            font-weight: 700;
-        }
-
-        .header p {
-            margin-top: 10px;
-            font-size: .95rem;
-            opacity: .9;
-        }
-
-        .menu {
-            padding: 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
-
-        .menu a {
-            display: block;
-            text-decoration: none;
-            background: #f7f7f7;
-            color: #333;
-            padding: 18px;
-            border-radius: 10px;
-            border: 2px solid #e2e2e2;
-            text-align: center;
-            font-size: 1.15rem;
-            font-weight: 600;
-            transition: all .2s ease;
-        }
-
-        .menu a:hover {
-            background: #f58220;
-            color: white;
-            border-color: #f58220;
-            transform: translateY(-3px);
-            box-shadow: 0 8px 16px rgba(245,130,32,.25);
-        }
-
-        .footer {
-            text-align: center;
-            padding: 20px;
-            color: #777;
-            font-size: .85rem;
-            border-top: 1px solid #eee;
-            background: #fafafa;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PURE IT BOWLING TOOLS</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #ececec, #d9d9d9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: #333;
+  }
+  .card {
+    width: 90%;
+    max-width: 520px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+    overflow: hidden;
+  }
+  .header {
+    background: #F58220;
+    color: white;
+    text-align: center;
+    padding: 28px 20px;
+  }
+  .header h1 {
+    margin: 0;
+    font-size: 2rem;
+    letter-spacing: 2px;
+    font-weight: 700;
+  }
+  .header p {
+    margin-top: 10px;
+    font-size: 0.95rem;
+    opacity: 0.9;
+  }
+  .menu {
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .menu a {
+    display: block;
+    text-decoration: none;
+    background: #f7f7f7;
+    color: #333;
+    padding: 18px;
+    border-radius: 10px;
+    border: 2px solid #e2e2e2;
+    text-align: center;
+    font-size: 1.15rem;
+    font-weight: 600;
+    transition: 0.2s;
+  }
+  .menu a:hover {
+    background: #F58220;
+    color: white;
+    border-color: #F58220;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(245,130,32,0.25);
+  }
+  .tips {
+    padding: 0 30px 30px;
+  }
+  .tips h2 {
+    margin: 0 0 14px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #F58220;
+  }
+  .tip-item {
+    background: #f7f7f7;
+    border-left: 4px solid #F58220;
+    border-radius: 8px;
+    padding: 16px 18px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #333;
+  }
+  .tip-item strong {
+    color: #F58220;
+  }
+  .footer {
+    text-align: center;
+    padding: 20px;
+    color: #777;
+    font-size: 0.85rem;
+    border-top: 1px solid #eee;
+    background: #fafafa;
+  }
+</style>
 </head>
-
 <body>
-
-<div class="card">
-
+  <div class="card">
     <div class="header">
-        <h1>PURE IT BOWLING TOOLS</h1>
-        <p>Select a tool to launch</p>
+      <h1>PURE IT BOWLING TOOLS</h1>
+      <p>Select a tool to launch</p>
     </div>
-
     <div class="menu">
-        <a href="./ImageFrame/" target="_blank">Image Frame</a>
-        <a href="./NewReleaseFlyerBuilder/" target="_blank">New Release Flyer Builder</a>
+      <a href="./ImageFrame/">Image Frame</a>
+      <a href="./NewReleaseFlyerBuilder/">New Release Flyer Builder</a>
     </div>
-
-    <div class="footer">
-        © Pure It Bowling
+    <div class="tips">
+      <h2>Tips &amp; Tricks</h2>
+      <div class="tip-item">
+        When building social media posts for new releases, create multiple posts and use the social media scheduler to plan each post ahead of time up until the day of the release. Make sure to include a post for the day before as a <strong>Last Chance</strong> post, as well as a post for the day of as a <strong>Releasing Today</strong> post.
+      </div>
     </div>
-
-</div>
-
+    <div class="footer">© Pure It Bowling</div>
+  </div>
 </body>
 </html>
