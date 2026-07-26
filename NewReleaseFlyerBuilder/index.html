@@ -2478,6 +2478,7 @@ function drawSmallCaps(ctx, text, cx, y, fontStr, tracking, centered) {
 // ('destination-out') — the net effect is a scattering of tiny erosions
 // confined strictly to the ink of the letters.
 function drawDistressOverlay(ctx, text, cx, y, fontStr) {
+  if (!text) return;
   const sizeMatch = fontStr.match(/(\d+)px/);
   const fontSize = sizeMatch ? parseInt(sizeMatch[1], 10) : 40;
   ctx.font = fontStr;
@@ -2519,6 +2520,13 @@ function drawDistressOverlay(ctx, text, cx, y, fontStr) {
 // line's own baseline center so it stays centered), a drop shadow for
 // punch/depth, and the distressed-edge speckling on top.
 function drawSlantedHeadlineLine(ctx, text, cx, y, maxW, fontStr, color) {
+  // An empty (removed) headline line has hSize1/hSize2 forced to 0, which
+  // makes fontStr read as "...0px...". Nothing to draw here anyway, but
+  // drawDistressOverlay below would build a 0-height offscreen canvas from
+  // that 0px size and drawImage()-ing a zero-dimension canvas throws,
+  // silently killing the rest of generateFlyer() for every section after
+  // the headline. Bail out before any of that happens.
+  if (!text) return;
   const SLANT = 0.16;
   ctx.save();
   ctx.translate(cx, y);
