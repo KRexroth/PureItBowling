@@ -60,9 +60,7 @@
   .slot-text-input:focus{outline:none;border-color:#EF4123;}
   .slot-text-color-row{display:flex;align-items:center;gap:6px;}
   .slot-text-color-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#aaa;}
-  .slot-text-color{width:36px;height:30px;padding:0;border:1px solid #ddd;border-radius:5px;cursor:pointer;background:none;flex-shrink:0;}
-  .slot-text-color-hex{flex:1;min-width:0;border:1px solid #ddd;border-radius:5px;padding:6px;font-size:11px;font-family:'Barlow',sans-serif;text-transform:uppercase;color:#111;}
-  .slot-text-color-hex:focus{outline:none;border-color:#EF4123;}
+  .slot-text-color{width:100%;height:30px;padding:0;border:1px solid #ddd;border-radius:5px;cursor:pointer;background:none;flex:1;}
 
   .upload-zone{border:2px dashed #ddd;border-radius:8px;padding:10px;text-align:center;cursor:pointer;background:#fafafa;position:relative;}
   .upload-zone:hover{border-color:#EF4123;}
@@ -159,20 +157,13 @@
   .text-row{display:flex;align-items:flex-end;gap:10px;margin-bottom:12px;}
   .text-row:last-child{margin-bottom:0;}
   .text-row .ig{flex:1;min-width:0;}
-  .field-remove-btn{flex-shrink:0;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#999;text-decoration:none;cursor:pointer;padding:8px 2px;white-space:nowrap;}
-  .field-remove-btn:hover{color:#EF4123;text-decoration:underline;}
-  .field-restore-chip{display:none;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border:1.5px dashed #ccc;border-radius:7px;background:#fafafa;color:#888;font-size:12px;font-weight:700;letter-spacing:.02em;margin-bottom:12px;cursor:pointer;}
-  .field-restore-chip:hover{border-color:#EF4123;color:#EF4123;background:#fff5f2;}
-  .field-restore-chip .plus{font-size:14px;font-weight:800;margin-right:4px;}
-  .field-restore-chip .hint{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#bbb;}
-  .field-restore-chip:hover .hint{color:#EF4123;}
   .swatch-holder{flex-shrink:0;}
 
   .swatch-row{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:4px;}
   .swatch-item{display:flex;align-items:center;gap:9px;}
   .swatch-item label{font-size:12px;color:#555;}
 
-  .color-swatch{width:38px;height:38px;padding:0;border:1.5px solid #ccc;border-radius:7px;cursor:pointer;flex-shrink:0;box-shadow:inset 0 0 0 2px #fff, 0 1px 3px rgba(0,0,0,0.12);}
+  .color-swatch{width:38px;height:38px;padding:0;border:1px solid #ddd;border-radius:7px;cursor:pointer;flex-shrink:0;box-shadow:inset 0 0 0 2px #fff;}
   .color-swatch:hover{border-color:#EF4123;}
 
   .color-popover{display:none;position:absolute;z-index:1000;background:#fff;border:1px solid #ddd;border-radius:9px;box-shadow:0 10px 30px rgba(0,0,0,0.18);padding:14px;width:230px;max-width:calc(100vw - 20px);}
@@ -566,16 +557,12 @@ function isValidRectangle(group) {
   const expected = (b.maxCol - b.minCol + 1) * (b.maxRow - b.minRow + 1);
   if (group.slots.length !== expected) return false;
 
+  const refLen = columnLayout[b.minCol].length;
   const slotSet = {};
   group.slots.forEach(function(s) { slotSet[s] = true; });
 
-  // Only the cells actually inside this merge's own row/col range need to
-  // exist and belong to the group — columns are free to have more or fewer
-  // rows beyond that range (e.g. a 3-column grid where one column has an
-  // extra image), so we don't require every spanned column to share the
-  // same total height, just that this rectangle's own cells are present.
   for (let c = b.minCol; c <= b.maxCol; c++) {
-    if (!columnLayout[c]) return false;
+    if (!columnLayout[c] || columnLayout[c].length !== refLen) return false;
     for (let r = b.minRow; r <= b.maxRow; r++) {
       const s = columnLayout[c][r];
       if (s === undefined || !slotSet[s]) return false;
@@ -618,11 +605,12 @@ function mergeOrSplit(slotA, slotB) {
   for (let attempt = 0; attempt < 8; attempt++) {
     const b = getGroupBounds({ slots: combined });
     if (!b) return;
+    const refLen = columnLayout[b.minCol] ? columnLayout[b.minCol].length : -1;
     let ok = true;
 
     outer:
     for (let c = b.minCol; c <= b.maxCol; c++) {
-      if (!columnLayout[c]) { ok = false; break outer; }
+      if (!columnLayout[c] || columnLayout[c].length !== refLen) { ok = false; break outer; }
       for (let r = b.minRow; r <= b.maxRow; r++) {
         const s = columnLayout[c][r];
         if (s === undefined) { ok = false; break outer; }
@@ -1281,39 +1269,13 @@ function createLayoutSlotEl(slotIdx, colIdx, rowIdx) {
     colorInput.type = 'color';
     colorInput.className = 'slot-text-color';
     colorInput.value = slotTextColors[slotIdx] || '#161616';
-    // Hex field alongside the swatch, matching every other color control in
-    // the app — typing a hex code works here too, not just picking visually.
-    const hexInput = document.createElement('input');
-    hexInput.type = 'text';
-    hexInput.className = 'slot-text-color-hex';
-    hexInput.maxLength = 7;
-    hexInput.placeholder = '#RRGGBB';
-    hexInput.value = (slotTextColors[slotIdx] || '#161616').toUpperCase();
-
-    [colorInput, hexInput].forEach(function(el) {
-      el.addEventListener('mousedown', function(e) { e.stopPropagation(); });
-      el.addEventListener('click', function(e) { e.stopPropagation(); });
-    });
+    colorInput.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+    colorInput.addEventListener('click', function(e) { e.stopPropagation(); });
     colorInput.addEventListener('input', function(e) {
       slotTextColors[slotIdx] = e.target.value;
-      hexInput.value = e.target.value.toUpperCase();
     });
-    hexInput.addEventListener('change', function(e) {
-      let v = e.target.value.trim();
-      if (v && v.charAt(0) !== '#') v = '#' + v;
-      if (isValidHex(v)) {
-        v = v.toUpperCase();
-        slotTextColors[slotIdx] = v;
-        colorInput.value = v;
-        hexInput.value = v;
-      } else {
-        hexInput.value = (slotTextColors[slotIdx] || '#161616').toUpperCase();
-      }
-    });
-
     colorRow.appendChild(colorLabel);
     colorRow.appendChild(colorInput);
-    colorRow.appendChild(hexInput);
     textPanel.appendChild(colorRow);
 
     const alignRow = document.createElement('div');
@@ -2026,71 +1988,6 @@ function val(id, fallback) {
   return v || fallback;
 }
 
-// Any Flyer Text field the user removes is tracked here by id. A removed
-// field's value is kept intact in its (hidden) input — removing just tells
-// generateFlyer() to treat it as blank instead of falling back to the
-// default placeholder copy, so restoring it brings the original text right back.
-const removedTextFields = new Set();
-
-function fieldVal(id, fallback) {
-  if (removedTextFields.has(id)) return '';
-  return val(id, fallback);
-}
-
-const REMOVABLE_TEXT_FIELDS = [
-  { id: 'headline1', label: 'Headline Line 1' },
-  { id: 'headline2', label: 'Headline Line 2' },
-  { id: 'tagline',   label: 'Tagline' },
-  { id: 'fitLine1',  label: 'Callout Line 1' },
-  { id: 'fitLine2',  label: 'Callout Line 2' },
-  { id: 'fitDesc',   label: 'Callout Description' },
-  { id: 'finePrint', label: 'Fine Print' }
-];
-
-// Wires a "Remove" link onto each removable text field's row and a matching
-// "+ Add [Field]" chip that takes its place once removed — click either to
-// flip back and forth. Runs once on page load.
-function initRemovableTextFields() {
-  REMOVABLE_TEXT_FIELDS.forEach(function(f) {
-    const input = document.getElementById(f.id);
-    if (!input) return;
-    const row = input.closest('.text-row');
-    if (!row) return;
-
-    const removeBtn = document.createElement('a');
-    removeBtn.href = '#';
-    removeBtn.className = 'field-remove-btn';
-    removeBtn.textContent = 'Remove';
-    removeBtn.title = 'Remove ' + f.label + ' from the flyer';
-    row.appendChild(removeBtn);
-
-    const restoreChip = document.createElement('div');
-    restoreChip.className = 'field-restore-chip';
-    restoreChip.innerHTML = '<span><span class="plus">+</span>Add ' + f.label + '</span><span class="hint">Click to restore</span>';
-    row.parentNode.insertBefore(restoreChip, row.nextSibling);
-
-    function setRemoved(isRemoved) {
-      if (isRemoved) {
-        removedTextFields.add(f.id);
-        row.style.display = 'none';
-        restoreChip.style.display = 'flex';
-      } else {
-        removedTextFields.delete(f.id);
-        row.style.display = '';
-        restoreChip.style.display = 'none';
-      }
-    }
-
-    removeBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      setRemoved(true);
-    });
-    restoreChip.addEventListener('click', function() {
-      setRemoved(false);
-    });
-  });
-}
-
 function fitText(ctx, text, x, y, maxW, fontStr, minSize) {
   const match = fontStr.match(/(\d+)px/);
   if (!match) { ctx.font = fontStr; ctx.fillText(text, x, y); return; }
@@ -2478,7 +2375,6 @@ function drawSmallCaps(ctx, text, cx, y, fontStr, tracking, centered) {
 // ('destination-out') — the net effect is a scattering of tiny erosions
 // confined strictly to the ink of the letters.
 function drawDistressOverlay(ctx, text, cx, y, fontStr) {
-  if (!text) return;
   const sizeMatch = fontStr.match(/(\d+)px/);
   const fontSize = sizeMatch ? parseInt(sizeMatch[1], 10) : 40;
   ctx.font = fontStr;
@@ -2520,13 +2416,6 @@ function drawDistressOverlay(ctx, text, cx, y, fontStr) {
 // line's own baseline center so it stays centered), a drop shadow for
 // punch/depth, and the distressed-edge speckling on top.
 function drawSlantedHeadlineLine(ctx, text, cx, y, maxW, fontStr, color) {
-  // An empty (removed) headline line has hSize1/hSize2 forced to 0, which
-  // makes fontStr read as "...0px...". Nothing to draw here anyway, but
-  // drawDistressOverlay below would build a 0-height offscreen canvas from
-  // that 0px size and drawImage()-ing a zero-dimension canvas throws,
-  // silently killing the rest of generateFlyer() for every section after
-  // the headline. Bail out before any of that happens.
-  if (!text) return;
   const SLANT = 0.16;
   ctx.save();
   ctx.translate(cx, y);
@@ -2579,13 +2468,13 @@ async function generateFlyer() {
     try { await document.fonts.ready; } catch (e) {}
   }
 
-  const headline1 = fieldVal('headline1', 'NEW RELEASES');
-  const headline2 = fieldVal('headline2', 'HAVE ARRIVED');
-  const tagline   = fieldVal('tagline', 'THE LATEST. THE HOTTEST. THE MOST INNOVATIVE.');
-  const fitLine1  = fieldVal('fitLine1', 'YOUR NEW BALL DESERVES');
-  const fitLine2  = fieldVal('fitLine2', 'A PROFESSIONAL FIT.');
-  const fitDesc   = fieldVal('fitDesc', 'Pre-order from Pure It Bowling and receive FREE standard drilling.');
-  const finePrint = fieldVal('finePrint', 'Grips, slugs & interchangeable thumb systems additional.');
+  const headline1 = val('headline1', 'NEW RELEASES');
+  const headline2 = val('headline2', 'HAVE ARRIVED');
+  const tagline   = val('tagline', 'THE LATEST. THE HOTTEST. THE MOST INNOVATIVE.');
+  const fitLine1  = val('fitLine1', 'YOUR NEW BALL DESERVES');
+  const fitLine2  = val('fitLine2', 'A PROFESSIONAL FIT.');
+  const fitDesc   = val('fitDesc', 'Pre-order from Pure It Bowling and receive FREE standard drilling.');
+  const finePrint = val('finePrint', 'Grips, slugs & interchangeable thumb systems additional.');
   // Not forced to uppercase anymore — the footer line is now a fixed,
   // uneditable address string with its own intentional mixed case.
   const footerUrl = val('footerUrl', 'PUREITBOWLING.COM | 114D East Main Street Ephrata, PA 17522 | (717) 679-8225');
@@ -2636,7 +2525,7 @@ async function generateFlyer() {
   const CB_BODY_LINE_HEIGHT = CB_BODY_SIZE * 1.10;
 
   ctx.font = "500 " + Math.round(CB_BODY_SIZE) + "px 'Montserrat', 'Oswald', sans-serif";
-  const descLines = fitDesc ? wrapText(ctx, fitDesc, CB_TEXT_COL_W) : [];
+  const descLines = wrapText(ctx, fitDesc, CB_TEXT_COL_W);
 
   // Solve the two headline lines' font sizes purely from the available
   // width — the reference flyer's headline reads big and bold, but it still
@@ -2655,19 +2544,12 @@ async function generateFlyer() {
   const CAP_RATIO = 0.72; // approx cap-height as a fraction of em size for this typeface
   const LINE_GAP = QUARTER_INCH * 0.3;
 
-  // Headline and tagline rows are trimmed 10% smaller than their natural fit
-  // so the freed vertical space flows into the image grid below (GRID_H is
-  // whatever's left after these fixed-height bands, so shrinking them here
-  // grows the grid automatically). A removed headline line (or the tagline)
-  // contributes zero height instead of the empty-string/probe-size fallback,
-  // so its band collapses too and that space also flows into the grid.
-  const TOP_ROWS_SCALE = 0.9;
-  const hSize1 = headline1 ? fitFontSizeToWidth(ctx, headline1, headlineFontFamily, headlineMaxW) * TOP_ROWS_SCALE : 0;
-  const hSize2 = headline2 ? fitFontSizeToWidth(ctx, headline2, headlineFontFamily, headlineMaxW) * TOP_ROWS_SCALE : 0;
+  const hSize1 = fitFontSizeToWidth(ctx, headline1, headlineFontFamily, headlineMaxW);
+  const hSize2 = fitFontSizeToWidth(ctx, headline2, headlineFontFamily, headlineMaxW);
 
   const HEADER_H = 200;
-  const HEADLINE_H = 2 * QUARTER_INCH + hSize1 * CAP_RATIO + (headline1 && headline2 ? LINE_GAP : 0) + hSize2 * CAP_RATIO;
-  const TAGLINE_H = tagline ? 66 * TOP_ROWS_SCALE : 20;
+  const HEADLINE_H = 2 * QUARTER_INCH + hSize1 * CAP_RATIO + LINE_GAP + hSize2 * CAP_RATIO;
+  const TAGLINE_H = 66;
   const GRID_TOP_GAP = 38;
   const FITBOX_GAP = 38;
   const FITBOX_H = CB_HEIGHT; // fixed per spec — content is constrained to fit inside, not the other way around
@@ -2675,8 +2557,8 @@ async function generateFlyer() {
   // and below (to the footer) to keep it from touching either — no extra
   // decorative whitespace.
   const FINEPRINT_SIZE = 20;
-  const FINEPRINT_GAP = finePrint ? 8 : 0;
-  const FINEPRINT_H = finePrint ? Math.round(FINEPRINT_SIZE * 1.2) : 0;
+  const FINEPRINT_GAP = 8;
+  const FINEPRINT_H = Math.round(FINEPRINT_SIZE * 1.2);
   const FOOTER_GAP = 10;
   const FOOTER_H = 86;
 
@@ -2733,21 +2615,19 @@ async function generateFlyer() {
 
   y = HEADER_H + HEADLINE_H;
   const taglineY = y + TAGLINE_H / 2;
-  if (tagline) {
-    ctx.fillStyle = colorState.taglineColor;
-    ctx.textAlign = 'center';
-    const taglineW = drawSmallCaps(ctx, tagline, DESIGN_W/2, taglineY + 7, "800 21px 'Montserrat', 'Oswald', sans-serif", 5, true);
-    ctx.strokeStyle = colorState.highlightColor; ctx.lineWidth = 3;
-    const lineGap = 22, lineLen = 80;
-    ctx.beginPath();
-    ctx.moveTo(DESIGN_W/2 - taglineW/2 - lineGap - lineLen, taglineY);
-    ctx.lineTo(DESIGN_W/2 - taglineW/2 - lineGap, taglineY);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(DESIGN_W/2 + taglineW/2 + lineGap, taglineY);
-    ctx.lineTo(DESIGN_W/2 + taglineW/2 + lineGap + lineLen, taglineY);
-    ctx.stroke();
-  }
+  ctx.fillStyle = colorState.taglineColor;
+  ctx.textAlign = 'center';
+  const taglineW = drawSmallCaps(ctx, tagline, DESIGN_W/2, taglineY + 7, "800 21px 'Montserrat', 'Oswald', sans-serif", 5, true);
+  ctx.strokeStyle = colorState.highlightColor; ctx.lineWidth = 3;
+  const lineGap = 22, lineLen = 80;
+  ctx.beginPath();
+  ctx.moveTo(DESIGN_W/2 - taglineW/2 - lineGap - lineLen, taglineY);
+  ctx.lineTo(DESIGN_W/2 - taglineW/2 - lineGap, taglineY);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(DESIGN_W/2 + taglineW/2 + lineGap, taglineY);
+  ctx.lineTo(DESIGN_W/2 + taglineW/2 + lineGap + lineLen, taglineY);
+  ctx.stroke();
 
   y = HEADER_H + HEADLINE_H + TAGLINE_H + GRID_TOP_GAP;
   const gridX = PAD_X, gridY = y, gridW = DESIGN_W - 2 * PAD_X;
@@ -2865,38 +2745,29 @@ async function generateFlyer() {
   // The whole text block (headline1 + gap + headline2 + gap + body) is
   // centered vertically as a group within the box, per the spec's
   // alignment rules — matching how the icon is centered too.
-  // A removed callout line drops out of the block-height sum entirely (not
-  // just skipped when drawing) so the remaining lines + body copy stay
-  // tightly centered instead of leaving a gap where it used to sit.
   const bodyBlockH = descLines.length * CB_BODY_LINE_HEIGHT;
-  const h1BlockH = fitLine1 ? CB_H1_SIZE + CB_H1_GAP : 0;
-  const h2BlockH = fitLine2 ? CB_H2_SIZE + CB_H2_GAP : 0;
-  const totalContentH = h1BlockH + h2BlockH + bodyBlockH;
+  const totalContentH = CB_H1_SIZE + CB_H1_GAP + CB_H2_SIZE + CB_H2_GAP + bodyBlockH;
   let ty = fbY + (fbH - totalContentH) / 2;
 
   ctx.textAlign = 'left';
-  if (fitLine1) {
-    ctx.fillStyle = colorState.fitLine1Color;
-    // letterSpacing is set before fitText's internal measureText calls, so its
-    // shrink-to-fit check already accounts for the extra tracking width. The
-    // spec size (42px) is the starting/max size, but guaranteeing the text
-    // never overflows the box takes priority over the spec's "no more than
-    // 5% shrink" preference — a bold, tracked 23-character line at 42px needs
-    // more headroom than 5% to actually fit a 636px column, so the floor here
-    // is much lower to make sure it always does.
-    if ('letterSpacing' in ctx) ctx.letterSpacing = CB_H1_TRACKING + 'px';
-    fitText(ctx, fitLine1, textX, ty + CB_H1_SIZE * CAP_RATIO, calloutLineMaxW, "800 " + Math.round(CB_H1_SIZE) + "px 'Montserrat', 'Archivo Black', sans-serif", 16);
-    if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
-    ty += CB_H1_SIZE + CB_H1_GAP;
-  }
+  ctx.fillStyle = colorState.fitLine1Color;
+  // letterSpacing is set before fitText's internal measureText calls, so its
+  // shrink-to-fit check already accounts for the extra tracking width. The
+  // spec size (42px) is the starting/max size, but guaranteeing the text
+  // never overflows the box takes priority over the spec's "no more than
+  // 5% shrink" preference — a bold, tracked 23-character line at 42px needs
+  // more headroom than 5% to actually fit a 636px column, so the floor here
+  // is much lower to make sure it always does.
+  if ('letterSpacing' in ctx) ctx.letterSpacing = CB_H1_TRACKING + 'px';
+  fitText(ctx, fitLine1, textX, ty + CB_H1_SIZE * CAP_RATIO, calloutLineMaxW, "800 " + Math.round(CB_H1_SIZE) + "px 'Montserrat', 'Archivo Black', sans-serif", 16);
+  if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+  ty += CB_H1_SIZE + CB_H1_GAP;
 
-  if (fitLine2) {
-    ctx.fillStyle = colorState.fitLine2Color;
-    if ('letterSpacing' in ctx) ctx.letterSpacing = CB_H2_TRACKING + 'px';
-    fitText(ctx, fitLine2, textX, ty + CB_H2_SIZE * CAP_RATIO, calloutLineMaxW, "800 " + Math.round(CB_H2_SIZE) + "px 'Montserrat', 'Archivo Black', sans-serif", 16);
-    if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
-    ty += CB_H2_SIZE + CB_H2_GAP;
-  }
+  ctx.fillStyle = colorState.fitLine2Color;
+  if ('letterSpacing' in ctx) ctx.letterSpacing = CB_H2_TRACKING + 'px';
+  fitText(ctx, fitLine2, textX, ty + CB_H2_SIZE * CAP_RATIO, calloutLineMaxW, "800 " + Math.round(CB_H2_SIZE) + "px 'Montserrat', 'Archivo Black', sans-serif", 16);
+  if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+  ty += CB_H2_SIZE + CB_H2_GAP;
 
   // Body copy: regular description color/weight, except the word "FREE"
   // which renders bold in the highlight/accent color.
@@ -2975,7 +2846,6 @@ window.addEventListener('DOMContentLoaded', function() {
   initColorControls();
   initBackgroundControls();
   initImageLibraryControls();
-  initRemovableTextFields();
   document.getElementById('allBordersOn').addEventListener('click', function(e) {
     e.preventDefault();
     setAllBorders(true);
