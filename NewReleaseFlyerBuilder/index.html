@@ -126,6 +126,16 @@
   .merge-ghost-undo{border:none;background:none;color:#c8451f;font-size:15px;line-height:1;cursor:pointer;padding:0 2px;}
   .merge-ghost-undo:hover{color:#EF4123;}
 
+  .add-element-menu{display:none;position:absolute;top:100%;left:0;right:0;margin-top:6px;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.14);z-index:20;overflow:hidden;}
+  .add-element-menu.open{display:block;}
+  .add-element-menu button{display:block;width:100%;text-align:left;padding:10px 14px;border:none;background:none;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;cursor:pointer;color:#333;}
+  .add-element-menu button:hover{background:#f7f7f7;color:#EF4123;}
+  .add-element-menu button + button{border-top:1px solid #eee;}
+  .custom-el-card{background:#fff;border:1px solid #e6e6e6;border-radius:7px;padding:9px;margin-top:10px;position:relative;}
+  .custom-el-card .slot-label{margin-bottom:6px;padding-right:16px;}
+  .custom-el-delete{position:absolute;top:6px;right:7px;border:none;background:none;color:#bbb;font-size:15px;line-height:1;cursor:pointer;padding:2px;}
+  .custom-el-delete:hover{color:#EF4123;}
+
   .ctrl-hint a{color:#EF4123;font-weight:700;text-decoration:none;cursor:pointer;}
   .ctrl-hint a:hover{text-decoration:underline;}
 
@@ -396,6 +406,24 @@
   </div>
 </div>
 
+<div class="card collapsible" id="customElementsSection">
+  <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <span class="card-title">Custom Elements</span>
+  </div>
+  <div class="card-body">
+    <div class="ctrl-hint" style="margin-bottom:10px;">Add extra headers, text, or images anywhere on the flyer — arrange them by dragging in the preview. After making your changes, press Preview Image to view the new element.</div>
+    <div style="position:relative;">
+      <button type="button" class="ctrl-btn" id="addElementBtn" style="width:100%;">+ Add Element</button>
+      <div id="addElementMenu" class="add-element-menu">
+        <button type="button" data-type="header">Header</button>
+        <button type="button" data-type="text">Standard Text</button>
+        <button type="button" data-type="image">Image</button>
+      </div>
+    </div>
+    <div id="customElementsList"></div>
+  </div>
+</div>
+
 <button class="btn" onclick="previewFlyer()">Preview Image</button>
 
 <div id="cardWrap">
@@ -460,6 +488,15 @@ let slotTextAligns = []; // 'top' | 'center' (default) | 'bottom' — vertical a
 let columnLayout = [];
 let draggedSlotIndex = null;
 let slotBorders = {};
+
+// User-added elements from "+ Add Element" — headers, standard text, and
+// images that float freely on the flyer instead of living in the feature
+// grid or one of the fixed text fields. Each gets its own entry in
+// elementOffsets/elementBounds/elementPivots (see the drag/resize system
+// further down) so it's draggable and resizable in the preview exactly
+// like the built-in elements are.
+let customElements = []; // { id, type: 'header'|'text'|'image', text, color, mode, image, imgText, imgTextColor, imgTextAlign }
+let customElementSeq = 1;
 let backgroundImage = null; // currently-selected flyer background (library pick or user upload)
 let backgroundImageOpacity = 100; // 0-100; how strongly the uploaded image shows over the plain fallback fill
 let selectedLibraryBg = null; // filename of the currently-selected library background, if any
@@ -489,7 +526,7 @@ const IMG_LIBRARY_ROOT_PATH = 'NewReleaseFlyerBuilder/Images/';
 let imageLibraryTree = null;        // nested {folders:{name:node}, files:[filename,...]}, rooted at Images/
 let imageLibraryLoadPromise = null; // in-flight/cached fetch, so we only ever hit the API once per session
 let imageLibraryPath = [];          // breadcrumb: array of folder names from the Images root
-let imageLibraryTargetSlot = null;  // which "Image N" slot the modal is currently filling
+let imageLibraryTargetSlot = null;  // which target the modal is currently filling — a numeric feature-slot index, or a custom element's string id
 
 // Backend-only archiving: every image a visitor uploads (feature slot or
 // background) and every flyer they generate is silently mirrored to a
@@ -1546,6 +1583,272 @@ function renderLayoutBoard() {
   renderBorderBoard();
 }
 
+/* ---- Custom Elements ("+ Add Element": headers, standard text, images) ---- */
+
+function createCustomElement(type) {
+  const id = 'custom' + (customElementSeq++);
+  const el = {
+    id: id,
+    type: type, // 'header' | 'text' | 'image'
+    text: type === 'header' ? 'NEW HEADER' : type === 'text' ? 'New standard text' : '',
+    color: '#161616',
+    mode: null, // image elements only: 'text' | 'upload' | 'library'
+    image: null,
+    imgText: '',
+    imgTextColor: '#161616',
+    imgTextAlign: 'center'
+  };
+  customElements.push(el);
+  ensureElementOffset(id);
+  renderCustomElementsList();
+  return el;
+}
+
+function removeCustomElement(id) {
+  customElements = customElements.filter(function(el) { return el.id !== id; });
+  delete elementOffsets[id];
+  delete elementBounds[id];
+  delete elementPivots[id];
+  if (activeDrag && activeDrag.key === id) activeDrag = null;
+  renderCustomElementsList();
+}
+
+function renderCustomElementsList() {
+  const container = document.getElementById('customElementsList');
+  if (!container) return;
+  container.innerHTML = '';
+  customElements.forEach(function(el) {
+    container.appendChild(createCustomElementCard(el));
+  });
+}
+
+// Builds the sidebar card for one custom element. Header/Standard Text just
+// need a text input + color; Image reuses the exact same 3-way mode
+// selector (Add Text / Upload Image / Choose From Library) as a feature
+// grid slot, just keyed by the element's own id instead of a slot index.
+function createCustomElementCard(el) {
+  const card = document.createElement('div');
+  card.className = 'custom-el-card';
+  card.dataset.elId = el.id;
+
+  const delBtn = document.createElement('button');
+  delBtn.type = 'button';
+  delBtn.className = 'custom-el-delete';
+  delBtn.textContent = '×';
+  delBtn.title = 'Delete this element';
+  delBtn.addEventListener('click', function() { removeCustomElement(el.id); });
+  card.appendChild(delBtn);
+
+  const label = document.createElement('div');
+  label.className = 'slot-label';
+  label.textContent = el.type === 'header' ? 'Header' : el.type === 'text' ? 'Standard Text' : 'Image';
+  card.appendChild(label);
+
+  if (el.type === 'header' || el.type === 'text') {
+    const ig = document.createElement('div');
+    ig.className = 'ig';
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = el.text;
+    input.placeholder = el.type === 'header' ? 'Header text' : 'Text';
+    input.addEventListener('input', function(e) { el.text = e.target.value; });
+    ig.appendChild(input);
+    card.appendChild(ig);
+
+    const colorRow = document.createElement('div');
+    colorRow.className = 'slot-text-color-row';
+    colorRow.style.marginTop = '6px';
+    const colorLabel = document.createElement('span');
+    colorLabel.className = 'slot-text-color-label';
+    colorLabel.textContent = 'Color';
+    const colorInput = document.createElement('input');
+    colorInput.type = 'color';
+    colorInput.className = 'slot-text-color';
+    colorInput.value = el.color;
+    const hexInput = document.createElement('input');
+    hexInput.type = 'text';
+    hexInput.className = 'slot-text-color-hex';
+    hexInput.maxLength = 7;
+    hexInput.placeholder = '#RRGGBB';
+    hexInput.value = el.color.toUpperCase();
+    colorInput.addEventListener('input', function(e) {
+      el.color = e.target.value;
+      hexInput.value = e.target.value.toUpperCase();
+    });
+    hexInput.addEventListener('change', function(e) {
+      let v = e.target.value.trim();
+      if (v && v.charAt(0) !== '#') v = '#' + v;
+      if (isValidHex(v)) {
+        v = v.toUpperCase();
+        el.color = v;
+        colorInput.value = v;
+        hexInput.value = v;
+      } else {
+        hexInput.value = el.color.toUpperCase();
+      }
+    });
+    colorRow.appendChild(colorLabel);
+    colorRow.appendChild(colorInput);
+    colorRow.appendChild(hexInput);
+    card.appendChild(colorRow);
+  } else if (el.type === 'image') {
+    const modeRow = document.createElement('div');
+    modeRow.className = 'slot-mode-row';
+    [
+      { key: 'text', label: 'Add Text' },
+      { key: 'upload', label: 'Upload Image' },
+      { key: 'library', label: 'Choose From Library' }
+    ].forEach(function(opt) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'slot-mode-btn' + (el.mode === opt.key ? ' active' : '');
+      btn.textContent = opt.label;
+      btn.addEventListener('click', function() {
+        el.mode = opt.key;
+        renderCustomElementsList();
+        if (opt.key === 'library') {
+          openImgLibraryModal(el.id);
+        } else if (opt.key === 'upload') {
+          const newCard = document.querySelector('.custom-el-card[data-el-id="' + el.id + '"]');
+          const fileInput = newCard && newCard.querySelector('input[type="file"]');
+          if (fileInput) fileInput.click();
+        }
+      });
+      modeRow.appendChild(btn);
+    });
+    card.appendChild(modeRow);
+
+    if (el.mode === 'text') {
+      const textPanel = document.createElement('div');
+      textPanel.className = 'slot-text-panel';
+
+      const textInput = document.createElement('textarea');
+      textInput.className = 'slot-text-input';
+      textInput.placeholder = 'Element text (multiple lines OK)';
+      textInput.rows = 3;
+      textInput.value = el.imgText || '';
+      textInput.addEventListener('input', function(e) { el.imgText = e.target.value; });
+      textPanel.appendChild(textInput);
+
+      const colorRow = document.createElement('div');
+      colorRow.className = 'slot-text-color-row';
+      const colorLabel = document.createElement('span');
+      colorLabel.className = 'slot-text-color-label';
+      colorLabel.textContent = 'Color';
+      const colorInput = document.createElement('input');
+      colorInput.type = 'color';
+      colorInput.className = 'slot-text-color';
+      colorInput.value = el.imgTextColor || '#161616';
+      const hexInput = document.createElement('input');
+      hexInput.type = 'text';
+      hexInput.className = 'slot-text-color-hex';
+      hexInput.maxLength = 7;
+      hexInput.placeholder = '#RRGGBB';
+      hexInput.value = (el.imgTextColor || '#161616').toUpperCase();
+      colorInput.addEventListener('input', function(e) {
+        el.imgTextColor = e.target.value;
+        hexInput.value = e.target.value.toUpperCase();
+      });
+      hexInput.addEventListener('change', function(e) {
+        let v = e.target.value.trim();
+        if (v && v.charAt(0) !== '#') v = '#' + v;
+        if (isValidHex(v)) {
+          v = v.toUpperCase();
+          el.imgTextColor = v;
+          colorInput.value = v;
+          hexInput.value = v;
+        } else {
+          hexInput.value = (el.imgTextColor || '#161616').toUpperCase();
+        }
+      });
+      colorRow.appendChild(colorLabel);
+      colorRow.appendChild(colorInput);
+      colorRow.appendChild(hexInput);
+      textPanel.appendChild(colorRow);
+
+      const alignRow = document.createElement('div');
+      alignRow.className = 'slot-text-color-row';
+      const alignLabel = document.createElement('span');
+      alignLabel.className = 'slot-text-color-label';
+      alignLabel.textContent = 'Align';
+      const alignSelect = document.createElement('select');
+      alignSelect.className = 'slot-text-align';
+      [
+        { v: 'top', label: 'Top' },
+        { v: 'center', label: 'Center' },
+        { v: 'bottom', label: 'Bottom' }
+      ].forEach(function(opt) {
+        const o = document.createElement('option');
+        o.value = opt.v;
+        o.textContent = opt.label;
+        if ((el.imgTextAlign || 'center') === opt.v) o.selected = true;
+        alignSelect.appendChild(o);
+      });
+      alignSelect.addEventListener('change', function(e) { el.imgTextAlign = e.target.value; });
+      alignRow.appendChild(alignLabel);
+      alignRow.appendChild(alignSelect);
+      textPanel.appendChild(alignRow);
+
+      card.appendChild(textPanel);
+    } else if (el.mode === 'library') {
+      const libPanel = document.createElement('div');
+      libPanel.className = 'upload-zone';
+      if (el.image) {
+        const thumb = document.createElement('img');
+        thumb.src = el.image.src;
+        thumb.className = 'preview-thumb';
+        libPanel.appendChild(thumb);
+      }
+      const libLabelSpan = document.createElement('div');
+      libLabelSpan.className = 'upload-label';
+      libLabelSpan.innerHTML = el.image ? '<span>Change from library</span>' : '<span>Browse library</span>';
+      libPanel.appendChild(libLabelSpan);
+      libPanel.addEventListener('click', function() { openImgLibraryModal(el.id); });
+      card.appendChild(libPanel);
+    } else if (el.mode === 'upload') {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.style.display = 'none';
+      input.addEventListener('change', function(e) { handleCustomImageUpload(el.id, e); });
+      card.appendChild(input);
+
+      if (el.image) {
+        const thumb = document.createElement('img');
+        thumb.src = el.image.src;
+        thumb.className = 'preview-thumb';
+        card.appendChild(thumb);
+      }
+    } else {
+      const hint = document.createElement('div');
+      hint.className = 'ctrl-hint';
+      hint.style.textAlign = 'center';
+      hint.textContent = 'Choose an option above';
+      card.appendChild(hint);
+    }
+  }
+
+  return card;
+}
+
+function initCustomElementControls() {
+  const btn = document.getElementById('addElementBtn');
+  const menu = document.getElementById('addElementMenu');
+  btn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    menu.classList.toggle('open');
+  });
+  Array.prototype.forEach.call(menu.querySelectorAll('button[data-type]'), function(optBtn) {
+    optBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      createCustomElement(optBtn.dataset.type);
+      menu.classList.remove('open');
+    });
+  });
+  document.addEventListener('click', function() { menu.classList.remove('open'); });
+  renderCustomElementsList();
+}
+
 function createHToggle(slotIdx, isOn, gridCol, gridRow) {
   const ht = document.createElement('div');
   ht.className = 'border-h-toggle' + (isOn ? ' on' : '');
@@ -1660,6 +1963,24 @@ function handleSlotUpload(idx, e) {
     img.onload = function() {
       slotImages[idx] = img;
       renderLayoutBoard();
+    };
+    img.src = ev.target.result;
+    logToCloudinary(ev.target.result, CLOUDINARY_LOADED_IMAGES_PRESET);
+  };
+  reader.readAsDataURL(file);
+}
+
+// Same idea as handleSlotUpload, but for a custom (non-grid) image element
+// looked up by id rather than a numeric slot index.
+function handleCustomImageUpload(elId, e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const img = new Image();
+    img.onload = function() {
+      const el = customElements.find(function(x) { return x.id === elId; });
+      if (el) { el.image = img; renderCustomElementsList(); }
     };
     img.src = ev.target.result;
     logToCloudinary(ev.target.result, CLOUDINARY_LOADED_IMAGES_PRESET);
@@ -1799,12 +2120,17 @@ function renderImageLibraryView() {
 
 function loadImageIntoSlot(relPath) {
   if (imageLibraryTargetSlot === null) return;
-  const slotIdx = imageLibraryTargetSlot;
+  const target = imageLibraryTargetSlot;
   const img = new Image();
   img.crossOrigin = 'anonymous';
   img.onload = function() {
-    slotImages[slotIdx] = img;
-    renderLayoutBoard();
+    if (typeof target === 'number') {
+      slotImages[target] = img;
+      renderLayoutBoard();
+    } else {
+      const el = customElements.find(function(e) { return e.id === target; });
+      if (el) { el.image = img; renderCustomElementsList(); }
+    }
     closeImgLibraryModal();
   };
   img.onerror = function() {
@@ -2560,10 +2886,20 @@ function drawSlantedHeadlineLine(ctx, text, cx, y, maxW, fontStr, color) {
 // entirely (it always sits flush along the bottom edge, so moving or
 // resizing it independently doesn't make sense).
 const DRAG_ELEMENT_KEYS = ['logo', 'headline1', 'headline2', 'tagline', 'grid', 'calloutBox', 'finePrint'];
+
+// The full set of draggable keys at any moment — the fixed built-ins plus
+// one entry per user-added custom element (id doubles as its drag key).
+function allDragKeys() {
+  return DRAG_ELEMENT_KEYS.concat(customElements.map(function(el) { return el.id; }));
+}
+
 let elementOffsets = {};
+function ensureElementOffset(key) {
+  if (!elementOffsets[key]) elementOffsets[key] = { x: 0, y: 0, scale: 1 };
+}
 function resetElementOffsets() {
   elementOffsets = {};
-  DRAG_ELEMENT_KEYS.forEach(function(k) { elementOffsets[k] = { x: 0, y: 0, scale: 1 }; });
+  allDragKeys().forEach(ensureElementOffset);
 }
 resetElementOffsets();
 
@@ -3107,6 +3443,71 @@ function renderFlyerToCanvas(interactive) {
   ctx.fillText(footerUrl, DESIGN_W / 2, y + FOOTER_H / 2 + 9 * footerScale);
   if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
 
+  // User-added custom elements (headers, standard text, images) draw last,
+  // on top of everything else, each defaulting to a staggered spot near the
+  // middle of the page so newly-added ones are easy to find and drag into
+  // place. An empty header/text element (no text typed yet) doesn't get a
+  // bounding box — same rule the built-in text fields use — but an empty
+  // image element still does, so its placeholder box stays draggable/
+  // resizable while the user is deciding what to put in it.
+  customElements.forEach(function(el, idx) {
+    ensureElementOffset(el.id);
+    const baseX = DESIGN_W / 2;
+    const baseY = gridY + GRID_H / 2 + idx * 36;
+
+    if (el.type === 'header') {
+      const fontStr = "400 70px 'Bebas Neue', 'Anton', 'Arial Narrow', sans-serif";
+      const capH = 70 * CAP_RATIO;
+      elementPivots[el.id] = { x: baseX, y: baseY };
+      if (el.text) {
+        ctx.save();
+        applyElementTransform(ctx, el.id);
+        drawSlantedHeadlineLine(ctx, el.text, baseX, baseY + capH / 2, 700, fontStr, el.color);
+        ctx.restore();
+        const w = Math.min(measureTextW(ctx, el.text, fontStr), 700);
+        elementBounds[el.id] = { x: baseX - w / 2 - 10, y: baseY - capH * 0.7, w: w + 20, h: capH * 1.4 };
+      } else {
+        elementBounds[el.id] = null;
+      }
+    } else if (el.type === 'text') {
+      // Styled like Callout Line 1: bold, tracked Montserrat/Archivo Black —
+      // just centered instead of left-aligned, since this element floats on
+      // its own instead of sitting in the callout box's text column.
+      const size = 32;
+      const fontStr = "800 " + size + "px 'Montserrat', 'Archivo Black', sans-serif";
+      elementPivots[el.id] = { x: baseX, y: baseY };
+      if (el.text) {
+        ctx.save();
+        applyElementTransform(ctx, el.id);
+        ctx.textAlign = 'center';
+        ctx.fillStyle = el.color;
+        if ('letterSpacing' in ctx) ctx.letterSpacing = '2px';
+        fitText(ctx, el.text, baseX, baseY + size * CAP_RATIO / 2, 700, fontStr, 14);
+        if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+        ctx.restore();
+        const w = Math.min(measureTextW(ctx, el.text, fontStr), 700);
+        elementBounds[el.id] = { x: baseX - w / 2 - 10, y: baseY - size * CAP_RATIO * 0.7, w: w + 20, h: size * CAP_RATIO * 1.4 };
+      } else {
+        elementBounds[el.id] = null;
+      }
+    } else if (el.type === 'image') {
+      // Same content model as a feature grid slot (upload / library / typed
+      // text), just floating free instead of occupying a grid cell.
+      const boxW = 300, boxH = 220;
+      const boxX = baseX - boxW / 2, boxY = baseY - boxH / 2;
+      elementPivots[el.id] = { x: baseX, y: baseY };
+      elementBounds[el.id] = { x: boxX, y: boxY, w: boxW, h: boxH };
+      ctx.save();
+      applyElementTransform(ctx, el.id);
+      if (el.mode === 'text') {
+        if (el.imgText) drawTextContain(ctx, el.imgText, boxX, boxY, boxW, boxH, el.imgTextColor || '#161616', el.imgTextAlign || 'center');
+      } else if (el.image) {
+        drawContain(ctx, el.image, boxX, boxY, boxW, boxH);
+      }
+      ctx.restore();
+    }
+  });
+
   if (interactive) drawDragHandles(ctx);
 
   document.getElementById('cardWrap').style.display = 'block';
@@ -3125,7 +3526,7 @@ const RESIZE_HANDLE_HIT_R = 15;
 // and its handle turns solid while a resize is in progress.
 function drawDragHandles(ctx) {
   ctx.save();
-  DRAG_ELEMENT_KEYS.forEach(function(key) {
+  allDragKeys().forEach(function(key) {
     const box = getDisplayBox(key);
     if (!box) return;
     const isActive = activeDrag && activeDrag.key === key;
@@ -3154,8 +3555,9 @@ function canvasPointToDesign(canvas, clientX, clientY) {
 // Resize handles take priority over the move (body) hit area since a
 // handle sits right at an element's corner, inside its bounding box.
 function hitDragTarget(pt) {
-  for (let i = DRAG_ELEMENT_KEYS.length - 1; i >= 0; i--) {
-    const key = DRAG_ELEMENT_KEYS[i];
+  const keys = allDragKeys();
+  for (let i = keys.length - 1; i >= 0; i--) {
+    const key = keys[i];
     const box = getDisplayBox(key);
     if (!box) continue;
     const hx = box.x + box.w, hy = box.y + box.h;
@@ -3163,8 +3565,8 @@ function hitDragTarget(pt) {
       return { key: key, mode: 'resize' };
     }
   }
-  for (let i = DRAG_ELEMENT_KEYS.length - 1; i >= 0; i--) {
-    const key = DRAG_ELEMENT_KEYS[i];
+  for (let i = keys.length - 1; i >= 0; i--) {
+    const key = keys[i];
     const box = getDisplayBox(key);
     if (!box) continue;
     if (pt.x >= box.x && pt.x <= box.x + box.w && pt.y >= box.y && pt.y <= box.y + box.h) {
@@ -3290,6 +3692,7 @@ window.addEventListener('DOMContentLoaded', function() {
   initImageLibraryControls();
   initRemovableTextFields();
   initCanvasDragging();
+  initCustomElementControls();
   document.getElementById('resetPositionsBtn').addEventListener('click', function(e) {
     e.preventDefault();
     resetPositions();
