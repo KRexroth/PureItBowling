@@ -4,11 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pure It Bowling — Flyer Generator</title>
-<!-- GoatCounter: privacy-friendly pageview/unique-visitor analytics.
-     Backend-only stats for the site owner — dashboard lives at
-     https://pureitbowlingnewflyer.goatcounter.com and isn't linked from
-     anywhere in this page. -->
-<script data-goatcounter="https://pureitbowlingnewflyer.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@500;600;700;800;900&family=Anton&family=Archivo+Black&family=Oswald:wght@500;600;700&family=Barlow+Condensed:wght@700;900&family=Barlow:wght@500;700&display=swap');
   *{box-sizing:border-box;margin:0;padding:0;}
@@ -43,8 +38,6 @@
   .ctrl-group{display:flex;align-items:center;gap:7px;}
   .ctrl-group label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#888;white-space:nowrap;}
   .ctrl-group input[type="number"]{border:1px solid #ddd;border-radius:5px;padding:5px 8px;font-size:13px;font-family:'Barlow',sans-serif;background:#fff;color:#111;width:64px;}
-  .ctrl-btn{border:1px solid #ddd;border-radius:5px;background:#fafafa;color:#777;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:6px 12px;cursor:pointer;white-space:nowrap;font-family:'Barlow',sans-serif;}
-  .ctrl-btn:hover{border-color:#EF4123;color:#EF4123;}
   .ctrl-hint{font-size:11px;color:#999;}
 
   .slot-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#aaa;}
@@ -54,15 +47,11 @@
   .slot-mode-btn:hover{border-color:#EF4123;color:#EF4123;}
   .slot-mode-btn.active{background:#EF4123;border-color:#EF4123;color:#fff;}
   .slot-text-panel{display:flex;flex-direction:column;gap:6px;}
-  .slot-text-input{width:100%;border:1px solid #ddd;border-radius:5px;padding:7px 8px;font-size:13px;font-family:'Barlow',sans-serif;background:#fff;color:#111;resize:vertical;line-height:1.35;}
-  .slot-text-input:focus{outline:none;border-color:#EF4123;}
-  .slot-text-align{width:100%;border:1px solid #ddd;border-radius:5px;padding:6px 4px;font-size:11px;font-family:'Barlow',sans-serif;background:#fff;color:#111;flex:1;}
+  .slot-text-input{width:100%;border:1px solid #ddd;border-radius:5px;padding:7px 8px;font-size:13px;font-family:'Barlow',sans-serif;background:#fff;color:#111;}
   .slot-text-input:focus{outline:none;border-color:#EF4123;}
   .slot-text-color-row{display:flex;align-items:center;gap:6px;}
   .slot-text-color-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#aaa;}
-  .slot-text-color{width:36px;height:30px;padding:0;border:1px solid #ddd;border-radius:5px;cursor:pointer;background:none;flex-shrink:0;}
-  .slot-text-color-hex{flex:1;min-width:0;border:1px solid #ddd;border-radius:5px;padding:6px;font-size:11px;font-family:'Barlow',sans-serif;text-transform:uppercase;color:#111;}
-  .slot-text-color-hex:focus{outline:none;border-color:#EF4123;}
+  .slot-text-color{width:100%;height:30px;padding:0;border:1px solid #ddd;border-radius:5px;cursor:pointer;background:none;flex:1;}
 
   .upload-zone{border:2px dashed #ddd;border-radius:8px;padding:10px;text-align:center;cursor:pointer;background:#fafafa;position:relative;}
   .upload-zone:hover{border-color:#EF4123;}
@@ -147,8 +136,6 @@
   .btn:hover{background:#D5361B;}
 
   canvas{width:100%;height:auto;border-radius:10px;display:block;max-width:100%;background:#fff;}
-  canvas.interactive{cursor:default;touch-action:none;}
-  canvas.dragging{cursor:grabbing !important;}
   #cardWrap{display:none;max-width:720px;margin:0 auto;overflow:hidden;}
   .share-btn{border:none;border-radius:7px;padding:0;height:42px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;line-height:1;box-sizing:border-box;width:100%;}
   .share-btn.download{background:#111;color:#fff;}
@@ -161,23 +148,16 @@
   .text-row{display:flex;align-items:flex-end;gap:10px;margin-bottom:12px;}
   .text-row:last-child{margin-bottom:0;}
   .text-row .ig{flex:1;min-width:0;}
-  .field-remove-btn{flex-shrink:0;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#999;text-decoration:none;cursor:pointer;padding:8px 2px;white-space:nowrap;}
-  .field-remove-btn:hover{color:#EF4123;text-decoration:underline;}
-  .field-restore-chip{display:none;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border:1.5px dashed #ccc;border-radius:7px;background:#fafafa;color:#888;font-size:12px;font-weight:700;letter-spacing:.02em;margin-bottom:12px;cursor:pointer;}
-  .field-restore-chip:hover{border-color:#EF4123;color:#EF4123;background:#fff5f2;}
-  .field-restore-chip .plus{font-size:14px;font-weight:800;margin-right:4px;}
-  .field-restore-chip .hint{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#bbb;}
-  .field-restore-chip:hover .hint{color:#EF4123;}
   .swatch-holder{flex-shrink:0;}
 
   .swatch-row{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:4px;}
   .swatch-item{display:flex;align-items:center;gap:9px;}
   .swatch-item label{font-size:12px;color:#555;}
 
-  .color-swatch{width:38px;height:38px;padding:0;border:1.5px solid #ccc;border-radius:7px;cursor:pointer;flex-shrink:0;box-shadow:inset 0 0 0 2px #fff, 0 1px 3px rgba(0,0,0,0.12);}
+  .color-swatch{width:38px;height:38px;padding:0;border:1px solid #ddd;border-radius:7px;cursor:pointer;flex-shrink:0;box-shadow:inset 0 0 0 2px #fff;}
   .color-swatch:hover{border-color:#EF4123;}
 
-  .color-popover{display:none;position:absolute;z-index:1000;background:#fff;border:1px solid #ddd;border-radius:9px;box-shadow:0 10px 30px rgba(0,0,0,0.18);padding:14px;width:230px;max-width:calc(100vw - 20px);}
+  .color-popover{display:none;position:absolute;z-index:1000;background:#fff;border:1px solid #ddd;border-radius:9px;box-shadow:0 10px 30px rgba(0,0,0,0.18);padding:14px;width:210px;}
   .popover-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
   .popover-header span{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#888;}
   .popover-close{border:none;background:none;font-size:19px;line-height:1;color:#bbb;cursor:pointer;padding:0;}
@@ -185,16 +165,6 @@
   .popover-hint{font-size:10.5px;color:#999;margin:-8px 0 12px;line-height:1.4;}
   .popover-body{display:flex;flex-direction:column;gap:10px;}
   .popover-body input[type="color"]{width:100%;height:40px;padding:0;border:1px solid #ddd;border-radius:6px;cursor:pointer;background:none;}
-
-  /* Custom saturation/value square + hue slider — a self-drawn picker
-     (rather than the native input[type=color]) so it looks and behaves
-     identically on desktop and mobile, instead of handing off to whatever
-     picker UI the phone's OS happens to show. */
-  .sv-square{position:relative;width:100%;aspect-ratio:1/1;border-radius:8px;cursor:pointer;touch-action:none;background-color:#FF0000;background-image:linear-gradient(to top, #000, rgba(0,0,0,0)), linear-gradient(to right, #fff, rgba(255,255,255,0));box-shadow:inset 0 0 0 1px rgba(0,0,0,0.12);}
-  .sv-cursor{position:absolute;width:18px;height:18px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.45);transform:translate(-50%,-50%);pointer-events:none;top:0;left:0;}
-  .hue-slider{position:relative;width:100%;height:20px;border-radius:10px;cursor:pointer;touch-action:none;background:linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);box-shadow:inset 0 0 0 1px rgba(0,0,0,0.12);}
-  .hue-cursor{position:absolute;top:50%;width:20px;height:20px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.45);transform:translate(-50%,-50%);pointer-events:none;left:0;background:transparent;}
-
   .hex-field{display:flex;flex-direction:column;gap:3px;}
   .hex-field label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#bbb;}
   .hex-input{width:100%;border:1px solid #ddd;border-radius:5px;padding:7px 8px;font-size:13px;font-family:'Barlow',sans-serif;text-transform:uppercase;}
@@ -318,19 +288,9 @@
   <div class="card-body">
     <div class="ctrl-group" style="margin-bottom:8px;">
       <label for="slotCount">Features</label>
-      <input type="number" id="slotCount" min="1" max="12" value="4" onchange="renderSlots()">
+      <input type="number" id="slotCount" min="1" max="12" value="6" onchange="renderSlots()">
     </div>
     <div class="ctrl-hint" style="margin-bottom:14px;">Choose how many feature spaces the flyer should have. For each one, add text, upload an image, or choose one from the library. Drag features to rearrange the layout — stack two or more in a column to make it narrower, or leave a column with just one to make it wider and taller.</div>
-
-    <div class="ctrl-group" style="margin-bottom:6px; flex-wrap:wrap;">
-      <label for="gridCols">Columns</label>
-      <input type="number" id="gridCols" min="1" max="12" value="2">
-      <label for="gridRows">Rows</label>
-      <input type="number" id="gridRows" min="1" max="12" value="2">
-      <button type="button" class="ctrl-btn" id="applyGridBtn">Arrange</button>
-    </div>
-    <div class="ctrl-hint" style="margin-bottom:14px;">Prefer typing exact numbers instead of dragging? Set columns and rows here and click Arrange. This replaces the current layout and clears any merges (extra columns are added automatically if there isn't room for everything).</div>
-
     <div class="layout-board" id="layoutBoard"></div>
 
     <div class="ctrl-hint" style="margin-top:16px;margin-bottom:8px;">Click any line below to show or hide that specific border between two features. <a href="#" id="allBordersOn">Show all</a> &middot; <a href="#" id="allBordersOff">Hide all</a></div>
@@ -396,13 +356,11 @@
   </div>
 </div>
 
-<button class="btn" onclick="previewFlyer()">Preview Image</button>
+<button class="btn" onclick="generateFlyer()">Generate Flyer</button>
 
 <div id="cardWrap">
-  <div id="dragHint" class="ctrl-hint" style="display:none;text-align:center;margin-bottom:10px;">Drag any outlined element to move it, or drag its corner handle to resize it. The footer bar stays fixed. Your layout is remembered the next time you preview — <a href="#" id="resetPositionsBtn">reset positions</a> to start over. Click <strong>Generate Image</strong> below when you're happy.</div>
   <canvas id="flyerCanvas"></canvas>
-  <button class="btn" id="generateBtn" onclick="generateFinalImage()" style="display:none;margin-top:14px;">Generate Image</button>
-  <div id="dlWrap" style="display:none;margin-top:10px;">
+  <div style="margin-top:10px;">
     <a id="dlBtn" class="share-btn download" download="pure-it-bowling-flyer.png" style="width:100%;display:flex;align-items:center;justify-content:center;height:42px;">Download</a>
   </div>
 </div>
@@ -414,12 +372,7 @@
   </div>
   <div class="popover-hint" id="popoverHint" style="display:none;"></div>
   <div class="popover-body">
-    <div class="sv-square" id="svSquare">
-      <div class="sv-cursor" id="svCursor"></div>
-    </div>
-    <div class="hue-slider" id="hueSlider">
-      <div class="hue-cursor" id="hueCursor"></div>
-    </div>
+    <input type="color" id="popoverPicker"/>
     <div class="hex-field">
       <label>Hex</label>
       <input type="text" id="popoverHex" class="hex-input" maxlength="7"/>
@@ -456,7 +409,6 @@ let slotImages = [];
 let slotModes = [];
 let slotTexts = [];
 let slotTextColors = [];
-let slotTextAligns = []; // 'top' | 'center' (default) | 'bottom' — vertical alignment of text-mode slots
 let columnLayout = [];
 let draggedSlotIndex = null;
 let slotBorders = {};
@@ -490,36 +442,6 @@ let imageLibraryTree = null;        // nested {folders:{name:node}, files:[filen
 let imageLibraryLoadPromise = null; // in-flight/cached fetch, so we only ever hit the API once per session
 let imageLibraryPath = [];          // breadcrumb: array of folder names from the Images root
 let imageLibraryTargetSlot = null;  // which "Image N" slot the modal is currently filling
-
-// Backend-only archiving: every image a visitor uploads (feature slot or
-// background) and every flyer they generate is silently mirrored to a
-// Cloudinary account for the site owner to browse later. This uses an
-// "unsigned upload preset" — a token specifically designed to be safe in
-// public client-side code (it can only push new uploads into its own
-// pre-set folder, nothing else), unlike a real API secret. Nothing about
-// this is shown or linked anywhere in the page itself.
-const CLOUDINARY_CLOUD_NAME = 'jof6fttp';
-const CLOUDINARY_LOADED_IMAGES_PRESET = 'loaded_images';
-const CLOUDINARY_GENERATED_FLYERS_PRESET = 'generated_flyers';
-
-function logToCloudinary(dataUrl, presetName) {
-  if (!CLOUDINARY_CLOUD_NAME || !dataUrl) return;
-  try {
-    const formData = new FormData();
-    formData.append('file', dataUrl);
-    formData.append('upload_preset', presetName);
-    fetch('https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD_NAME + '/image/upload', {
-      method: 'POST',
-      body: formData
-    }).catch(function() {
-      // Silent by design — this is background logging for the site owner,
-      // and must never interrupt or error out the visitor's actual use of
-      // the flyer builder if the upload fails (offline, preset issue, etc.).
-    });
-  } catch (e) {
-    // Same reasoning as above — never let logging break the real feature.
-  }
-}
 
 // A merge combines a rectangular block of images (1 row tall x 2+ columns
 // wide, 2+ rows tall x 1 column, or both at once) into one picture that
@@ -570,16 +492,12 @@ function isValidRectangle(group) {
   const expected = (b.maxCol - b.minCol + 1) * (b.maxRow - b.minRow + 1);
   if (group.slots.length !== expected) return false;
 
+  const refLen = columnLayout[b.minCol].length;
   const slotSet = {};
   group.slots.forEach(function(s) { slotSet[s] = true; });
 
-  // Only the cells actually inside this merge's own row/col range need to
-  // exist and belong to the group — columns are free to have more or fewer
-  // rows beyond that range (e.g. a 3-column grid where one column has an
-  // extra image), so we don't require every spanned column to share the
-  // same total height, just that this rectangle's own cells are present.
   for (let c = b.minCol; c <= b.maxCol; c++) {
-    if (!columnLayout[c]) return false;
+    if (!columnLayout[c] || columnLayout[c].length !== refLen) return false;
     for (let r = b.minRow; r <= b.maxRow; r++) {
       const s = columnLayout[c][r];
       if (s === undefined || !slotSet[s]) return false;
@@ -622,11 +540,12 @@ function mergeOrSplit(slotA, slotB) {
   for (let attempt = 0; attempt < 8; attempt++) {
     const b = getGroupBounds({ slots: combined });
     if (!b) return;
+    const refLen = columnLayout[b.minCol] ? columnLayout[b.minCol].length : -1;
     let ok = true;
 
     outer:
     for (let c = b.minCol; c <= b.maxCol; c++) {
-      if (!columnLayout[c]) { ok = false; break outer; }
+      if (!columnLayout[c] || columnLayout[c].length !== refLen) { ok = false; break outer; }
       for (let r = b.minRow; r <= b.maxRow; r++) {
         const s = columnLayout[c][r];
         if (s === undefined) { ok = false; break outer; }
@@ -738,39 +657,6 @@ function rgbToHex(r, g, b) {
   return '#' + h(r) + h(g) + h(b);
 }
 
-// HSV <-> RGB conversions for the custom saturation/value square + hue
-// slider color picker (h: 0-360, s/v: 0-1).
-function rgbToHsv(r, g, b) {
-  r /= 255; g /= 255; b /= 255;
-  const max = Math.max(r, g, b), min = Math.min(r, g, b);
-  const d = max - min;
-  let h = 0;
-  if (d !== 0) {
-    if (max === r) h = ((g - b) / d) % 6;
-    else if (max === g) h = (b - r) / d + 2;
-    else h = (r - g) / d + 4;
-    h *= 60;
-    if (h < 0) h += 360;
-  }
-  const s = max === 0 ? 0 : d / max;
-  const v = max;
-  return { h: h, s: s, v: v };
-}
-
-function hsvToRgb(h, s, v) {
-  const c = v * s;
-  const x = c * (1 - Math.abs((h / 60) % 2 - 1));
-  const m = v - c;
-  let r = 0, g = 0, b = 0;
-  if (h < 60) { r = c; g = x; b = 0; }
-  else if (h < 120) { r = x; g = c; b = 0; }
-  else if (h < 180) { r = 0; g = c; b = x; }
-  else if (h < 240) { r = 0; g = x; b = c; }
-  else if (h < 300) { r = x; g = 0; b = c; }
-  else { r = c; g = 0; b = x; }
-  return { r: (r + m) * 255, g: (g + m) * 255, b: (b + m) * 255 };
-}
-
 function lightenColor(hex, amt) {
   const rgb = hexToRgb(hex);
   return rgbToHex(
@@ -822,88 +708,14 @@ function updateSwatch(key, hex) {
   if (sw) sw.style.background = hex;
 }
 
-// Current HSV of the open popover's SV-square/hue-slider widget. Kept as
-// its own state (rather than always re-deriving from the hex on every
-// update) because hue is undefined/arbitrary once saturation or value hits
-// zero — re-deriving on every drag tick would make the hue slider randomly
-// snap around whenever you drag to the edge of the square.
-let pickerHsv = { h: 0, s: 0, v: 0 };
-// Set while the SV-square/hue-slider itself is driving a color change, so
-// populatePopover() knows to skip re-deriving pickerHsv from the resulting
-// hex (see above) and only sync the hex/RGB text fields.
-let suppressPickerHsvSync = false;
-
-function updatePickerCursors() {
-  document.getElementById('svSquare').style.backgroundColor = 'hsl(' + pickerHsv.h + ',100%,50%)';
-  const svCursor = document.getElementById('svCursor');
-  svCursor.style.left = (pickerHsv.s * 100) + '%';
-  svCursor.style.top = ((1 - pickerHsv.v) * 100) + '%';
-  document.getElementById('hueCursor').style.left = (pickerHsv.h / 360 * 100) + '%';
-}
-
 function populatePopover(hex) {
   hex = hex.toUpperCase();
   const rgb = hexToRgb(hex);
+  document.getElementById('popoverPicker').value = hex;
   document.getElementById('popoverHex').value = hex;
   document.getElementById('popover_r').value = rgb.r;
   document.getElementById('popover_g').value = rgb.g;
   document.getElementById('popover_b').value = rgb.b;
-  if (!suppressPickerHsvSync) {
-    pickerHsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
-    updatePickerCursors();
-  }
-}
-
-// Applies the current pickerHsv (after a drag on the square or slider) as
-// the popover's color, without letting the resulting setColor()/hex
-// round-trip reset the hue we're mid-drag on.
-function applyPickerHsv() {
-  updatePickerCursors();
-  if (!currentPopoverKey) return;
-  const rgb = hsvToRgb(pickerHsv.h, pickerHsv.s, pickerHsv.v);
-  const hex = rgbToHex(rgb.r, rgb.g, rgb.b);
-  suppressPickerHsvSync = true;
-  setColor(currentPopoverKey, hex);
-  suppressPickerHsvSync = false;
-}
-
-function setHsvFromSvPointer(clientX, clientY) {
-  const rect = document.getElementById('svSquare').getBoundingClientRect();
-  let s = (clientX - rect.left) / rect.width;
-  let v = 1 - (clientY - rect.top) / rect.height;
-  pickerHsv.s = Math.max(0, Math.min(1, s));
-  pickerHsv.v = Math.max(0, Math.min(1, v));
-  applyPickerHsv();
-}
-
-function setHueFromSliderPointer(clientX) {
-  const rect = document.getElementById('hueSlider').getBoundingClientRect();
-  let h = (clientX - rect.left) / rect.width;
-  pickerHsv.h = Math.max(0, Math.min(1, h)) * 360;
-  applyPickerHsv();
-}
-
-// Pointer Events unify mouse/touch/pen in one code path, so the square and
-// slider drag identically on desktop and mobile — nothing here depends on
-// which device or browser is showing it.
-function bindPickerDrag(el, onMove) {
-  let dragging = false;
-  el.addEventListener('pointerdown', function(e) {
-    dragging = true;
-    el.setPointerCapture(e.pointerId);
-    onMove(e.clientX, e.clientY);
-    e.preventDefault();
-  });
-  el.addEventListener('pointermove', function(e) {
-    if (dragging) onMove(e.clientX, e.clientY);
-  });
-  el.addEventListener('pointerup', function() { dragging = false; });
-  el.addEventListener('pointercancel', function() { dragging = false; });
-}
-
-function initSvHuePicker() {
-  bindPickerDrag(document.getElementById('svSquare'), function(x, y) { setHsvFromSvPointer(x, y); });
-  bindPickerDrag(document.getElementById('hueSlider'), function(x) { setHueFromSliderPointer(x); });
 }
 
 function updateColorUI(key, hex) {
@@ -947,7 +759,7 @@ function findColorDef(key) {
 function positionPopover(triggerEl) {
   const pop = document.getElementById('colorPopover');
   const rect = triggerEl.getBoundingClientRect();
-  const popW = pop.offsetWidth || 230;
+  const popW = 210;
   let left = rect.left + window.scrollX;
   const maxLeft = document.documentElement.scrollWidth - popW - 10;
   if (left > maxLeft) left = Math.max(10, maxLeft);
@@ -1012,7 +824,9 @@ function buildLabeledSwatch(def) {
 }
 
 function wirePopover() {
-  initSvHuePicker();
+  document.getElementById('popoverPicker').addEventListener('input', function(e) {
+    if (currentPopoverKey) setColor(currentPopoverKey, e.target.value);
+  });
   document.getElementById('popoverHex').addEventListener('change', function(e) {
     if (!currentPopoverKey) return;
     const v = e.target.value.trim();
@@ -1114,42 +928,6 @@ function syncColumnLayout(n) {
   }
 }
 
-// Lets someone type an exact grid shape instead of dragging. Fills
-// column-major (down each column, then across) using "Rows" as the stack
-// height per column — the same fill order syncColumnLayout already uses,
-// just driven by an explicit number instead of the fixed STACK_TARGET. If
-// there are more features than Columns x Rows can hold, extra columns are
-// added automatically beyond what was requested so nothing gets dropped.
-function applyGridLayout() {
-  let cols = parseInt(document.getElementById('gridCols').value, 10);
-  let rows = parseInt(document.getElementById('gridRows').value, 10);
-  if (!cols || cols < 1) cols = 1;
-  if (!rows || rows < 1) rows = 1;
-  cols = Math.min(cols, 12);
-  rows = Math.min(rows, 12);
-  document.getElementById('gridCols').value = cols;
-  document.getElementById('gridRows').value = rows;
-
-  const n = slotImages.length;
-  const newLayout = [];
-  let col = [];
-  for (let i = 0; i < n; i++) {
-    col.push(i);
-    if (col.length >= rows) {
-      newLayout.push(col);
-      col = [];
-    }
-  }
-  if (col.length) newLayout.push(col);
-
-  columnLayout = newLayout;
-  // The old merge geometry was computed against the previous layout and
-  // won't line up with the new one, so clear it rather than leave stale
-  // merges pointing at the wrong neighbors.
-  mergeGroups = [];
-  renderLayoutBoard();
-}
-
 function findColumnOfSlot(slotIdx) {
   for (let c = 0; c < columnLayout.length; c++) {
     const pos = columnLayout[c].indexOf(slotIdx);
@@ -1168,7 +946,6 @@ function renderSlots() {
   const newModes = [];
   const newTexts = [];
   const newTextColors = [];
-  const newTextAligns = [];
   for (let i = 0; i < n; i++) {
     newImages.push(slotImages[i] || null);
     // No default mode — nothing is pre-selected/highlighted until the user
@@ -1176,13 +953,11 @@ function renderSlots() {
     newModes.push(slotModes[i] || null);
     newTexts.push(slotTexts[i] || '');
     newTextColors.push(slotTextColors[i] || '#161616');
-    newTextAligns.push(slotTextAligns[i] || 'center');
   }
   slotImages = newImages;
   slotModes = newModes;
   slotTexts = newTexts;
   slotTextColors = newTextColors;
-  slotTextAligns = newTextAligns;
 
   syncColumnLayout(n);
   renderLayoutBoard();
@@ -1264,10 +1039,10 @@ function createLayoutSlotEl(slotIdx, colIdx, rowIdx) {
     const textPanel = document.createElement('div');
     textPanel.className = 'slot-text-panel';
 
-    const textInput = document.createElement('textarea');
+    const textInput = document.createElement('input');
+    textInput.type = 'text';
     textInput.className = 'slot-text-input';
-    textInput.placeholder = 'Feature text (multiple lines OK)';
-    textInput.rows = 3;
+    textInput.placeholder = 'Feature text';
     textInput.value = slotTexts[slotIdx] || '';
     textInput.addEventListener('mousedown', function(e) { e.stopPropagation(); });
     textInput.addEventListener('click', function(e) { e.stopPropagation(); });
@@ -1285,67 +1060,14 @@ function createLayoutSlotEl(slotIdx, colIdx, rowIdx) {
     colorInput.type = 'color';
     colorInput.className = 'slot-text-color';
     colorInput.value = slotTextColors[slotIdx] || '#161616';
-    // Hex field alongside the swatch, matching every other color control in
-    // the app — typing a hex code works here too, not just picking visually.
-    const hexInput = document.createElement('input');
-    hexInput.type = 'text';
-    hexInput.className = 'slot-text-color-hex';
-    hexInput.maxLength = 7;
-    hexInput.placeholder = '#RRGGBB';
-    hexInput.value = (slotTextColors[slotIdx] || '#161616').toUpperCase();
-
-    [colorInput, hexInput].forEach(function(el) {
-      el.addEventListener('mousedown', function(e) { e.stopPropagation(); });
-      el.addEventListener('click', function(e) { e.stopPropagation(); });
-    });
+    colorInput.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+    colorInput.addEventListener('click', function(e) { e.stopPropagation(); });
     colorInput.addEventListener('input', function(e) {
       slotTextColors[slotIdx] = e.target.value;
-      hexInput.value = e.target.value.toUpperCase();
     });
-    hexInput.addEventListener('change', function(e) {
-      let v = e.target.value.trim();
-      if (v && v.charAt(0) !== '#') v = '#' + v;
-      if (isValidHex(v)) {
-        v = v.toUpperCase();
-        slotTextColors[slotIdx] = v;
-        colorInput.value = v;
-        hexInput.value = v;
-      } else {
-        hexInput.value = (slotTextColors[slotIdx] || '#161616').toUpperCase();
-      }
-    });
-
     colorRow.appendChild(colorLabel);
     colorRow.appendChild(colorInput);
-    colorRow.appendChild(hexInput);
     textPanel.appendChild(colorRow);
-
-    const alignRow = document.createElement('div');
-    alignRow.className = 'slot-text-color-row';
-    const alignLabel = document.createElement('span');
-    alignLabel.className = 'slot-text-color-label';
-    alignLabel.textContent = 'Align';
-    const alignSelect = document.createElement('select');
-    alignSelect.className = 'slot-text-align';
-    [
-      { v: 'top', label: 'Top' },
-      { v: 'center', label: 'Center' },
-      { v: 'bottom', label: 'Bottom' }
-    ].forEach(function(opt) {
-      const o = document.createElement('option');
-      o.value = opt.v;
-      o.textContent = opt.label;
-      if ((slotTextAligns[slotIdx] || 'center') === opt.v) o.selected = true;
-      alignSelect.appendChild(o);
-    });
-    alignSelect.addEventListener('mousedown', function(e) { e.stopPropagation(); });
-    alignSelect.addEventListener('click', function(e) { e.stopPropagation(); });
-    alignSelect.addEventListener('change', function(e) {
-      slotTextAligns[slotIdx] = e.target.value;
-    });
-    alignRow.appendChild(alignLabel);
-    alignRow.appendChild(alignSelect);
-    textPanel.appendChild(alignRow);
 
     card.appendChild(textPanel);
   } else if (mode === 'library') {
@@ -1662,7 +1384,6 @@ function handleSlotUpload(idx, e) {
       renderLayoutBoard();
     };
     img.src = ev.target.result;
-    logToCloudinary(ev.target.result, CLOUDINARY_LOADED_IMAGES_PRESET);
   };
   reader.readAsDataURL(file);
 }
@@ -1860,7 +1581,6 @@ function handleBackgroundUpload(e) {
       updateLibrarySelectionHighlight();
     };
     img.src = ev.target.result;
-    logToCloudinary(ev.target.result, CLOUDINARY_LOADED_IMAGES_PRESET);
   };
   reader.readAsDataURL(file);
 }
@@ -2030,71 +1750,6 @@ function val(id, fallback) {
   return v || fallback;
 }
 
-// Any Flyer Text field the user removes is tracked here by id. A removed
-// field's value is kept intact in its (hidden) input — removing just tells
-// renderFlyerToCanvas() to treat it as blank instead of falling back to the
-// default placeholder copy, so restoring it brings the original text right back.
-const removedTextFields = new Set();
-
-function fieldVal(id, fallback) {
-  if (removedTextFields.has(id)) return '';
-  return val(id, fallback);
-}
-
-const REMOVABLE_TEXT_FIELDS = [
-  { id: 'headline1', label: 'Headline Line 1' },
-  { id: 'headline2', label: 'Headline Line 2' },
-  { id: 'tagline',   label: 'Tagline' },
-  { id: 'fitLine1',  label: 'Callout Line 1' },
-  { id: 'fitLine2',  label: 'Callout Line 2' },
-  { id: 'fitDesc',   label: 'Callout Description' },
-  { id: 'finePrint', label: 'Fine Print' }
-];
-
-// Wires a "Remove" link onto each removable text field's row and a matching
-// "+ Add [Field]" chip that takes its place once removed — click either to
-// flip back and forth. Runs once on page load.
-function initRemovableTextFields() {
-  REMOVABLE_TEXT_FIELDS.forEach(function(f) {
-    const input = document.getElementById(f.id);
-    if (!input) return;
-    const row = input.closest('.text-row');
-    if (!row) return;
-
-    const removeBtn = document.createElement('a');
-    removeBtn.href = '#';
-    removeBtn.className = 'field-remove-btn';
-    removeBtn.textContent = 'Remove';
-    removeBtn.title = 'Remove ' + f.label + ' from the flyer';
-    row.appendChild(removeBtn);
-
-    const restoreChip = document.createElement('div');
-    restoreChip.className = 'field-restore-chip';
-    restoreChip.innerHTML = '<span><span class="plus">+</span>Add ' + f.label + '</span><span class="hint">Click to restore</span>';
-    row.parentNode.insertBefore(restoreChip, row.nextSibling);
-
-    function setRemoved(isRemoved) {
-      if (isRemoved) {
-        removedTextFields.add(f.id);
-        row.style.display = 'none';
-        restoreChip.style.display = 'flex';
-      } else {
-        removedTextFields.delete(f.id);
-        row.style.display = '';
-        restoreChip.style.display = 'none';
-      }
-    }
-
-    removeBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      setRemoved(true);
-    });
-    restoreChip.addEventListener('click', function() {
-      setRemoved(false);
-    });
-  });
-}
-
 function fitText(ctx, text, x, y, maxW, fontStr, minSize) {
   const match = fontStr.match(/(\d+)px/);
   if (!match) { ctx.font = fontStr; ctx.fillText(text, x, y); return; }
@@ -2181,34 +1836,15 @@ function drawContain(ctx, img, cx, cy, cw, ch, padRatio) {
 // Feature slots set to "Add Text" instead of an image. Wraps to multiple
 // lines at the starting size, then shrinks (re-wrapping each time) until the
 // whole block fits both the width and the height, down to minSize.
-// Splits on explicit newlines first (so intentional line breaks the user
-// typed are always respected as hard breaks, including blank lines),
-// wrapping each paragraph independently to fit maxWidth.
-function wrapMultilineText(ctx, text, maxWidth) {
-  const paragraphs = text.split('\n');
-  let lines = [];
-  paragraphs.forEach(function(p) {
-    if (p === '') { lines.push(''); return; }
-    lines = lines.concat(wrapText(ctx, p, maxWidth));
-  });
-  return lines;
-}
-
-// Draws `text` within a cx/cy/cw/ch box — used for Feature slots set to
-// "Add Text" instead of an image. Respects explicit line breaks the user
-// typed, additionally auto-wrapping any line that's too wide, then shrinks
-// (re-wrapping each time) until the whole block fits, down to minSize.
-// `align` is 'top' | 'center' (default) | 'bottom'.
-function drawTextContain(ctx, text, cx, cy, cw, ch, color, align, padRatio) {
+function drawTextContain(ctx, text, cx, cy, cw, ch, color, padRatio) {
   padRatio = padRatio || 0.86;
-  align = align || 'center';
   const maxW = cw * padRatio, maxH = ch * padRatio;
   const family = "'Montserrat', 'Oswald', sans-serif";
   const maxSize = 34, minSize = 12;
   let size = maxSize, lines = [], lineHeight = 0;
   while (size >= minSize) {
     ctx.font = "700 " + size + "px " + family;
-    lines = wrapMultilineText(ctx, text, maxW);
+    lines = wrapText(ctx, text, maxW);
     lineHeight = size * 1.18;
     const blockH = lines.length * lineHeight;
     const widestLine = lines.reduce(function(w, l) { return Math.max(w, ctx.measureText(l).width); }, 0);
@@ -2219,12 +1855,7 @@ function drawTextContain(ctx, text, cx, cy, cw, ch, color, align, padRatio) {
   ctx.fillStyle = color;
   ctx.textAlign = 'center';
   const blockH = lines.length * lineHeight;
-  const padY = (ch - maxH) / 2; // half of the padding padRatio leaves top/bottom
-  let blockTop;
-  if (align === 'top') blockTop = cy + padY;
-  else if (align === 'bottom') blockTop = cy + ch - padY - blockH;
-  else blockTop = cy + (ch - blockH) / 2;
-  let ly = blockTop + lineHeight * 0.78;
+  let ly = cy + (ch - blockH) / 2 + lineHeight * 0.78;
   lines.forEach(function(line) {
     ctx.fillText(line, cx + cw / 2, ly);
     ly += lineHeight;
@@ -2482,7 +2113,6 @@ function drawSmallCaps(ctx, text, cx, y, fontStr, tracking, centered) {
 // ('destination-out') — the net effect is a scattering of tiny erosions
 // confined strictly to the ink of the letters.
 function drawDistressOverlay(ctx, text, cx, y, fontStr) {
-  if (!text) return;
   const sizeMatch = fontStr.match(/(\d+)px/);
   const fontSize = sizeMatch ? parseInt(sizeMatch[1], 10) : 40;
   ctx.font = fontStr;
@@ -2524,13 +2154,6 @@ function drawDistressOverlay(ctx, text, cx, y, fontStr) {
 // line's own baseline center so it stays centered), a drop shadow for
 // punch/depth, and the distressed-edge speckling on top.
 function drawSlantedHeadlineLine(ctx, text, cx, y, maxW, fontStr, color) {
-  // An empty (removed) headline line has hSize1/hSize2 forced to 0, which
-  // makes fontStr read as "...0px...". Nothing to draw here anyway, but
-  // drawDistressOverlay below would build a 0-height offscreen canvas from
-  // that 0px size and drawImage()-ing a zero-dimension canvas throws,
-  // silently killing the rest of renderFlyerToCanvas() for every section after
-  // the headline. Bail out before any of that happens.
-  if (!text) return;
   const SLANT = 0.16;
   ctx.save();
   ctx.translate(cx, y);
@@ -2550,80 +2173,7 @@ function drawSlantedHeadlineLine(ctx, text, cx, y, maxW, fontStr, color) {
   ctx.restore();
 }
 
-// Every draggable/resizable element's current offset + scale relative to
-// its computed default position/size, in design-space pixels. This
-// persists across repeated Previews within the same page load — editing a
-// text field or color and clicking Preview again keeps whatever layout was
-// last arranged, rather than snapping back to defaults. It only resets on
-// page load/refresh, or when the user clicks "Reset positions". The footer
-// bar is deliberately left out — it's excluded from dragging and resizing
-// entirely (it always sits flush along the bottom edge, so moving or
-// resizing it independently doesn't make sense).
-const DRAG_ELEMENT_KEYS = ['logo', 'headline1', 'headline2', 'tagline', 'grid', 'calloutBox', 'finePrint'];
-let elementOffsets = {};
-function resetElementOffsets() {
-  elementOffsets = {};
-  DRAG_ELEMENT_KEYS.forEach(function(k) { elementOffsets[k] = { x: 0, y: 0, scale: 1 }; });
-}
-resetElementOffsets();
-
-// Each element's un-offset, un-scaled ("base") bounding box in design-space,
-// rebuilt every render — this is what dragging/resizing is measured
-// against. elementPivots holds the fixed point each element scales around
-// (its own center), computed from layout constants alone so it stays put
-// across drags. A null bounds entry means that element isn't currently on
-// the page (e.g. an empty/removed text field) and so can't be touched.
-let elementBounds = {};
-let elementPivots = {};
-let isPreviewInteractive = false;
-let lastDesignW = 1100, lastDesignH = 0;
-let activeDrag = null; // { key, mode: 'move'|'resize', ... } while a drag is in progress
-
-function measureTextW(ctx, text, fontStr) {
-  const prevFont = ctx.font;
-  ctx.font = fontStr;
-  const w = ctx.measureText(text).width;
-  ctx.font = prevFont;
-  return w;
-}
-
-// Maps a point in an element's own (un-offset, un-scaled) drawing space to
-// where it actually lands on the canvas, given that element's current drag
-// offset and resize scale — mirrors the ctx.translate/scale/translate
-// sequence each element is drawn with, so hit-testing and handle placement
-// always agree with what's on screen.
-function transformPoint(px, py, key) {
-  const off = elementOffsets[key];
-  const piv = elementPivots[key];
-  return {
-    x: piv.x + (px - piv.x) * off.scale + off.x,
-    y: piv.y + (py - piv.y) * off.scale + off.y
-  };
-}
-
-function getDisplayBox(key) {
-  const b = elementBounds[key];
-  if (!b) return null;
-  const tl = transformPoint(b.x, b.y, key);
-  const br = transformPoint(b.x + b.w, b.y + b.h, key);
-  return { x: tl.x, y: tl.y, w: br.x - tl.x, h: br.y - tl.y };
-}
-
-// Applies one element's current drag offset + resize scale to ctx, in the
-// same order transformPoint()/getDisplayBox() assume: move first (so
-// dragging always tracks the cursor 1:1, unaffected by scale), then scale
-// around the element's own pivot. elementPivots[key] must already be set
-// before calling this.
-function applyElementTransform(ctx, key) {
-  const off = elementOffsets[key];
-  const piv = elementPivots[key];
-  ctx.translate(off.x, off.y);
-  ctx.translate(piv.x, piv.y);
-  ctx.scale(off.scale, off.scale);
-  ctx.translate(-piv.x, -piv.y);
-}
-
-async function ensureFontsReady() {
+async function generateFlyer() {
   // The @import above only makes these fonts available for CSS — it doesn't
   // make the browser actually download them, because nothing in the visible
   // page HTML is styled with them (only the canvas draws with them). Without
@@ -2648,23 +2198,14 @@ async function ensureFontsReady() {
   if (document.fonts && document.fonts.ready) {
     try { await document.fonts.ready; } catch (e) {}
   }
-}
 
-// Draws the full flyer onto #flyerCanvas. In interactive (preview) mode,
-// every draggable element is drawn inside its own ctx.translate(offset), so
-// dragging just changes a number in elementOffsets and re-calls this
-// function — nothing about the underlying layout math changes, and a
-// dashed outline is drawn over each draggable element. Non-interactive mode
-// is exactly the same drawing minus the outlines, used for the final image.
-function renderFlyerToCanvas(interactive) {
-  isPreviewInteractive = interactive;
-  const headline1 = fieldVal('headline1', 'NEW RELEASES');
-  const headline2 = fieldVal('headline2', 'HAVE ARRIVED');
-  const tagline   = fieldVal('tagline', 'THE LATEST. THE HOTTEST. THE MOST INNOVATIVE.');
-  const fitLine1  = fieldVal('fitLine1', 'YOUR NEW BALL DESERVES');
-  const fitLine2  = fieldVal('fitLine2', 'A PROFESSIONAL FIT.');
-  const fitDesc   = fieldVal('fitDesc', 'Pre-order from Pure It Bowling and receive FREE standard drilling.');
-  const finePrint = fieldVal('finePrint', 'Grips, slugs & interchangeable thumb systems additional.');
+  const headline1 = val('headline1', 'NEW RELEASES');
+  const headline2 = val('headline2', 'HAVE ARRIVED');
+  const tagline   = val('tagline', 'THE LATEST. THE HOTTEST. THE MOST INNOVATIVE.');
+  const fitLine1  = val('fitLine1', 'YOUR NEW BALL DESERVES');
+  const fitLine2  = val('fitLine2', 'A PROFESSIONAL FIT.');
+  const fitDesc   = val('fitDesc', 'Pre-order from Pure It Bowling and receive FREE standard drilling.');
+  const finePrint = val('finePrint', 'Grips, slugs & interchangeable thumb systems additional.');
   // Not forced to uppercase anymore — the footer line is now a fixed,
   // uneditable address string with its own intentional mixed case.
   const footerUrl = val('footerUrl', 'PUREITBOWLING.COM | 114D East Main Street Ephrata, PA 17522 | (717) 679-8225');
@@ -2715,7 +2256,7 @@ function renderFlyerToCanvas(interactive) {
   const CB_BODY_LINE_HEIGHT = CB_BODY_SIZE * 1.10;
 
   ctx.font = "500 " + Math.round(CB_BODY_SIZE) + "px 'Montserrat', 'Oswald', sans-serif";
-  const descLines = fitDesc ? wrapText(ctx, fitDesc, CB_TEXT_COL_W) : [];
+  const descLines = wrapText(ctx, fitDesc, CB_TEXT_COL_W);
 
   // Solve the two headline lines' font sizes purely from the available
   // width — the reference flyer's headline reads big and bold, but it still
@@ -2734,19 +2275,12 @@ function renderFlyerToCanvas(interactive) {
   const CAP_RATIO = 0.72; // approx cap-height as a fraction of em size for this typeface
   const LINE_GAP = QUARTER_INCH * 0.3;
 
-  // Headline and tagline rows are trimmed 10% smaller than their natural fit
-  // so the freed vertical space flows into the image grid below (GRID_H is
-  // whatever's left after these fixed-height bands, so shrinking them here
-  // grows the grid automatically). A removed headline line (or the tagline)
-  // contributes zero height instead of the empty-string/probe-size fallback,
-  // so its band collapses too and that space also flows into the grid.
-  const TOP_ROWS_SCALE = 0.9;
-  const hSize1 = headline1 ? fitFontSizeToWidth(ctx, headline1, headlineFontFamily, headlineMaxW) * TOP_ROWS_SCALE : 0;
-  const hSize2 = headline2 ? fitFontSizeToWidth(ctx, headline2, headlineFontFamily, headlineMaxW) * TOP_ROWS_SCALE : 0;
+  const hSize1 = fitFontSizeToWidth(ctx, headline1, headlineFontFamily, headlineMaxW);
+  const hSize2 = fitFontSizeToWidth(ctx, headline2, headlineFontFamily, headlineMaxW);
 
   const HEADER_H = 200;
-  const HEADLINE_H = 2 * QUARTER_INCH + hSize1 * CAP_RATIO + (headline1 && headline2 ? LINE_GAP : 0) + hSize2 * CAP_RATIO;
-  const TAGLINE_H = tagline ? 66 * TOP_ROWS_SCALE : 20;
+  const HEADLINE_H = 2 * QUARTER_INCH + hSize1 * CAP_RATIO + LINE_GAP + hSize2 * CAP_RATIO;
+  const TAGLINE_H = 66;
   const GRID_TOP_GAP = 38;
   const FITBOX_GAP = 38;
   const FITBOX_H = CB_HEIGHT; // fixed per spec — content is constrained to fit inside, not the other way around
@@ -2754,8 +2288,8 @@ function renderFlyerToCanvas(interactive) {
   // and below (to the footer) to keep it from touching either — no extra
   // decorative whitespace.
   const FINEPRINT_SIZE = 20;
-  const FINEPRINT_GAP = finePrint ? 8 : 0;
-  const FINEPRINT_H = finePrint ? Math.round(FINEPRINT_SIZE * 1.2) : 0;
+  const FINEPRINT_GAP = 8;
+  const FINEPRINT_H = Math.round(FINEPRINT_SIZE * 1.2);
   const FOOTER_GAP = 10;
   const FOOTER_H = 86;
 
@@ -2776,8 +2310,6 @@ function renderFlyerToCanvas(interactive) {
   canvas.height = Math.round(DESIGN_H) * SCALE;
   ctx = canvas.getContext('2d');
   ctx.setTransform(SCALE, 0, 0, SCALE, 0, 0);
-  lastDesignW = DESIGN_W;
-  lastDesignH = DESIGN_H;
 
   // Background: the plain fallback fill (light or dark depending on the mode
   // toggle) always goes down first, then the uploaded image is cropped to
@@ -2797,16 +2329,9 @@ function renderFlyerToCanvas(interactive) {
   if (pIconLayerImg.complete && pIconLayerImg.naturalWidth > 0) {
     const logoH = 170, logoW = logoH * (pIconLayerImg.naturalWidth / pIconLayerImg.naturalHeight);
     const lx = DESIGN_W / 2 - logoW / 2, ly = y;
-    elementPivots.logo = { x: DESIGN_W / 2, y: ly + logoH / 2 };
-    ctx.save();
-    applyElementTransform(ctx, 'logo');
     drawRecoloredLayer(ctx, pIconLayerImg, colorState.pColor, lx, ly, logoW, logoH);
     drawRecoloredLayer(ctx, pureItLayerImg, colorState.pureItColor, lx, ly, logoW, logoH);
     drawRecoloredLayer(ctx, bowlingLayerImg, colorState.bowlingColor, lx, ly, logoW, logoH);
-    ctx.restore();
-    elementBounds.logo = { x: lx, y: ly, w: logoW, h: logoH };
-  } else {
-    elementBounds.logo = null;
   }
 
   // Font sizes (hSize1/hSize2) and layout constants (QUARTER_INCH,
@@ -2816,65 +2341,30 @@ function renderFlyerToCanvas(interactive) {
   const line1Baseline = HEADER_H + QUARTER_INCH + hSize1 * CAP_RATIO;
   const line2Baseline = line1Baseline + LINE_GAP + hSize2 * CAP_RATIO;
 
-  if (headline1) {
-    const h1FontStr = "400 " + Math.round(hSize1) + "px 'Bebas Neue', 'Anton', 'Arial Narrow', sans-serif";
-    elementPivots.headline1 = { x: DESIGN_W/2, y: line1Baseline - hSize1 * CAP_RATIO / 2 };
-    ctx.save();
-    applyElementTransform(ctx, 'headline1');
-    drawSlantedHeadlineLine(ctx, headline1, DESIGN_W/2, line1Baseline, headlineMaxW, h1FontStr, colorState.headline1Color);
-    ctx.restore();
-    const h1W = Math.min(measureTextW(ctx, headline1, h1FontStr), headlineMaxW);
-    elementBounds.headline1 = { x: DESIGN_W/2 - h1W/2 - 10, y: line1Baseline - hSize1 * CAP_RATIO * 1.2, w: h1W + 20, h: hSize1 * CAP_RATIO * 1.5 };
-  } else {
-    elementBounds.headline1 = null;
-  }
-
-  if (headline2) {
-    const h2FontStr = "400 " + Math.round(hSize2) + "px 'Bebas Neue', 'Anton', 'Arial Narrow', sans-serif";
-    elementPivots.headline2 = { x: DESIGN_W/2, y: line2Baseline - hSize2 * CAP_RATIO / 2 };
-    ctx.save();
-    applyElementTransform(ctx, 'headline2');
-    drawSlantedHeadlineLine(ctx, headline2, DESIGN_W/2, line2Baseline, headlineMaxW, h2FontStr, colorState.headline2Color);
-    ctx.restore();
-    const h2W = Math.min(measureTextW(ctx, headline2, h2FontStr), headlineMaxW);
-    elementBounds.headline2 = { x: DESIGN_W/2 - h2W/2 - 10, y: line2Baseline - hSize2 * CAP_RATIO * 1.2, w: h2W + 20, h: hSize2 * CAP_RATIO * 1.5 };
-  } else {
-    elementBounds.headline2 = null;
-  }
+  drawSlantedHeadlineLine(ctx, headline1, DESIGN_W/2, line1Baseline, headlineMaxW, "400 " + Math.round(hSize1) + "px 'Bebas Neue', 'Anton', 'Arial Narrow', sans-serif", colorState.headline1Color);
+  drawSlantedHeadlineLine(ctx, headline2, DESIGN_W/2, line2Baseline, headlineMaxW, "400 " + Math.round(hSize2) + "px 'Bebas Neue', 'Anton', 'Arial Narrow', sans-serif", colorState.headline2Color);
 
   y = HEADER_H + HEADLINE_H;
   const taglineY = y + TAGLINE_H / 2;
-  if (tagline) {
-    elementPivots.tagline = { x: DESIGN_W/2, y: taglineY };
-    ctx.save();
-    applyElementTransform(ctx, 'tagline');
-    ctx.fillStyle = colorState.taglineColor;
-    ctx.textAlign = 'center';
-    const taglineW = drawSmallCaps(ctx, tagline, DESIGN_W/2, taglineY + 7, "800 21px 'Montserrat', 'Oswald', sans-serif", 5, true);
-    ctx.strokeStyle = colorState.highlightColor; ctx.lineWidth = 3;
-    const lineGap = 22, lineLen = 80;
-    ctx.beginPath();
-    ctx.moveTo(DESIGN_W/2 - taglineW/2 - lineGap - lineLen, taglineY);
-    ctx.lineTo(DESIGN_W/2 - taglineW/2 - lineGap, taglineY);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(DESIGN_W/2 + taglineW/2 + lineGap, taglineY);
-    ctx.lineTo(DESIGN_W/2 + taglineW/2 + lineGap + lineLen, taglineY);
-    ctx.stroke();
-    ctx.restore();
-    elementBounds.tagline = { x: DESIGN_W/2 - taglineW/2 - lineGap - lineLen - 10, y: taglineY - 20, w: taglineW + 2 * (lineGap + lineLen) + 20, h: 40 };
-  } else {
-    elementBounds.tagline = null;
-  }
+  ctx.fillStyle = colorState.taglineColor;
+  ctx.textAlign = 'center';
+  const taglineW = drawSmallCaps(ctx, tagline, DESIGN_W/2, taglineY + 7, "800 21px 'Montserrat', 'Oswald', sans-serif", 5, true);
+  ctx.strokeStyle = colorState.highlightColor; ctx.lineWidth = 3;
+  const lineGap = 22, lineLen = 80;
+  ctx.beginPath();
+  ctx.moveTo(DESIGN_W/2 - taglineW/2 - lineGap - lineLen, taglineY);
+  ctx.lineTo(DESIGN_W/2 - taglineW/2 - lineGap, taglineY);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(DESIGN_W/2 + taglineW/2 + lineGap, taglineY);
+  ctx.lineTo(DESIGN_W/2 + taglineW/2 + lineGap + lineLen, taglineY);
+  ctx.stroke();
 
   y = HEADER_H + HEADLINE_H + TAGLINE_H + GRID_TOP_GAP;
   const gridX = PAD_X, gridY = y, gridW = DESIGN_W - 2 * PAD_X;
   const cellW = gridW / numCols;
   validateMergeGroups();
 
-  elementPivots.grid = { x: gridX + gridW / 2, y: gridY + GRID_H / 2 };
-  ctx.save();
-  applyElementTransform(ctx, 'grid');
   columnLayout.forEach(function(colArray, colIdx) {
     const cellX = gridX + colIdx * cellW;
     const cellH = GRID_H / colArray.length;
@@ -2892,7 +2382,7 @@ function renderFlyerToCanvas(interactive) {
 
       if (slotModes[slotIdx] === 'text') {
         if (slotTexts[slotIdx]) {
-          drawTextContain(ctx, slotTexts[slotIdx], cellX, cellY, drawW, drawH, slotTextColors[slotIdx] || '#161616', slotTextAligns[slotIdx] || 'center');
+          drawTextContain(ctx, slotTexts[slotIdx], cellX, cellY, drawW, drawH, slotTextColors[slotIdx] || '#161616');
         }
       } else {
         const img = slotImages[slotIdx];
@@ -2926,14 +2416,9 @@ function renderFlyerToCanvas(interactive) {
       }
     });
   });
-  ctx.restore();
-  elementBounds.grid = { x: gridX, y: gridY, w: gridW, h: GRID_H };
 
   y = gridY + GRID_H + FITBOX_GAP;
   const fbX = (DESIGN_W - CB_WIDTH) / 2, fbY = y, fbW = CB_WIDTH, fbH = CB_HEIGHT, radius = CB_RADIUS;
-  elementPivots.calloutBox = { x: fbX + fbW / 2, y: fbY + fbH / 2 };
-  ctx.save();
-  applyElementTransform(ctx, 'calloutBox');
   function fitboxPath() {
     ctx.beginPath();
     ctx.moveTo(fbX + radius, fbY);
@@ -2991,38 +2476,29 @@ function renderFlyerToCanvas(interactive) {
   // The whole text block (headline1 + gap + headline2 + gap + body) is
   // centered vertically as a group within the box, per the spec's
   // alignment rules — matching how the icon is centered too.
-  // A removed callout line drops out of the block-height sum entirely (not
-  // just skipped when drawing) so the remaining lines + body copy stay
-  // tightly centered instead of leaving a gap where it used to sit.
   const bodyBlockH = descLines.length * CB_BODY_LINE_HEIGHT;
-  const h1BlockH = fitLine1 ? CB_H1_SIZE + CB_H1_GAP : 0;
-  const h2BlockH = fitLine2 ? CB_H2_SIZE + CB_H2_GAP : 0;
-  const totalContentH = h1BlockH + h2BlockH + bodyBlockH;
+  const totalContentH = CB_H1_SIZE + CB_H1_GAP + CB_H2_SIZE + CB_H2_GAP + bodyBlockH;
   let ty = fbY + (fbH - totalContentH) / 2;
 
   ctx.textAlign = 'left';
-  if (fitLine1) {
-    ctx.fillStyle = colorState.fitLine1Color;
-    // letterSpacing is set before fitText's internal measureText calls, so its
-    // shrink-to-fit check already accounts for the extra tracking width. The
-    // spec size (42px) is the starting/max size, but guaranteeing the text
-    // never overflows the box takes priority over the spec's "no more than
-    // 5% shrink" preference — a bold, tracked 23-character line at 42px needs
-    // more headroom than 5% to actually fit a 636px column, so the floor here
-    // is much lower to make sure it always does.
-    if ('letterSpacing' in ctx) ctx.letterSpacing = CB_H1_TRACKING + 'px';
-    fitText(ctx, fitLine1, textX, ty + CB_H1_SIZE * CAP_RATIO, calloutLineMaxW, "800 " + Math.round(CB_H1_SIZE) + "px 'Montserrat', 'Archivo Black', sans-serif", 16);
-    if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
-    ty += CB_H1_SIZE + CB_H1_GAP;
-  }
+  ctx.fillStyle = colorState.fitLine1Color;
+  // letterSpacing is set before fitText's internal measureText calls, so its
+  // shrink-to-fit check already accounts for the extra tracking width. The
+  // spec size (42px) is the starting/max size, but guaranteeing the text
+  // never overflows the box takes priority over the spec's "no more than
+  // 5% shrink" preference — a bold, tracked 23-character line at 42px needs
+  // more headroom than 5% to actually fit a 636px column, so the floor here
+  // is much lower to make sure it always does.
+  if ('letterSpacing' in ctx) ctx.letterSpacing = CB_H1_TRACKING + 'px';
+  fitText(ctx, fitLine1, textX, ty + CB_H1_SIZE * CAP_RATIO, calloutLineMaxW, "800 " + Math.round(CB_H1_SIZE) + "px 'Montserrat', 'Archivo Black', sans-serif", 16);
+  if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+  ty += CB_H1_SIZE + CB_H1_GAP;
 
-  if (fitLine2) {
-    ctx.fillStyle = colorState.fitLine2Color;
-    if ('letterSpacing' in ctx) ctx.letterSpacing = CB_H2_TRACKING + 'px';
-    fitText(ctx, fitLine2, textX, ty + CB_H2_SIZE * CAP_RATIO, calloutLineMaxW, "800 " + Math.round(CB_H2_SIZE) + "px 'Montserrat', 'Archivo Black', sans-serif", 16);
-    if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
-    ty += CB_H2_SIZE + CB_H2_GAP;
-  }
+  ctx.fillStyle = colorState.fitLine2Color;
+  if ('letterSpacing' in ctx) ctx.letterSpacing = CB_H2_TRACKING + 'px';
+  fitText(ctx, fitLine2, textX, ty + CB_H2_SIZE * CAP_RATIO, calloutLineMaxW, "800 " + Math.round(CB_H2_SIZE) + "px 'Montserrat', 'Archivo Black', sans-serif", 16);
+  if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+  ty += CB_H2_SIZE + CB_H2_GAP;
 
   // Body copy: regular description color/weight, except the word "FREE"
   // which renders bold in the highlight/accent color.
@@ -3034,31 +2510,12 @@ function renderFlyerToCanvas(interactive) {
     // general highlight color, so the two stay in sync if that's changed.
     drawLineWithFreeHighlight(ctx, descLines[i], textX, lineY, bodyFont, colorState.fitDescColor, bodyBoldFont, colorState.fitLine2Color);
   }
-  ctx.restore();
-  elementBounds.calloutBox = { x: fbX, y: fbY, w: fbW, h: fbH };
 
-  // Fine print and footer both key off the callout box's un-offset (fbY/fbH)
-  // position, not wherever the box was dragged to — each element's default
-  // placement stays anchored to the base layout so dragging one element
-  // doesn't reflow anything else.
   y = fbY + fbH + FINEPRINT_GAP;
-  if (finePrint) {
-    const finePrintFontStr = "500 " + FINEPRINT_SIZE + "px 'Montserrat', 'Oswald', sans-serif";
-    elementPivots.finePrint = { x: DESIGN_W/2, y: y + FINEPRINT_H / 2 };
-    ctx.save();
-    applyElementTransform(ctx, 'finePrint');
-    ctx.textAlign = 'center';
-    ctx.fillStyle = colorState.finePrintColor;
-    fitText(ctx, finePrint, DESIGN_W / 2, y + Math.round(FINEPRINT_SIZE * 1.07), DESIGN_W - 100, finePrintFontStr, 15);
-    ctx.restore();
-    const fpW = Math.min(measureTextW(ctx, finePrint, finePrintFontStr), DESIGN_W - 100);
-    elementBounds.finePrint = { x: DESIGN_W/2 - fpW/2 - 10, y: y - 6, w: fpW + 20, h: FINEPRINT_H + 14 };
-  } else {
-    elementBounds.finePrint = null;
-  }
+  ctx.textAlign = 'center';
+  ctx.fillStyle = colorState.finePrintColor;
+  fitText(ctx, finePrint, DESIGN_W / 2, y + Math.round(FINEPRINT_SIZE * 1.07), DESIGN_W - 100, "500 " + FINEPRINT_SIZE + "px 'Montserrat', 'Oswald', sans-serif", 15);
 
-  // The footer bar is always static — not draggable or resizable — since it
-  // always sits flush along the bottom edge of the page.
   y = y + FINEPRINT_H + FOOTER_GAP;
   const footerCy = y + FOOTER_H / 2;
   // Footer bar background: solid highlight color, or a radial "glow"
@@ -3107,179 +2564,9 @@ function renderFlyerToCanvas(interactive) {
   ctx.fillText(footerUrl, DESIGN_W / 2, y + FOOTER_H / 2 + 9 * footerScale);
   if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
 
-  if (interactive) drawDragHandles(ctx);
-
   document.getElementById('cardWrap').style.display = 'block';
-  return canvas;
-}
-
-// Size (in design-space px) of the little square resize handle drawn at
-// each element's bottom-right corner, and how much slack the hit-test
-// gives around it so it's easy to grab with a mouse or a finger.
-const RESIZE_HANDLE_SIZE = 11;
-const RESIZE_HANDLE_HIT_R = 15;
-
-// Draws a dashed outline + resize handle over every currently-draggable
-// element so the user can see what's grabbable/resizable in the preview.
-// The element actively being interacted with is highlighted more strongly,
-// and its handle turns solid while a resize is in progress.
-function drawDragHandles(ctx) {
-  ctx.save();
-  DRAG_ELEMENT_KEYS.forEach(function(key) {
-    const box = getDisplayBox(key);
-    if (!box) return;
-    const isActive = activeDrag && activeDrag.key === key;
-
-    ctx.setLineDash([6, 5]);
-    ctx.lineWidth = isActive ? 2.5 : 1.5;
-    ctx.strokeStyle = isActive ? 'rgba(239,65,35,0.95)' : 'rgba(0,123,255,0.55)';
-    ctx.strokeRect(box.x, box.y, box.w, box.h);
-
-    ctx.setLineDash([]);
-    const isResizing = isActive && activeDrag.mode === 'resize';
-    ctx.fillStyle = isResizing ? 'rgba(239,65,35,0.95)' : 'rgba(0,123,255,0.9)';
-    ctx.fillRect(box.x + box.w - RESIZE_HANDLE_SIZE / 2, box.y + box.h - RESIZE_HANDLE_SIZE / 2, RESIZE_HANDLE_SIZE, RESIZE_HANDLE_SIZE);
-  });
-  ctx.restore();
-}
-
-function canvasPointToDesign(canvas, clientX, clientY) {
-  const rect = canvas.getBoundingClientRect();
-  return {
-    x: (clientX - rect.left) * (lastDesignW / rect.width),
-    y: (clientY - rect.top) * (lastDesignH / rect.height)
-  };
-}
-
-// Resize handles take priority over the move (body) hit area since a
-// handle sits right at an element's corner, inside its bounding box.
-function hitDragTarget(pt) {
-  for (let i = DRAG_ELEMENT_KEYS.length - 1; i >= 0; i--) {
-    const key = DRAG_ELEMENT_KEYS[i];
-    const box = getDisplayBox(key);
-    if (!box) continue;
-    const hx = box.x + box.w, hy = box.y + box.h;
-    if (Math.abs(pt.x - hx) <= RESIZE_HANDLE_HIT_R && Math.abs(pt.y - hy) <= RESIZE_HANDLE_HIT_R) {
-      return { key: key, mode: 'resize' };
-    }
-  }
-  for (let i = DRAG_ELEMENT_KEYS.length - 1; i >= 0; i--) {
-    const key = DRAG_ELEMENT_KEYS[i];
-    const box = getDisplayBox(key);
-    if (!box) continue;
-    if (pt.x >= box.x && pt.x <= box.x + box.w && pt.y >= box.y && pt.y <= box.y + box.h) {
-      return { key: key, mode: 'move' };
-    }
-  }
-  return null;
-}
-
-function initCanvasDragging() {
-  const canvas = document.getElementById('flyerCanvas');
-
-  function pointFromEvent(e) {
-    const t = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]) || e;
-    return canvasPointToDesign(canvas, t.clientX, t.clientY);
-  }
-
-  function down(e) {
-    if (!isPreviewInteractive) return;
-    const pt = pointFromEvent(e);
-    const hit = hitDragTarget(pt);
-    if (!hit) return;
-    if (hit.mode === 'resize') {
-      const piv = elementPivots[hit.key];
-      const startDist = Math.hypot(pt.x - piv.x, pt.y - piv.y) || 1;
-      activeDrag = { key: hit.key, mode: 'resize', pivot: piv, startDist: startDist, startScale: elementOffsets[hit.key].scale };
-    } else {
-      activeDrag = { key: hit.key, mode: 'move', lastX: pt.x, lastY: pt.y };
-    }
-    canvas.classList.add('dragging');
-    renderFlyerToCanvas(true);
-    e.preventDefault();
-  }
-
-  function move(e) {
-    if (!isPreviewInteractive) return;
-    if (!activeDrag) {
-      // Hover feedback: show a "grab" or resize cursor whenever the pointer
-      // is over a draggable element or its handle, even before the drag
-      // actually starts.
-      const pt = pointFromEvent(e);
-      const hit = hitDragTarget(pt);
-      canvas.style.cursor = hit ? (hit.mode === 'resize' ? 'nwse-resize' : 'grab') : 'default';
-      return;
-    }
-    const pt = pointFromEvent(e);
-    if (activeDrag.mode === 'resize') {
-      const dist = Math.hypot(pt.x - activeDrag.pivot.x, pt.y - activeDrag.pivot.y) || 1;
-      const newScale = activeDrag.startScale * (dist / activeDrag.startDist);
-      elementOffsets[activeDrag.key].scale = Math.max(0.3, Math.min(3, newScale));
-    } else {
-      elementOffsets[activeDrag.key].x += pt.x - activeDrag.lastX;
-      elementOffsets[activeDrag.key].y += pt.y - activeDrag.lastY;
-      activeDrag.lastX = pt.x;
-      activeDrag.lastY = pt.y;
-    }
-    renderFlyerToCanvas(true);
-    e.preventDefault();
-  }
-
-  function up() {
-    if (!activeDrag) return;
-    activeDrag = null;
-    canvas.classList.remove('dragging');
-    if (isPreviewInteractive) renderFlyerToCanvas(true);
-  }
-
-  canvas.addEventListener('mousedown', down);
-  window.addEventListener('mousemove', move);
-  window.addEventListener('mouseup', up);
-  canvas.addEventListener('touchstart', down, { passive: false });
-  window.addEventListener('touchmove', move, { passive: false });
-  window.addEventListener('touchend', up);
-}
-
-async function previewFlyer() {
-  // Backend-only usage signal, separate from a completed Generate Image —
-  // lets the dashboard tell how many visits actually reached a preview.
-  if (window.goatcounter && window.goatcounter.count) {
-    window.goatcounter.count({ path: 'preview-flyer', title: 'Preview Image clicked', event: true });
-  }
-  await ensureFontsReady();
-  activeDrag = null;
-  const canvas = document.getElementById('flyerCanvas');
-  canvas.classList.add('interactive');
-  renderFlyerToCanvas(true);
-  document.getElementById('dragHint').style.display = 'block';
-  document.getElementById('generateBtn').style.display = 'block';
-  document.getElementById('dlWrap').style.display = 'none';
-  document.getElementById('cardWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-// Puts every element's position/size back to its computed default without
-// touching any text, colors, or images — just the drag/resize state.
-function resetPositions() {
-  resetElementOffsets();
-  activeDrag = null;
-  if (isPreviewInteractive) renderFlyerToCanvas(true);
-}
-
-function generateFinalImage() {
-  if (window.goatcounter && window.goatcounter.count) {
-    window.goatcounter.count({ path: 'generate-flyer', title: 'Generate Image clicked', event: true });
-  }
-  activeDrag = null;
-  const canvas = document.getElementById('flyerCanvas');
-  canvas.classList.remove('interactive', 'dragging');
-  canvas.style.cursor = 'default';
-  renderFlyerToCanvas(false);
-  document.getElementById('dragHint').style.display = 'none';
   const dlBtn = document.getElementById('dlBtn');
-  const finishedPng = canvas.toDataURL('image/png');
-  dlBtn.href = finishedPng;
-  document.getElementById('dlWrap').style.display = 'block';
-  logToCloudinary(finishedPng, CLOUDINARY_GENERATED_FLYERS_PRESET);
+  dlBtn.href = canvas.toDataURL('image/png');
   document.getElementById('cardWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -3288,12 +2575,6 @@ window.addEventListener('DOMContentLoaded', function() {
   initColorControls();
   initBackgroundControls();
   initImageLibraryControls();
-  initRemovableTextFields();
-  initCanvasDragging();
-  document.getElementById('resetPositionsBtn').addEventListener('click', function(e) {
-    e.preventDefault();
-    resetPositions();
-  });
   document.getElementById('allBordersOn').addEventListener('click', function(e) {
     e.preventDefault();
     setAllBorders(true);
@@ -3302,7 +2583,6 @@ window.addEventListener('DOMContentLoaded', function() {
     e.preventDefault();
     setAllBorders(false);
   });
-  document.getElementById('applyGridBtn').addEventListener('click', applyGridLayout);
 });
 </script>
 </body>
