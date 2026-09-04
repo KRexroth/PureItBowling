@@ -304,7 +304,6 @@
       <h3>Backgrounds Library</h3>
       <button type="button" class="modal-close" id="bgLibraryModalClose">&times;</button>
     </div>
-    <div class="img-library-breadcrumb" id="bgLibraryBreadcrumb"></div>
     <div class="bg-library-grid" id="bgLibraryGrid"></div>
     <div class="ctrl-hint bg-library-status" id="bgLibraryStatus">Loading backgrounds&hellip;</div>
   </div>
@@ -503,19 +502,16 @@ let backgroundImageOpacity = 100; // 0-100; how strongly the uploaded image show
 let selectedLibraryBg = null; // filename of the currently-selected library background, if any
 
 // The flyer generator is hosted alongside a folder of pre-made background
-// images on GitHub Pages. Like the product Images library below, the full
-// repo tree is fetched once via the git "trees" API (?recursive=1) and
-// parsed into a nested {folders:{}, files:[]} structure, so backgrounds can
-// be organized into subfolders too — a flat single-directory listing (the
-// old approach) breaks the moment any subfolder is introduced, since a
-// subfolder isn't a file and the Contents API doesn't look inside it.
+// images on GitHub Pages. The folder's contents are fetched live via the
+// GitHub API so any image added to the repo later shows up automatically —
+// this hardcoded list is only a fallback for when that fetch fails (offline,
+// rate-limited, etc.).
 const BG_LIBRARY_BASE = 'https://krexroth.github.io/PureItBowling/NewReleaseFlyerBuilder/BackgroundImages/';
-const BG_LIBRARY_REPO_API = 'https://api.github.com/repos/krexroth/PureItBowling';
-const BG_LIBRARY_ROOT_PATH = 'NewReleaseFlyerBuilder/BackgroundImages/';
-
-let bgLibraryTree = null;        // nested {folders:{name:node}, files:[filename,...]}, rooted at BackgroundImages/
-let bgLibraryLoadPromise = null; // in-flight/cached fetch, so we only ever hit the API once per session
-let bgLibraryPath = [];          // breadcrumb: array of folder names from the BackgroundImages root
+const BG_LIBRARY_API = 'https://api.github.com/repos/krexroth/PureItBowling/contents/NewReleaseFlyerBuilder/BackgroundImages';
+const BG_LIBRARY_FALLBACK = [
+  'Pure It Flyer Background - Dark One Corner.png',
+  'Pure It Flyer Background - Light One Corner.png'
+];
 
 // Product image library: a whole folder tree (Images/, with subfolders and
 // sub-subfolders) hosted alongside the flyer generator on GitHub. Since the
@@ -2208,9 +2204,7 @@ function renderBackgroundPreview() {
     previewWrap.style.display = 'flex';
     previewLabel.textContent = isCustomUpload
       ? 'Your uploaded image'
-      // selectedLibraryBg may include a subfolder path now (e.g. "Dark/foo.png")
-      // — only the filename itself is shown here, same as in the library grid.
-      : 'Selected: ' + selectedLibraryBg.split('/').pop().replace(/\.[^.]+$/, '');
+      : 'Selected: ' + selectedLibraryBg.replace(/\.[^.]+$/, '');
   } else {
     previewWrap.style.display = 'none';
   }
@@ -2225,177 +2219,81 @@ function updateLibrarySelectionHighlight() {
   });
 }
 
-function loadLibraryBackground(relPath) {
+function loadLibraryBackground(filename) {
   const img = new Image();
   img.crossOrigin = 'anonymous'; // harmless same-origin on GitHub Pages; needed if this file is ever opened from elsewhere
   img.onload = function() {
     backgroundImage = img;
-    selectedLibraryBg = relPath;
+    selectedLibraryBg = filename;
     updateLibrarySelectionHighlight();
     renderBackgroundPreview();
     closeBgLibraryModal();
   };
   img.onerror = function() {
     const status = document.getElementById('bgLibraryStatus');
-    if (status) { status.textContent = 'Couldn\'t load "' + relPath + '".'; status.style.display = 'block'; }
+    if (status) { status.textContent = 'Couldn\'t load "' + filename + '".'; status.style.display = 'block'; }
   };
-  img.src = BG_LIBRARY_BASE + relPath.split('/').map(encodeURIComponent).join('/');
+  img.src = BG_LIBRARY_BASE + encodeURIComponent(filename);
 }
 
 function openBgLibraryModal() {
-  bgLibraryPath = [];
   document.getElementById('bgLibraryModalOverlay').classList.add('open');
-  renderBgLibraryView();
-  if (!bgLibraryTree) {
-    fetchBgLibraryTree().then(function() {
-      renderBgLibraryView();
-    }).catch(function() {
-      const status = document.getElementById('bgLibraryStatus');
-      status.textContent = 'Could not load the backgrounds library. Check your connection or the repo path.';
-      status.style.display = 'block';
-    });
-  }
 }
 
 function closeBgLibraryModal() {
   document.getElementById('bgLibraryModalOverlay').classList.remove('open');
 }
 
-const BG_IMAGE_EXT_RE = /\.(png|jpe?g|gif|webp)$/i;
-
-// Fetches the whole repo's file tree once (caching the in-flight/resolved
-// promise so repeat opens of the popup don't refetch), then builds a nested
-// folder structure scoped to just the BackgroundImages/ subtree — the same
-// approach the product Images library uses, so background images can be
-// organized into subfolders too instead of needing to stay flat.
-function fetchBgLibraryTree() {
-  if (bgLibraryLoadPromise) return bgLibraryLoadPromise;
-  bgLibraryLoadPromise = fetch(BG_LIBRARY_REPO_API)
-    .then(function(res) { if (!res.ok) throw new Error('repo info request failed'); return res.json(); })
-    .then(function(repoInfo) {
-      const branch = repoInfo.default_branch || 'main';
-      return fetch(BG_LIBRARY_REPO_API + '/git/trees/' + encodeURIComponent(branch) + '?recursive=1');
-    })
-    .then(function(res) { if (!res.ok) throw new Error('tree request failed'); return res.json(); })
-    .then(function(data) {
-      const root = { folders: {}, files: [] };
-      (data.tree || []).forEach(function(entry) {
-        if (entry.type !== 'blob') return;
-        if (entry.path.indexOf(BG_LIBRARY_ROOT_PATH) !== 0) return;
-        const rel = entry.path.slice(BG_LIBRARY_ROOT_PATH.length);
-        if (!rel || !BG_IMAGE_EXT_RE.test(rel)) return;
-        const parts = rel.split('/');
-        const filename = parts.pop();
-        let node = root;
-        parts.forEach(function(folder) {
-          if (!node.folders[folder]) node.folders[folder] = { folders: {}, files: [] };
-          node = node.folders[folder];
-        });
-        node.files.push(filename);
-      });
-      bgLibraryTree = root;
-      return root;
-    });
-  return bgLibraryLoadPromise;
-}
-
-function getBgLibraryNode(path) {
-  let node = bgLibraryTree;
-  for (let i = 0; i < path.length && node; i++) node = node.folders[path[i]];
-  return node;
-}
-
-// Renders the breadcrumb trail + the folders/images grid for the current
-// bgLibraryPath. Folders are clickable to drill in; images are clickable to
-// set them as the flyer background.
-function renderBgLibraryView() {
-  const status = document.getElementById('bgLibraryStatus');
+function renderBackgroundLibraryGrid(filenames) {
   const grid = document.getElementById('bgLibraryGrid');
-  const crumbEl = document.getElementById('bgLibraryBreadcrumb');
+  const status = document.getElementById('bgLibraryStatus');
   grid.innerHTML = '';
-  crumbEl.innerHTML = '';
-
-  const rootCrumb = document.createElement('a');
-  rootCrumb.href = '#';
-  rootCrumb.textContent = 'Backgrounds';
-  rootCrumb.addEventListener('click', function(e) {
-    e.preventDefault();
-    bgLibraryPath = [];
-    renderBgLibraryView();
-  });
-  crumbEl.appendChild(rootCrumb);
-  bgLibraryPath.forEach(function(folder, i) {
-    crumbEl.appendChild(document.createTextNode(' / '));
-    const a = document.createElement('a');
-    a.href = '#';
-    a.textContent = folder;
-    a.addEventListener('click', function(e) {
-      e.preventDefault();
-      bgLibraryPath = bgLibraryPath.slice(0, i + 1);
-      renderBgLibraryView();
-    });
-    crumbEl.appendChild(a);
-  });
-
-  if (!bgLibraryTree) {
-    status.textContent = 'Loading backgrounds…';
-    status.style.display = 'block';
-    return;
-  }
-
-  const node = getBgLibraryNode(bgLibraryPath);
-  if (!node) {
-    status.textContent = 'Folder not found.';
-    status.style.display = 'block';
-    return;
-  }
-
-  const folderNames = Object.keys(node.folders).sort();
-  const fileNames = node.files.slice().sort();
-
-  if (!folderNames.length && !fileNames.length) {
+  if (!filenames.length) {
     status.textContent = 'No background images found yet.';
     status.style.display = 'block';
     return;
   }
   status.style.display = 'none';
-
-  folderNames.forEach(function(name) {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'bg-library-thumb img-library-folder';
-    const label = document.createElement('div');
-    label.className = 'img-library-folder-label';
-    label.textContent = '📁 ' + name;
-    btn.appendChild(label);
-    btn.addEventListener('click', function() {
-      bgLibraryPath = bgLibraryPath.concat([name]);
-      renderBgLibraryView();
-    });
-    grid.appendChild(btn);
-  });
-
-  fileNames.forEach(function(filename) {
-    const relPath = bgLibraryPath.concat([filename]).join('/');
+  filenames.forEach(function(filename) {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'bg-library-thumb';
-    btn.dataset.filename = relPath;
+    btn.dataset.filename = filename;
     const img = document.createElement('img');
-    img.src = BG_LIBRARY_BASE + relPath.split('/').map(encodeURIComponent).join('/');
+    img.src = BG_LIBRARY_BASE + encodeURIComponent(filename);
     img.alt = filename;
     btn.appendChild(img);
     const label = document.createElement('div');
     label.className = 'bg-library-label';
     // Displayed name is just the filename with its extension stripped —
-    // whatever you name the file in the BackgroundImages folder (or any of
-    // its subfolders) is exactly what shows up here, no other transformation.
+    // whatever you name the file in the BackgroundImages folder is exactly
+    // what shows up here, no other transformation.
     label.textContent = filename.replace(/\.[^.]+$/, '');
     btn.appendChild(label);
-    btn.addEventListener('click', function() { loadLibraryBackground(relPath); });
+    btn.addEventListener('click', function() { loadLibraryBackground(filename); });
     grid.appendChild(btn);
   });
   updateLibrarySelectionHighlight();
+}
+
+const BG_IMAGE_EXT_RE = /\.(png|jpe?g|gif|webp)$/i;
+
+function renderBackgroundLibrary() {
+  // Show the known fallback list immediately so the UI isn't empty while
+  // the live folder listing loads, then swap in the live result if it
+  // succeeds — that way newly-added images show up without any code change.
+  renderBackgroundLibraryGrid(BG_LIBRARY_FALLBACK);
+  fetch(BG_LIBRARY_API)
+    .then(function(res) { if (!res.ok) throw new Error('GitHub API request failed'); return res.json(); })
+    .then(function(items) {
+      const names = items
+        .filter(function(item) { return item.type === 'file' && BG_IMAGE_EXT_RE.test(item.name); })
+        .map(function(item) { return item.name; });
+      if (names.length) renderBackgroundLibraryGrid(names);
+    })
+    .catch(function() {
+      // Fallback list is already showing — nothing further to do.
+    });
 }
 
 function initBackgroundControls() {
@@ -2425,11 +2323,7 @@ function initBackgroundControls() {
   document.getElementById('bgUploadBtn').addEventListener('click', function() {
     document.getElementById('backgroundInput').click();
   });
-  // Pre-fetch the backgrounds tree in the background so the modal's grid is
-  // already populated the first time someone opens it, rather than showing
-  // a "Loading…" flash. openBgLibraryModal() still handles fetching (and
-  // retrying on error) itself if this hasn't resolved yet.
-  fetchBgLibraryTree().catch(function() {});
+  renderBackgroundLibrary();
   document.getElementById('backgroundOpacity').addEventListener('input', function(e) {
     backgroundImageOpacity = parseInt(e.target.value, 10);
     document.getElementById('backgroundOpacityVal').textContent = backgroundImageOpacity + '%';
