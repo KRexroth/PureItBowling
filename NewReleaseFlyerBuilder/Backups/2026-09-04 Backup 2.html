@@ -10,7 +10,7 @@
      anywhere in this page. -->
 <script data-goatcounter="https://pureitbowlingnewflyer.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@500;600;700;800;900&family=Anton&family=Archivo+Black&family=Oswald:wght@500;600;700&family=Barlow+Condensed:wght@700;900&family=Barlow:wght@500;700&family=Poppins:wght@600;700;800&family=Playfair+Display:wght@700;900&family=Roboto+Slab:wght@700&family=Bungee&family=Permanent+Marker&family=Fredoka:wght@600;700&family=Alfa+Slab+One&family=Baloo+2:wght@600;700&family=Bitter:wght@700&family=Caveat:wght@600;700&family=Comfortaa:wght@600;700&family=Dancing+Script:wght@600;700&family=Fjalla+One&family=Inter:wght@600;700;800&family=Lato:wght@700;900&family=Libre+Baskerville:wght@700&family=Lora:wght@600;700&family=Luckiest+Guy&family=Merriweather:wght@700;900&family=Nunito:wght@700;800&family=Open+Sans:wght@600;700;800&family=Pacifico&family=PT+Sans:wght@700&family=Raleway:wght@700;800&family=Righteous&family=Rubik:wght@600;700;800&family=Space+Mono:wght@700&family=Titan+One&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@500;600;700;800;900&family=Anton&family=Archivo+Black&family=Oswald:wght@500;600;700&family=Barlow+Condensed:wght@700;900&family=Barlow:wght@500;700&display=swap');
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:'Barlow',sans-serif;background:#f0f0f0;padding:12px;max-width:680px;margin:0 auto;}
 
@@ -75,9 +75,6 @@
   .bg-upload-btn:hover{border-color:#EF4123;color:#EF4123;}
   .bg-btn-row{display:flex;gap:8px;}
   .bg-btn-row .bg-upload-btn{flex:1;}
-  .ai-optimize-btn{width:100%;border:none;border-radius:8px;padding:11px;background:linear-gradient(135deg, #FC5D01, #EF4123);color:#fff;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;font-family:'Barlow',sans-serif;box-shadow:0 2px 6px rgba(239,65,35,0.25);}
-  .ai-optimize-btn:hover{filter:brightness(1.06);}
-  .ai-optimize-btn:active{filter:brightness(0.96);}
   .bg-library-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(84px,1fr));gap:8px;margin-bottom:6px;}
   .bg-library-thumb{position:relative;border:2px solid #e6e6e6;border-radius:8px;overflow:hidden;cursor:pointer;aspect-ratio:8.5/11;background:#f5f5f5;padding:0;}
   .bg-library-thumb.selected{border-color:#EF4123;}
@@ -106,39 +103,28 @@
   .slot-library-link a:hover{text-decoration:underline;}
 
   .layout-hint{font-size:11px;color:#999;margin-bottom:10px;line-height:1.5;}
-  .layout-board{display:flex;align-items:stretch;gap:0;min-height:120px;overflow-x:auto;padding:2px 4px 10px;}
-  .col-gap{width:18px;flex-shrink:0;border-radius:6px;transition:background .12s;}
+  .layout-board{display:flex;align-items:stretch;gap:0;min-height:120px;overflow-x:auto;padding-bottom:4px;}
+  .col-gap{width:14px;flex-shrink:0;border-radius:6px;transition:background .12s;}
   .col-gap.drag-over{background:rgba(239,65,35,0.18);}
-  .layout-col{flex:1 0 120px;min-width:120px;display:flex;flex-direction:column;gap:16px;background:#fafafa;border:1.5px dashed #e2e2e2;border-radius:8px;padding:8px;transition:border-color .12s, background .12s;}
+  .layout-col{flex:1 0 120px;min-width:120px;display:flex;flex-direction:column;gap:8px;background:#fafafa;border:1.5px dashed #e2e2e2;border-radius:8px;padding:8px;transition:border-color .12s, background .12s;}
   .layout-col.drag-over{border-color:#EF4123;background:#fff3ef;}
   .layout-slot{background:#fff;border:1px solid #e6e6e6;border-radius:7px;padding:7px;cursor:grab;position:relative;}
   .layout-slot.dragging{opacity:0.35;}
   .layout-slot .drag-handle{position:absolute;top:6px;right:8px;font-size:12px;color:#ccc;line-height:1;user-select:none;}
+  .layout-slot .slot-label{margin-bottom:5px;padding-right:16px;}
+
+  .merge-btn{position:absolute;top:50%;transform:translateY(-50%);width:19px;height:19px;border-radius:50%;border:1px solid #ddd;background:#fff;color:#bbb;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;z-index:2;box-shadow:0 1px 3px rgba(0,0,0,0.12);}
+  .merge-btn:hover{border-color:#EF4123;color:#EF4123;}
+  .merge-btn.active{background:#EF4123;border-color:#EF4123;color:#fff;}
+  .merge-btn-left{left:-9px;}
+  .merge-btn-right{right:-9px;}
+  .merge-btn-up{top:-9px;left:50%;transform:translateX(-50%);}
+  .merge-btn-down{top:auto;bottom:-9px;left:50%;transform:translateX(-50%);}
   .layout-slot.merge-hidden{opacity:0.55;}
   .merge-hidden-badge{font-size:9.5px;color:#c8451f;font-weight:700;margin-top:6px;line-height:1.3;}
   .merge-anchor-note{display:flex;align-items:center;justify-content:space-between;gap:6px;background:#fff3ef;border:1px dashed #f0a98c;border-radius:6px;padding:5px 7px;font-size:9.5px;color:#c8451f;font-weight:700;margin-top:6px;}
   .merge-ghost-undo{border:none;background:none;color:#c8451f;font-size:15px;line-height:1;cursor:pointer;padding:0 2px;}
   .merge-ghost-undo:hover{color:#EF4123;}
-
-  /* Seams: the strip sitting in the gap between two adjacent (unmerged)
-     features. The bar itself toggles that border on/off and shows its
-     color; the small circle floating on top merges/splits the two
-     features; the tiny round color input (only meaningful once the border
-     is on, but always reachable) sets that segment's own color. Replaces
-     the old separate "border board" diagram entirely — everything now
-     lives right on the seam it controls. */
-  .seam-v{position:absolute;top:4px;bottom:4px;right:-15px;width:18px;display:flex;flex-direction:column;align-items:center;z-index:3;}
-  .seam-h{position:absolute;left:4px;right:4px;bottom:-15px;height:18px;display:flex;flex-direction:row;align-items:center;z-index:3;}
-  .seam-bar{cursor:pointer;border-radius:3px;background:#ddd;transition:background .12s;}
-  .seam-v .seam-bar{width:4px;flex:1;}
-  .seam-h .seam-bar{height:4px;flex:1;}
-  .seam-bar:hover{background:#f5a688;}
-  .seam-color-input{width:14px;height:14px;padding:0;border:1.5px solid #fff;border-radius:50%;cursor:pointer;background:none;box-shadow:0 1px 3px rgba(0,0,0,0.3);flex-shrink:0;}
-  .seam-v .seam-color-input{margin-top:4px;}
-  .seam-h .seam-color-input{margin-left:4px;}
-  .seam-merge-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:19px;height:19px;border-radius:50%;border:1px solid #ddd;background:#fff;color:#bbb;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;z-index:4;box-shadow:0 1px 3px rgba(0,0,0,0.12);}
-  .seam-merge-btn:hover{border-color:#EF4123;color:#EF4123;}
-  .seam-merge-btn.active{background:#EF4123;border-color:#EF4123;color:#fff;}
 
   .add-element-menu{display:none;position:absolute;top:100%;left:0;right:0;margin-top:6px;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.14);z-index:20;overflow:hidden;}
   .add-element-menu.open{display:block;}
@@ -150,86 +136,22 @@
   .custom-el-delete{position:absolute;top:6px;right:7px;border:none;background:none;color:#bbb;font-size:15px;line-height:1;cursor:pointer;padding:2px;}
   .custom-el-delete:hover{color:#EF4123;}
 
-  /* Typeable percentage next to any opacity slider (or, for the per-slot
-     grid background below, on its own with no slider at all) */
-  .opacity-num-wrap{display:inline-flex;align-items:center;gap:2px;color:#999;font-weight:700;font-size:9px;text-transform:none;letter-spacing:0;}
-  .opacity-num-input{width:44px;border:1px solid #ddd;border-radius:4px;padding:2px 3px;font-size:11px;font-family:'Barlow',sans-serif;color:#333;text-align:right;}
-  .opacity-num-input:focus{outline:none;border-color:#EF4123;}
-
-  /* Compact font-family picker sitting alongside a text field's color swatch */
-  .font-select-holder{flex-shrink:0;width:190px;}
-  .font-select-holder select{width:100%;border:1px solid #ddd;border-radius:5px;padding:9px 6px;font-size:14px;font-family:'Barlow',sans-serif;background:#fff;color:#333;}
-  .font-select-holder select:focus{outline:none;border-color:#EF4123;}
-  /* Each <option>'s own font-family is set inline (see buildFontSelect()) so
-     it previews in its actual typeface; a slightly larger option size makes
-     that preview easier to read while scanning the alphabetized list. */
-  .font-select-holder select option{font-size:15px;padding:4px;}
-
-  /* "Edit" trigger — a small read-only color preview plus a button that
-     opens the shared Edit Style modal. Used wherever a field's styling
-     tools (color, font, alignment, background) used to sit inline. */
-  .edit-trigger-row{display:flex;align-items:center;gap:8px;margin:8px 0;}
-  .edit-trigger-swatch{width:30px;height:30px;border-radius:7px;border:1.5px solid #ccc;box-shadow:inset 0 0 0 2px #fff, 0 1px 3px rgba(0,0,0,0.12);flex-shrink:0;}
-  .edit-trigger-btn{border:1px solid #ddd;border-radius:6px;background:#fafafa;color:#EF4123;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:8px 16px;cursor:pointer;font-family:'Barlow',sans-serif;}
-  .edit-trigger-btn:hover{background:#fff0ec;border-color:#EF4123;}
-
-  /* Grid feature slot header — "Feature N" label plus the Edit button that
-     opens the modal for everything (content type, text, color, font,
-     alignment, background). Sitting up here rather than on the preview box
-     below keeps the button from ever covering the actual preview. */
-  .slot-header-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;padding-right:16px;}
-  .slot-header-edit-btn{flex-shrink:0;padding:5px 12px;font-size:10px;}
-
-  /* Grid feature slot preview — a clean, unobstructed look at what the slot
-     will actually render: a background layer at the slot's own color/
-     opacity, plus a content layer with the actual styled text or chosen
-     image (or a quiet hint if nothing's picked yet). */
-  .slot-preview-box{position:relative;width:100%;aspect-ratio:4/3;border-radius:8px;overflow:hidden;border:1px solid #ddd;margin:0 0 8px;background:#f7f7f7;}
-  .slot-preview-bg{position:absolute;inset:0;}
-  .slot-preview-content{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:10px;text-align:center;overflow:hidden;}
-  .slot-preview-content img{max-width:100%;max-height:100%;object-fit:contain;}
-  .slot-preview-text{font-weight:700;font-size:14px;line-height:1.25;overflow-wrap:anywhere;}
-  .slot-preview-hint{color:#aaa;font-size:11px;font-weight:600;text-align:center;padding:0 10px;}
-
-  /* Rows inside the Edit Style modal body */
-  .edit-modal-row{margin-bottom:14px;}
-  .edit-modal-row:last-child{margin-bottom:0;}
-  .edit-modal-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#999;margin:18px 0 10px;padding-top:14px;border-top:1px dashed #eee;}
-  /* The grid slot's content-type buttons (.slot-mode-row) are normally
-     stacked for a narrow sidebar card; inside the wider modal, lay them out
-     side by side instead. */
-  #editToolsModalBody .slot-mode-row{flex-direction:row;gap:8px;}
-
-  /* Live-styled text box shown inside the grid slot Edit modal when "Add
-     Text" is selected — lets the person see their actual color/font choices
-     applied to their actual text while they're picking them. */
-  .edit-modal-textarea{width:100%;border:1px solid #ddd;border-radius:6px;padding:10px;font-size:15px;resize:vertical;min-height:70px;}
-  .edit-modal-textarea:focus{outline:none;border-color:#EF4123;}
-  /* Same idea as .edit-modal-textarea but for the single-line fixed text
-     fields (headline, tagline, footer, etc.) — a real input instead of a
-     multi-line box, so it matches the sidebar field it mirrors. */
-  .edit-modal-preview-input{width:100%;border:1px solid #ddd;border-radius:6px;padding:10px;font-size:16px;}
-  .edit-modal-preview-input:focus{outline:none;border-color:#EF4123;}
-  .edit-modal-preview-input[readonly]{background:#fafafa;cursor:default;}
-
-  .edit-modal-done-btn{width:100%;border:none;border-radius:6px;background:#EF4123;color:#fff;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:11px 12px;cursor:pointer;font-family:'Barlow',sans-serif;margin-top:18px;}
-  .edit-modal-done-btn:hover{background:#d63a1e;}
-
   .ctrl-hint a{color:#EF4123;font-weight:700;text-decoration:none;cursor:pointer;}
   .ctrl-hint a:hover{text-decoration:underline;}
 
-
-  /* Layout template gallery: a row of small clickable shape icons above
-     the layout board (see buildLayoutTemplateGallery()). Each icon is
-     just a tiny CSS grid of blocks — no images needed. */
-  .template-gallery{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
-  .template-btn{display:flex;flex-direction:column;align-items:center;gap:5px;border:1.5px solid #e2e2e2;border-radius:8px;background:#fafafa;padding:8px 9px 7px;cursor:pointer;width:64px;}
-  .template-btn:hover{border-color:#EF4123;background:#fff3ef;}
-  .template-btn-icon{display:grid;gap:2px;width:44px;height:36px;}
-  .template-btn-icon span{background:#c9c9c9;border-radius:2px;}
-  .template-btn:hover .template-btn-icon span{background:#EF4123;}
-  .template-btn-label{font-size:8.5px;font-weight:700;color:#888;text-align:center;line-height:1.2;text-transform:uppercase;letter-spacing:.02em;}
-  .template-btn:hover .template-btn-label{color:#EF4123;}
+  .border-board{display:inline-grid;}
+  .border-cell{width:34px;height:34px;background:#f0f0f0;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#999;font-weight:700;}
+  .border-cell-merged{width:auto;height:auto;background:#fff3ef;border:1px dashed #f0a98c;color:#c8451f;font-size:9.5px;}
+  .border-h-toggle{width:34px;height:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .border-h-toggle-wide{width:auto;}
+  .border-h-toggle .bar{width:100%;height:3px;border-radius:2px;background:#ddd;transition:background .12s;}
+  .border-h-toggle:hover .bar{background:#f5a688;}
+  .border-h-toggle.on .bar{background:#EF4123;}
+  .border-v-toggle{width:10px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .border-v-toggle-tall{height:auto;}
+  .border-v-toggle .bar{width:3px;height:100%;border-radius:2px;background:#ddd;transition:background .12s;}
+  .border-v-toggle:hover .bar{background:#f5a688;}
+  .border-v-toggle.on .bar{background:#EF4123;}
 
   .btn{background:#EF4123;color:#fff;border:none;border-radius:8px;padding:14px;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;width:100%;margin-bottom:14px;}
   .btn:hover{background:#D5361B;}
@@ -257,7 +179,6 @@
   .field-restore-chip .hint{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#bbb;}
   .field-restore-chip:hover .hint{color:#EF4123;}
   .swatch-holder{flex-shrink:0;}
-  .text-row .edit-trigger-row{margin:0;}
 
   .swatch-row{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:4px;}
   .swatch-item{display:flex;align-items:center;gap:9px;}
@@ -322,60 +243,13 @@
   <span style="font-family:'Oswald'; font-weight:700;">Aa</span>
   <span style="font-family:'Barlow Condensed'; font-weight:700;">Aa</span>
   <span style="font-family:'Barlow Condensed'; font-weight:900;">Aa</span>
-  <span style="font-family:'Poppins'; font-weight:600;">Aa</span>
-  <span style="font-family:'Poppins'; font-weight:700;">Aa</span>
-  <span style="font-family:'Poppins'; font-weight:800;">Aa</span>
-  <span style="font-family:'Playfair Display'; font-weight:700;">Aa</span>
-  <span style="font-family:'Playfair Display'; font-weight:900;">Aa</span>
-  <span style="font-family:'Roboto Slab'; font-weight:700;">Aa</span>
-  <span style="font-family:'Bungee'; font-weight:400;">Aa</span>
-  <span style="font-family:'Permanent Marker'; font-weight:400;">Aa</span>
-  <span style="font-family:'Fredoka'; font-weight:600;">Aa</span>
-  <span style="font-family:'Fredoka'; font-weight:700;">Aa</span>
-  <span style="font-family:'Alfa Slab One'; font-weight:400;">Aa</span>
-  <span style="font-family:'Baloo 2'; font-weight:600;">Aa</span>
-  <span style="font-family:'Baloo 2'; font-weight:700;">Aa</span>
-  <span style="font-family:'Bitter'; font-weight:700;">Aa</span>
-  <span style="font-family:'Caveat'; font-weight:600;">Aa</span>
-  <span style="font-family:'Caveat'; font-weight:700;">Aa</span>
-  <span style="font-family:'Comfortaa'; font-weight:600;">Aa</span>
-  <span style="font-family:'Comfortaa'; font-weight:700;">Aa</span>
-  <span style="font-family:'Dancing Script'; font-weight:600;">Aa</span>
-  <span style="font-family:'Dancing Script'; font-weight:700;">Aa</span>
-  <span style="font-family:'Fjalla One'; font-weight:400;">Aa</span>
-  <span style="font-family:'Inter'; font-weight:600;">Aa</span>
-  <span style="font-family:'Inter'; font-weight:700;">Aa</span>
-  <span style="font-family:'Inter'; font-weight:800;">Aa</span>
-  <span style="font-family:'Lato'; font-weight:700;">Aa</span>
-  <span style="font-family:'Lato'; font-weight:900;">Aa</span>
-  <span style="font-family:'Libre Baskerville'; font-weight:700;">Aa</span>
-  <span style="font-family:'Lora'; font-weight:600;">Aa</span>
-  <span style="font-family:'Lora'; font-weight:700;">Aa</span>
-  <span style="font-family:'Luckiest Guy'; font-weight:400;">Aa</span>
-  <span style="font-family:'Merriweather'; font-weight:700;">Aa</span>
-  <span style="font-family:'Merriweather'; font-weight:900;">Aa</span>
-  <span style="font-family:'Nunito'; font-weight:700;">Aa</span>
-  <span style="font-family:'Nunito'; font-weight:800;">Aa</span>
-  <span style="font-family:'Open Sans'; font-weight:600;">Aa</span>
-  <span style="font-family:'Open Sans'; font-weight:700;">Aa</span>
-  <span style="font-family:'Open Sans'; font-weight:800;">Aa</span>
-  <span style="font-family:'Pacifico'; font-weight:400;">Aa</span>
-  <span style="font-family:'PT Sans'; font-weight:700;">Aa</span>
-  <span style="font-family:'Raleway'; font-weight:700;">Aa</span>
-  <span style="font-family:'Raleway'; font-weight:800;">Aa</span>
-  <span style="font-family:'Righteous'; font-weight:400;">Aa</span>
-  <span style="font-family:'Rubik'; font-weight:600;">Aa</span>
-  <span style="font-family:'Rubik'; font-weight:700;">Aa</span>
-  <span style="font-family:'Rubik'; font-weight:800;">Aa</span>
-  <span style="font-family:'Space Mono'; font-weight:700;">Aa</span>
-  <span style="font-family:'Titan One'; font-weight:400;">Aa</span>
 </div>
 
 <div class="page-title">Pure It Bowling — Flyer Generator</div>
 
 <div class="card collapsible" id="colorSection">
   <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')">
-    <span class="card-title">Logo Colors</span>
+    <span class="card-title">Logo &amp; Highlight Colors</span>
   </div>
   <div class="card-body">
     <div class="link-row">
@@ -383,6 +257,12 @@
       <label for="linkPBColors">Link "P" and "Bowling" colors (changing one changes both)</label>
     </div>
     <div class="swatch-row" id="logoSwatchRow"></div>
+
+    <div class="link-row" style="margin-top:16px;">
+      <input type="checkbox" id="linkHighlightPColors" checked/>
+      <label for="linkHighlightPColors">Link highlights color to "P" color (changing one changes both)</label>
+    </div>
+    <div class="swatch-row" id="highlightSwatchRow"></div>
   </div>
 </div>
 
@@ -411,11 +291,9 @@
 
     <div class="ctrl-hint" id="removeBackgroundWrap" style="margin-top:8px; display:none;"><a href="#" id="removeBackgroundLink">Remove background image</a></div>
 
-    <button type="button" class="ai-optimize-btn" id="aiOptimizeBtn" style="margin-top:14px;">Optimize With AI</button>
-    <div class="ctrl-hint" style="margin-top:6px;">Analyzes your background image and automatically picks text, accent, and background colors (plus callout box opacity) for strong contrast and a matching palette — including Feature text colors and grid border colors. Fonts and layout are left as you set them. Anything you've already customized by hand is left alone unless "Ignore previous changes" is checked below.</div>
-    <div class="link-row" style="margin-top:8px; padding-bottom:0; border-bottom:none;">
-      <input type="checkbox" id="aiIgnorePreviousChanges"/>
-      <label for="aiIgnorePreviousChanges">Ignore previous changes (let AI override colors and opacity you've already set)</label>
+    <div class="ig" style="margin-top:14px;">
+      <label>Background Image Opacity <span id="backgroundOpacityVal" style="color:#bbb;">100%</span></label>
+      <input type="range" id="backgroundOpacity" min="0" max="100" value="100"/>
     </div>
   </div>
 </div>
@@ -444,26 +322,36 @@
   </div>
 </div>
 
-<!-- Shared "Edit Style" modal — every text field's color/font (and, for grid
-     slots, alignment + background color/opacity) now live in here behind a
-     single Edit button, instead of a stack of inline controls. Content is
-     built fresh by openEditModal() each time it's opened, driven by whatever
-     get/set callbacks the caller passes in. -->
-<div class="modal-overlay" id="editToolsModalOverlay">
-  <div class="modal-box">
-    <div class="modal-header">
-      <h3 id="editToolsModalTitle">Edit</h3>
-      <button type="button" class="modal-close" id="editToolsModalClose">&times;</button>
+<div class="card collapsible" id="logoSection">
+  <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <span class="card-title">Features</span>
+  </div>
+  <div class="card-body">
+    <div class="ctrl-group" style="margin-bottom:8px;">
+      <label for="slotCount">Features</label>
+      <input type="number" id="slotCount" min="1" max="12" value="4" onchange="renderSlots()">
     </div>
-    <div id="editToolsModalBody"></div>
+    <div class="ctrl-hint" style="margin-bottom:14px;">Choose how many feature spaces the flyer should have. For each one, add text, upload an image, or choose one from the library. Drag features to rearrange the layout — stack two or more in a column to make it narrower, or leave a column with just one to make it wider and taller.</div>
+
+    <div class="ctrl-group" style="margin-bottom:6px; flex-wrap:wrap;">
+      <label for="gridCols">Columns</label>
+      <input type="number" id="gridCols" min="1" max="12" value="2">
+      <label for="gridRows">Rows</label>
+      <input type="number" id="gridRows" min="1" max="12" value="2">
+      <button type="button" class="ctrl-btn" id="applyGridBtn">Arrange</button>
+    </div>
+    <div class="ctrl-hint" style="margin-bottom:14px;">Prefer typing exact numbers instead of dragging? Set columns and rows here and click Arrange. This replaces the current layout and clears any merges (extra columns are added automatically if there isn't room for everything).</div>
+
+    <div class="layout-board" id="layoutBoard"></div>
+
+    <div class="ctrl-hint" style="margin-top:16px;margin-bottom:8px;">Click any line below to show or hide that specific border between two features. <a href="#" id="allBordersOn">Show all</a> &middot; <a href="#" id="allBordersOff">Hide all</a></div>
+    <div class="border-board" id="borderBoard"></div>
   </div>
 </div>
 
-<!-- Sits above Features since headlines/tagline are the first thing that
-     shows on the flyer, top to bottom. -->
-<div class="card collapsible" id="headlineTaglineSection">
+<div class="card collapsible" id="textSection">
   <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')">
-    <span class="card-title">Headlines &amp; Tagline</span>
+    <span class="card-title">Flyer Text</span>
   </div>
   <div class="card-body">
     <div class="text-row">
@@ -478,42 +366,6 @@
       <div class="ig"><label>Tagline</label><input type="text" id="tagline" value="THE LATEST. THE HOTTEST. THE MOST INNOVATIVE."/></div>
       <div class="swatch-holder" id="swatch_taglineColor"></div>
     </div>
-  </div>
-</div>
-
-<div class="card collapsible" id="logoSection">
-  <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')">
-    <span class="card-title">Features</span>
-  </div>
-  <div class="card-body">
-    <div class="ctrl-group" style="margin-bottom:8px;">
-      <label for="slotCount">Features</label>
-      <input type="number" id="slotCount" min="1" max="12" value="4" onchange="renderSlots()">
-    </div>
-    <div class="ctrl-hint" style="margin-bottom:14px;">Choose how many feature spaces the flyer should have. For each one, add text, upload an image, or choose one from the library. Drag features to rearrange the layout — stack two or more in a column to make it narrower, or leave a column with just one to make it wider and taller.</div>
-
-    <div class="ctrl-hint" style="margin-bottom:6px;">Or start from a common shape — this sets the feature count and layout for you (any existing merges are replaced):</div>
-    <div class="template-gallery" id="layoutTemplateGallery" style="margin-bottom:14px;"></div>
-
-    <div class="layout-board" id="layoutBoard"></div>
-    <div class="ctrl-hint" style="margin-top:10px;">Each seam between features: the bar toggles that border on/off and the small dot sets its color, and the ⟷/↕ circle merges (or splits) the two features. <a href="#" id="allBordersOn">Show all borders</a> &middot; <a href="#" id="allBordersOff">Hide all borders</a></div>
-
-    <div class="ctrl-group" style="margin-top:14px;">
-      <label for="gridBorderStyle">Border Style</label>
-      <select id="gridBorderStyle">
-        <option value="padded" selected>Padded (gap at corners)</option>
-        <option value="connected">Connected (lines touch)</option>
-      </select>
-    </div>
-  </div>
-</div>
-
-<div class="card collapsible" id="calloutSection">
-  <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')">
-    <span class="card-title">Callout Box</span>
-  </div>
-  <div class="card-body">
-    <div id="calloutBoxStyleTrigger" style="margin-bottom:14px;"></div>
     <div class="text-row">
       <div class="ig"><label>Callout Line 1</label><input type="text" id="fitLine1" value="YOUR NEW BALL DESERVES"/></div>
       <div class="swatch-holder" id="swatch_fitLine1Color"></div>
@@ -527,20 +379,30 @@
       <div class="swatch-holder" id="swatch_fitDescColor"></div>
     </div>
     <div class="text-row">
+      <div class="ig">
+        <label>Callout Box Background <span id="calloutBgOpacityVal" style="color:#bbb;">0%</span></label>
+        <input type="range" id="calloutBgOpacity" min="0" max="100" value="0"/>
+      </div>
+      <div class="swatch-holder" id="swatch_calloutBgColor"></div>
+    </div>
+    <div class="text-row">
       <div class="ig"><label>Fine Print</label><input type="text" id="finePrint" value="Grips, slugs & interchangeable thumb systems additional."/></div>
       <div class="swatch-holder" id="swatch_finePrintColor"></div>
     </div>
-  </div>
-</div>
-
-<div class="card collapsible" id="footerSection">
-  <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')">
-    <span class="card-title">Footer</span>
-  </div>
-  <div class="card-body">
     <div class="text-row">
       <div class="ig"><label>Footer Text</label><input type="text" id="footerUrl" value="PUREITBOWLING.COM | 114D East Main Street Ephrata, PA 17522 | (717) 679-8225" readonly/></div>
       <div class="swatch-holder" id="swatch_footerTextColor"></div>
+    </div>
+    <div class="text-row">
+      <div class="ig">
+        <label>Footer Background Style</label>
+        <select id="footerBgGradientMode">
+          <option value="solid">Solid (Default)</option>
+          <option value="center">Radiate From Center</option>
+          <option value="left">Radiate From Left</option>
+          <option value="right">Radiate From Right</option>
+        </select>
+      </div>
     </div>
   </div>
 </div>
@@ -566,9 +428,9 @@
 <button class="btn" onclick="previewFlyer()">Preview Image</button>
 
 <div id="cardWrap">
-  <div id="dragHint" class="ctrl-hint" style="display:none;text-align:center;margin-bottom:10px;">Drag any outlined element to move it, or drag its corner handle to resize it. The footer bar stays fixed. Your layout is remembered the next time you preview — <a href="#" id="resetPositionsBtn">reset positions</a> to start over. Click <strong>Save Image</strong> below when you're happy.</div>
+  <div id="dragHint" class="ctrl-hint" style="display:none;text-align:center;margin-bottom:10px;">Drag any outlined element to move it, or drag its corner handle to resize it. The footer bar stays fixed. Your layout is remembered the next time you preview — <a href="#" id="resetPositionsBtn">reset positions</a> to start over. Click <strong>Generate Image</strong> below when you're happy.</div>
   <canvas id="flyerCanvas"></canvas>
-  <button class="btn" id="generateBtn" onclick="generateFinalImage()" style="display:none;margin-top:14px;">Save Image</button>
+  <button class="btn" id="generateBtn" onclick="generateFinalImage()" style="display:none;margin-top:14px;">Generate Image</button>
   <div id="dlWrap" style="display:none;margin-top:10px;">
     <a id="dlBtn" class="share-btn download" download="pure-it-bowling-flyer.png" style="width:100%;display:flex;align-items:center;justify-content:center;height:42px;">Download</a>
   </div>
@@ -623,25 +485,10 @@ let slotImages = [];
 let slotModes = [];
 let slotTexts = [];
 let slotTextColors = [];
-// Parallel to slotTextColors: true once the user has manually picked a
-// color for that slot, so toggleDarkMode() knows to leave it alone instead
-// of auto-flipping it like a still-default slot.
-let slotTextColorsCustomized = [];
 let slotTextAligns = []; // 'top' | 'center' (default) | 'bottom' — vertical alignment of text-mode slots
-let slotTextFonts = []; // per-slot font-family CSS stack for text-mode slots (see AVAILABLE_FONTS)
-let slotBgColors = []; // per-slot background fill color, independent of content mode
-let slotBgOpacities = []; // per-slot background fill opacity, 0-100; defaults to 0 (no fill)
 let columnLayout = [];
 let draggedSlotIndex = null;
 let slotBorders = {};
-// Keyed 'slotIdx_right' / 'slotIdx_bottom'. Set true only when the user
-// actually picks a color on that seam's own color input (see addSeam()) —
-// lets optimizeWithAI() tell "still at the default border color" apart
-// from "the user picked this on purpose", same idea as colorCustomized.
-let borderColorsCustomized = {};
-// 'padded' (default) leaves a small gap around each border line so corners
-// don't touch; 'connected' removes that gap so lines run edge-to-edge.
-let gridBorderStyle = 'padded';
 
 // User-added elements from "+ Add Element" — headers, standard text, and
 // images that float freely on the flyer instead of living in the feature
@@ -652,7 +499,7 @@ let gridBorderStyle = 'padded';
 let customElements = []; // { id, type: 'header'|'text'|'image', text, color, mode, image, imgText, imgTextColor, imgTextAlign }
 let customElementSeq = 1;
 let backgroundImage = null; // currently-selected flyer background (library pick or user upload)
-let backgroundImageOpacity = 100; // 0-100; how strongly the uploaded image shows over the plain fallback fill. Fixed at 100 — no UI control for this anymore, background images always show at full strength.
+let backgroundImageOpacity = 100; // 0-100; how strongly the uploaded image shows over the plain fallback fill
 let selectedLibraryBg = null; // filename of the currently-selected library background, if any
 
 // The flyer generator is hosted alongside a folder of pre-made background
@@ -728,18 +575,8 @@ function logToCloudinary(dataUrl, presetName) {
 // under an existing side-by-side pair combines all four into one.
 let mergeGroups = []; // [{ slots: [slotIdx, ...] }]
 
-// Grid border segments used to fall back to the (now-removed) global
-// Highlights color. There's no shared global color to track anymore, so an
-// untouched segment's default is just this frozen constant — the same
-// orange the old Highlights color used to default to — and stays there
-// until the user picks something else for that specific segment.
-const DEFAULT_BORDER_COLOR = '#FC5D01';
-
-// Each edge is { on, color }. color is null until the user picks one for
-// that specific segment, in which case it falls back to DEFAULT_BORDER_COLOR
-// at draw time.
 function getSlotBorders(slotIdx) {
-  if (!slotBorders[slotIdx]) slotBorders[slotIdx] = { right: { on: true, color: null }, bottom: { on: true, color: null } };
+  if (!slotBorders[slotIdx]) slotBorders[slotIdx] = { right: true, bottom: true };
   return slotBorders[slotIdx];
 }
 
@@ -879,74 +716,54 @@ const colorDefaults = {
   headline1Color: '#161616',
   headline2Color: '#EF4123',
   taglineColor: '#161616',
-  taglineFlankColor: '#FC5D01',
   fitLine1Color: '#161616',
   fitLine2Color: '#EF4123',
   fitDescColor: '#161616',
   finePrintColor: '#333333',
   footerTextColor: '#FFFFFF',
-  footerBgColor: '#FC5D01',
-  calloutBorderColor: '#FC5D01',
-  calloutBgColor: '#FFFFFF',
-  calloutPColor: '#FC5D01'
+  highlightColor: '#FC5D01',
+  calloutBgColor: '#FFFFFF'
 };
 
 let colorState = Object.assign({}, colorDefaults);
-// Tracks which DARK_MODE_TEXT_KEYS entries the user has manually set (via
-// the color popover), as opposed to still sitting at their original
-// default. Only non-customized keys are eligible for toggleDarkMode()'s
-// automatic black<->white flip — see setColor()/toggleDarkMode() below.
-let colorCustomized = {};
 let isDarkMode = false;
-let calloutBgOpacity = 80; // 0-100; defaults to 80% so the fill reads clearly against most backgrounds
-// Set true the moment the user actually drags/types a value in the Edit Box
-// Style popup — lets optimizeWithAI() tell "still at the untouched default"
-// apart from "the user picked this on purpose" the same way colorCustomized
-// does for colorState fields (see setColor()).
-let calloutBgOpacityCustomized = false;
-// Whether the callout box "P" icon color follows the top logo "P" color.
-// The checkbox that controls this now lives inside the Edit Box Style
-// modal, which is rebuilt from scratch every time it opens, so this can't
-// live on a persistent DOM element the way linkPBColors does — it has to be
-// tracked here instead.
-let calloutPColorLinked = true;
-// How the footer bar's background is filled: a flat solid fill (Footer
-// Background Color), or a radial "glow" gradient anchored at the
-// center/left/right edge that fades outward from that point. The footer
-// text always stays solid.
+let calloutBgOpacity = 0; // 0-100; 0 = fully transparent (the default)
+// How the footer bar's background is filled: a flat solid highlight color,
+// or a radial "glow" gradient anchored at the center/left/right edge that
+// fades outward from that point. The footer text/icon always stay solid.
 let footerBgGradientMode = 'solid';
 
 // Fields that are meant to be plain black/white "default text" (as opposed to
 // the orange brand accents like headline2Color/fitLine2Color/pColor/
-// bowlingColor, which stay put in both modes). Footer text is deliberately
-// excluded — it sits on its own colored footer bar rather than directly on
-// the page background, so it shouldn't flip with the mode toggle. Callout
-// Line 1 / Description are also excluded — they always default to black
-// regardless of dark mode, since the callout box has its own background.
+// bowlingColor/highlightColor, which stay put in both modes). Footer text is
+// deliberately excluded — it sits on its own colored footer bar rather than
+// directly on the page background, so it shouldn't flip with the mode toggle.
 const DARK_MODE_TEXT_KEYS = [
-  'headline1Color', 'taglineColor',
+  'headline1Color', 'taglineColor', 'fitLine1Color', 'fitDescColor',
   'finePrintColor', 'pureItColor'
 ];
 
-// Headline Line 1/2, Tagline, Callout Line 1/2, Callout Description, Fine
-// Print, and Footer Text are intentionally NOT here — those 8 fields now
-// live behind their own "Edit Style" button (color + font together), built
-// by initTextFieldEditButtons() below, instead of the swatch-triggered
-// popover this array drives. Callout Box Background/Border and Footer
-// Background are also not here anymore — they moved into their own "Edit
-// Box/Footer Style" popups (see initCalloutBoxStyleButton() and the
-// footer-specific block inside initTextFieldEditButtons()). The logo/brand
-// colors, tagline flank lines, and the callout box "P" icon color below
-// still use this plain popover — they're single-purpose glyph colors
-// rather than flyer content text or a whole styled box/bar.
 const colorDefs = [
-  { key: 'pColor',              label: '"P" Icon Color',            shortLabel: '"P" Icon',       container: 'logoSwatchRow',      layout: 'labeled' },
-  { key: 'pureItColor',         label: '"Pure It" Text Color',      shortLabel: '"Pure It" Text', container: 'logoSwatchRow',      layout: 'labeled' },
-  { key: 'bowlingColor',        label: '"Bowling" Text Color',      shortLabel: '"Bowling" Text', container: 'logoSwatchRow',      layout: 'labeled' }
+  { key: 'headline1Color',  label: 'Headline Line 1 Color',     container: 'swatch_headline1Color',  layout: 'swatch' },
+  { key: 'headline2Color',  label: 'Headline Line 2 Color',     container: 'swatch_headline2Color',  layout: 'swatch' },
+  { key: 'taglineColor',    label: 'Tagline Color',             container: 'swatch_taglineColor',    layout: 'swatch' },
+  { key: 'fitLine1Color',   label: 'Callout Line 1 Color',      container: 'swatch_fitLine1Color',   layout: 'swatch' },
+  { key: 'fitLine2Color',   label: 'Callout Line 2 Color',      container: 'swatch_fitLine2Color',   layout: 'swatch' },
+  { key: 'fitDescColor',    label: 'Callout Description Color', container: 'swatch_fitDescColor',    layout: 'swatch' },
+  { key: 'finePrintColor',  label: 'Fine Print Color',          container: 'swatch_finePrintColor',  layout: 'swatch' },
+  { key: 'footerTextColor', label: 'Footer Text Color',         container: 'swatch_footerTextColor', layout: 'swatch' },
+  { key: 'pColor',          label: '"P" Icon Color',            shortLabel: '"P" Icon',       container: 'logoSwatchRow',      layout: 'labeled' },
+  { key: 'pureItColor',     label: '"Pure It" Text Color',      shortLabel: '"Pure It" Text', container: 'logoSwatchRow',      layout: 'labeled' },
+  { key: 'bowlingColor',    label: '"Bowling" Text Color',      shortLabel: '"Bowling" Text', container: 'logoSwatchRow',      layout: 'labeled' },
+  { key: 'highlightColor',  label: 'Highlights Color',          shortLabel: 'Highlights',     container: 'highlightSwatchRow', layout: 'labeled',
+    hint: 'Sets the footer background, callout box border, and logo grid divider lines.' },
+  { key: 'calloutBgColor',  label: 'Callout Box Background',    container: 'swatch_calloutBgColor',  layout: 'swatch',
+    hint: 'Transparent by default — use the opacity slider below to fade this fill in.' }
 ];
 
 const linkRules = [
-  { a: 'pColor', b: 'bowlingColor', checkboxId: 'linkPBColors' }
+  { a: 'pColor', b: 'bowlingColor', checkboxId: 'linkPBColors' },
+  { a: 'pColor', b: 'highlightColor', checkboxId: 'linkHighlightPColors' }
 ];
 
 function hexToRgb(hex) {
@@ -1013,386 +830,6 @@ function isValidHex(hex) {
   return /^#?[0-9A-Fa-f]{6}$/.test(hex);
 }
 
-// Keeps a 0-100 <input type="range"> and its companion typed-percentage
-// <input type="number"> in sync in both directions, and calls onChange with
-// the clamped integer value whenever either one moves. Used for every
-// opacity control in the app (background image, callout box, each grid
-// slot's background) so all of them can be set exactly by typing, not just
-// by dragging.
-function bindOpacityControl(rangeEl, numEl, onChange) {
-  function setVal(v) {
-    if (isNaN(v)) return;
-    v = Math.max(0, Math.min(100, Math.round(v)));
-    rangeEl.value = v;
-    numEl.value = v;
-    onChange(v);
-  }
-  rangeEl.addEventListener('input', function() { setVal(parseInt(rangeEl.value, 10)); });
-  numEl.addEventListener('input', function() { setVal(parseInt(numEl.value, 10)); });
-  numEl.addEventListener('blur', function() {
-    // Leaving the field empty or invalid snaps back to whatever's current,
-    // rather than silently leaving an inconsistent/blank value showing.
-    if (numEl.value === '' || isNaN(parseInt(numEl.value, 10))) numEl.value = rangeEl.value;
-  });
-  [numEl].forEach(function(el) {
-    el.addEventListener('mousedown', function(e) { e.stopPropagation(); });
-    el.addEventListener('click', function(e) { e.stopPropagation(); });
-  });
-}
-
-/* ---- Font system ---- */
-
-// Named font-stack constants for the handful of fonts used as *defaults*
-// elsewhere in the app (fontDefaults below). Defined by value rather than
-// by AVAILABLE_FONTS array position, specifically so that list can be
-// freely reordered/sorted/extended without silently repointing a default
-// at the wrong font.
-const FONT_BEBAS_NEUE = "'Bebas Neue', 'Anton', 'Arial Narrow', sans-serif";
-const FONT_MONTSERRAT = "'Montserrat', 'Oswald', sans-serif";
-const FONT_MONTSERRAT_BLACK = "'Montserrat', 'Archivo Black', sans-serif";
-
-// Every font family available to pick from, drawn from the Google Fonts
-// already @import-ed at the top of the stylesheet. Each entry's `value` is
-// a full CSS font-family stack (with sane fallbacks) ready to drop straight
-// into a canvas `ctx.font` string. buildFontSelect() sorts these
-// alphabetically by label when it builds a dropdown, so order here doesn't
-// matter — add new fonts wherever's convenient.
-//
-// This is a curated set, not the full Google Fonts catalog (1000+
-// families). A handful of reasons: the app preloads every listed font on
-// page load (see the hidden warm-up <span>s further down) so canvas
-// fillText can actually use them — doing that for the whole catalog would
-// mean downloading an enormous amount of font data on every visit, which
-// would make the page slow to load, especially on mobile. A long list is
-// also just harder to scan and pick from. This set is chosen for range —
-// bold display faces for headlines, clean sans/serif for body copy, a few
-// scripts and slab serifs for accents — which covers the vast majority of
-// what a flyer needs; more can always be added the same way.
-const AVAILABLE_FONTS = [
-  { value: FONT_BEBAS_NEUE,                                     label: 'Bebas Neue' },
-  { value: "'Anton', 'Arial Narrow', sans-serif",               label: 'Anton' },
-  { value: "'Archivo Black', sans-serif",                       label: 'Archivo Black' },
-  { value: FONT_MONTSERRAT,                                     label: 'Montserrat' },
-  { value: FONT_MONTSERRAT_BLACK,                                label: 'Montserrat Black' },
-  { value: "'Oswald', sans-serif",                              label: 'Oswald' },
-  { value: "'Barlow Condensed', sans-serif",                    label: 'Barlow Condensed' },
-  { value: "'Barlow', sans-serif",                               label: 'Barlow' },
-  { value: "'Poppins', sans-serif",                             label: 'Poppins' },
-  { value: "'Fredoka', sans-serif",                             label: 'Fredoka' },
-  { value: "'Playfair Display', serif",                         label: 'Playfair Display' },
-  { value: "'Roboto Slab', serif",                               label: 'Roboto Slab' },
-  { value: "'Bungee', sans-serif",                               label: 'Bungee' },
-  { value: "'Permanent Marker', cursive",                       label: 'Permanent Marker' },
-  { value: "'Alfa Slab One', serif",                            label: 'Alfa Slab One' },
-  { value: "'Baloo 2', sans-serif",                             label: 'Baloo 2' },
-  { value: "'Bitter', serif",                                    label: 'Bitter' },
-  { value: "'Caveat', cursive",                                 label: 'Caveat' },
-  { value: "'Comfortaa', sans-serif",                           label: 'Comfortaa' },
-  { value: "'Dancing Script', cursive",                         label: 'Dancing Script' },
-  { value: "'Fjalla One', sans-serif",                          label: 'Fjalla One' },
-  { value: "'Inter', sans-serif",                               label: 'Inter' },
-  { value: "'Lato', sans-serif",                                label: 'Lato' },
-  { value: "'Libre Baskerville', serif",                        label: 'Libre Baskerville' },
-  { value: "'Lora', serif",                                      label: 'Lora' },
-  { value: "'Luckiest Guy', cursive",                           label: 'Luckiest Guy' },
-  { value: "'Merriweather', serif",                             label: 'Merriweather' },
-  { value: "'Nunito', sans-serif",                              label: 'Nunito' },
-  { value: "'Open Sans', sans-serif",                           label: 'Open Sans' },
-  { value: "'Pacifico', cursive",                               label: 'Pacifico' },
-  { value: "'PT Sans', sans-serif",                             label: 'PT Sans' },
-  { value: "'Raleway', sans-serif",                             label: 'Raleway' },
-  { value: "'Righteous', sans-serif",                           label: 'Righteous' },
-  { value: "'Rubik', sans-serif",                               label: 'Rubik' },
-  { value: "'Space Mono', monospace",                           label: 'Space Mono' },
-  { value: "'Titan One', cursive",                              label: 'Titan One' }
-];
-const DEFAULT_FONT = FONT_MONTSERRAT;
-
-// Default font family per fixed text field — matches each field's original
-// hardcoded look exactly, so nothing changes visually until the user picks
-// something different.
-const fontDefaults = {
-  headline1: FONT_BEBAS_NEUE,
-  headline2: FONT_BEBAS_NEUE,
-  tagline:   FONT_MONTSERRAT,
-  fitLine1:  FONT_MONTSERRAT_BLACK,
-  fitLine2:  FONT_MONTSERRAT_BLACK,
-  fitDesc:   FONT_MONTSERRAT,
-  finePrint: FONT_MONTSERRAT,
-  footer:    FONT_BEBAS_NEUE
-};
-let fontState = Object.assign({}, fontDefaults);
-
-// Builds a <select> populated with every AVAILABLE_FONTS option (sorted
-// alphabetically by name so it's easy to scan/find one), wired to call
-// onChange(value) whenever the user picks a different one. Shared by every
-// font picker in the app — the fixed text fields, each grid slot, and every
-// custom element.
-function buildFontSelect(currentValue, onChange) {
-  const holder = document.createElement('div');
-  holder.className = 'font-select-holder';
-  const select = document.createElement('select');
-  const sortedFonts = AVAILABLE_FONTS.slice().sort(function(a, b) {
-    return a.label.localeCompare(b.label);
-  });
-  sortedFonts.forEach(function(f) {
-    const o = document.createElement('option');
-    o.value = f.value;
-    o.textContent = f.label;
-    o.style.fontFamily = f.value;
-    if (f.value === currentValue) o.selected = true;
-    select.appendChild(o);
-  });
-  select.addEventListener('mousedown', function(e) { e.stopPropagation(); });
-  select.addEventListener('click', function(e) { e.stopPropagation(); });
-  select.addEventListener('change', function(e) {
-    onChange(e.target.value);
-  });
-  holder.appendChild(select);
-  return holder;
-}
-
-/* ---- Shared "Edit Style" modal ----
-   Every field that can be styled (a fixed text field, a grid slot, a custom
-   element) gets a single "Edit" trigger instead of a stack of inline
-   controls. openEditModal(config) builds whatever rows the caller asks for:
-
-     config = {
-       title: 'Edit Headline Line 1',
-       color:      { get, set } | undefined,   // hex string
-       font:       { get, set } | undefined,   // AVAILABLE_FONTS value
-       align:      { get, set } | undefined,   // 'top' | 'center' | 'bottom'
-       background: {                            // per-slot fill, not per-field
-         color:   { get, set },
-         opacity: { get, set }                  // 0-100
-       } | undefined,
-       onClose:    function() {} | undefined    // e.g. refresh a preview swatch
-     }
-
-   Only the rows whose config key is present get built, so a plain text
-   field (color + font) looks different from a grid slot (color + font +
-   align + background) without any special-casing here. */
-let editModalOnClose = null;
-
-function buildEditModalColorRow(handlers) {
-  const row = document.createElement('div');
-  row.className = 'slot-text-color-row edit-modal-row';
-  const label = document.createElement('span');
-  label.className = 'slot-text-color-label';
-  label.textContent = handlers.label || 'Color';
-  const colorInput = document.createElement('input');
-  colorInput.type = 'color';
-  colorInput.className = 'slot-text-color';
-  colorInput.value = handlers.get();
-  const hexInput = document.createElement('input');
-  hexInput.type = 'text';
-  hexInput.className = 'slot-text-color-hex';
-  hexInput.maxLength = 7;
-  hexInput.placeholder = '#RRGGBB';
-  hexInput.value = handlers.get().toUpperCase();
-  colorInput.addEventListener('input', function(e) {
-    handlers.set(e.target.value);
-    hexInput.value = e.target.value.toUpperCase();
-  });
-  hexInput.addEventListener('change', function(e) {
-    let v = e.target.value.trim();
-    if (v && v.charAt(0) !== '#') v = '#' + v;
-    if (isValidHex(v)) {
-      v = v.toUpperCase();
-      handlers.set(v);
-      colorInput.value = v;
-      hexInput.value = v;
-    } else {
-      hexInput.value = handlers.get().toUpperCase();
-    }
-  });
-  row.appendChild(label);
-  row.appendChild(colorInput);
-  row.appendChild(hexInput);
-  return row;
-}
-
-function buildEditModalFontRow(handlers) {
-  const row = document.createElement('div');
-  row.className = 'slot-text-color-row edit-modal-row';
-  const label = document.createElement('span');
-  label.className = 'slot-text-color-label';
-  label.textContent = 'Font';
-  row.appendChild(label);
-  row.appendChild(buildFontSelect(handlers.get(), handlers.set));
-  return row;
-}
-
-function buildEditModalAlignRow(handlers) {
-  const row = document.createElement('div');
-  row.className = 'slot-text-color-row edit-modal-row';
-  const label = document.createElement('span');
-  label.className = 'slot-text-color-label';
-  label.textContent = 'Align';
-  const select = document.createElement('select');
-  select.className = 'slot-text-align';
-  [
-    { v: 'top', label: 'Top' },
-    { v: 'center', label: 'Center' },
-    { v: 'bottom', label: 'Bottom' }
-  ].forEach(function(opt) {
-    const o = document.createElement('option');
-    o.value = opt.v;
-    o.textContent = opt.label;
-    if ((handlers.get() || 'center') === opt.v) o.selected = true;
-    select.appendChild(o);
-  });
-  select.addEventListener('change', function(e) { handlers.set(e.target.value); });
-  row.appendChild(label);
-  row.appendChild(select);
-  return row;
-}
-
-function buildEditModalBackgroundSection(bg) {
-  const wrap = document.createElement('div');
-  const heading = document.createElement('div');
-  heading.className = 'edit-modal-section-title';
-  heading.textContent = 'Background';
-  wrap.appendChild(heading);
-
-  const row = document.createElement('div');
-  row.className = 'slot-text-color-row edit-modal-row';
-  const colorInput = document.createElement('input');
-  colorInput.type = 'color';
-  colorInput.className = 'slot-text-color';
-  colorInput.value = bg.color.get();
-  const opacityWrap = document.createElement('span');
-  opacityWrap.className = 'opacity-num-wrap';
-  const opacityNum = document.createElement('input');
-  opacityNum.type = 'number';
-  opacityNum.className = 'opacity-num-input';
-  opacityNum.min = '0';
-  opacityNum.max = '100';
-  opacityNum.value = String(bg.opacity.get());
-  opacityWrap.appendChild(opacityNum);
-  opacityWrap.appendChild(document.createTextNode('%'));
-  row.appendChild(colorInput);
-  row.appendChild(opacityWrap);
-  wrap.appendChild(row);
-
-  // Full-width slider under the color+number row — the number input covers
-  // "set it exactly," the slider covers "drag and eyeball it." Kept in sync
-  // with the number input by the same bindOpacityControl() every other
-  // opacity control in the app uses.
-  const sliderRow = document.createElement('div');
-  sliderRow.className = 'edit-modal-row';
-  sliderRow.style.marginTop = '-6px';
-  const opacitySlider = document.createElement('input');
-  opacitySlider.type = 'range';
-  opacitySlider.min = '0';
-  opacitySlider.max = '100';
-  opacitySlider.value = String(bg.opacity.get());
-  opacitySlider.style.width = '100%';
-  sliderRow.appendChild(opacitySlider);
-  wrap.appendChild(sliderRow);
-
-  bindOpacityControl(opacitySlider, opacityNum, function(v) { bg.opacity.set(v); });
-
-  colorInput.addEventListener('input', function(e) {
-    bg.color.set(e.target.value);
-    // Picking a color at 0% opacity (the default) would be invisible —
-    // jump straight to fully visible so the change is obvious immediately.
-    opacitySlider.value = '100';
-    opacityNum.value = '100';
-    bg.opacity.set(100);
-  });
-
-  return wrap;
-}
-
-function openEditModal(config) {
-  document.getElementById('editToolsModalTitle').textContent = config.title || 'Edit';
-  const body = document.getElementById('editToolsModalBody');
-  body.innerHTML = '';
-  // An arbitrary caller-built section (e.g. the grid slot's content-type
-  // buttons) that goes above the standard color/font/align/background rows.
-  if (config.contentSection) body.appendChild(config.contentSection);
-  if (config.color) body.appendChild(buildEditModalColorRow(config.color));
-  if (config.font) body.appendChild(buildEditModalFontRow(config.font));
-  if (config.align) body.appendChild(buildEditModalAlignRow(config.align));
-  if (config.background) body.appendChild(buildEditModalBackgroundSection(config.background));
-  const doneBtn = document.createElement('button');
-  doneBtn.type = 'button';
-  doneBtn.className = 'edit-modal-done-btn';
-  doneBtn.textContent = 'Done';
-  doneBtn.addEventListener('click', closeEditModal);
-  body.appendChild(doneBtn);
-  editModalOnClose = config.onClose || null;
-  document.getElementById('editToolsModalOverlay').classList.add('open');
-}
-
-function closeEditModal() {
-  document.getElementById('editToolsModalOverlay').classList.remove('open');
-  if (editModalOnClose) editModalOnClose();
-  editModalOnClose = null;
-}
-
-function initEditModalControls() {
-  document.getElementById('editToolsModalClose').addEventListener('click', closeEditModal);
-  document.getElementById('editToolsModalOverlay').addEventListener('click', function(e) {
-    if (e.target === this) closeEditModal();
-  });
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && document.getElementById('editToolsModalOverlay').classList.contains('open')) {
-      closeEditModal();
-    }
-  });
-}
-
-// Every buildEditTrigger()'s refresh function for the 7 fixed text fields,
-// so setColor() can keep them in sync whenever a color changes somewhere
-// other than their own modal — e.g. a dark-mode-toggle flip, or the
-// popover's reset button. Grid slots and custom elements don't register
-// here: their cards are fully rebuilt by renderLayoutBoard()/
-// renderCustomElementsList() on every change, which already refreshes their
-// triggers, so adding them here would just leak old detached-card closures.
-let editTriggerRefreshers = [];
-
-// Builds the small color-preview + "Edit" button pairing used to trigger
-// openEditModal() from a field's row. previewGetter returns { color, opacity }
-// (opacity defaults to 100 when the field doesn't have its own, e.g. plain
-// text colors) so the swatch always shows an accurate at-a-glance preview.
-// syncWithColorState should only be passed true for a trigger backed by a
-// colorState[] key (see note above the registry). label overrides the
-// button text (defaults to "Edit Style"; grid slots use plain "Edit" since
-// their modal also covers picking text vs. image, not just styling).
-// showSwatch (defaults true) hides the little color-preview square next to
-// the button when false — used where the color is already visible inside
-// the popup itself, so a second preview on the outside is redundant.
-function buildEditTrigger(previewGetter, onOpen, syncWithColorState, label, showSwatch) {
-  if (showSwatch === undefined) showSwatch = true;
-  const row = document.createElement('div');
-  row.className = 'edit-trigger-row';
-  const swatch = document.createElement('div');
-  swatch.className = 'edit-trigger-swatch';
-  function refreshSwatch() {
-    const p = previewGetter();
-    swatch.style.background = p.color;
-    swatch.style.opacity = String(p.opacity != null ? p.opacity / 100 : 1);
-  }
-  if (syncWithColorState) editTriggerRefreshers.push(refreshSwatch);
-  refreshSwatch();
-  const btn = document.createElement('button');
-  btn.type = 'button';
-  btn.className = 'edit-trigger-btn';
-  btn.textContent = label || 'Edit Style';
-  (showSwatch ? [swatch, btn] : [btn]).forEach(function(el) {
-    el.addEventListener('mousedown', function(e) { e.stopPropagation(); });
-    el.addEventListener('click', function(e) {
-      e.stopPropagation();
-      onOpen(refreshSwatch);
-    });
-  });
-  if (showSwatch) row.appendChild(swatch);
-  row.appendChild(btn);
-  return row;
-}
-
 function isNearBlack(hex) {
   const rgb = hexToRgb(hex);
   return (rgb.r + rgb.g + rgb.b) / 3 < 60;
@@ -1412,23 +849,10 @@ function isNearWhite(hex) {
 function toggleDarkMode(enable) {
   isDarkMode = enable;
   DARK_MODE_TEXT_KEYS.forEach(function(key) {
-    if (colorCustomized[key]) return; // user has set this manually — leave it exactly as-is
     const cur = colorState[key];
-    if (isNearBlack(cur)) setColor(key, '#FFFFFF', undefined, false);
-    else if (isNearWhite(cur)) setColor(key, '#161616', undefined, false);
+    if (isNearBlack(cur)) setColor(key, '#FFFFFF');
+    else if (isNearWhite(cur)) setColor(key, '#161616');
   });
-  // Grid/feature slot text colors flip the same way, but only for slots the
-  // user hasn't manually recolored (slotTextColorsCustomized) — same rule
-  // as the fixed text fields above.
-  let slotColorsChanged = false;
-  for (let i = 0; i < slotTextColors.length; i++) {
-    if (slotTextColorsCustomized[i]) continue;
-    const cur = slotTextColors[i];
-    if (!cur) continue;
-    if (isNearBlack(cur)) { slotTextColors[i] = '#FFFFFF'; slotColorsChanged = true; }
-    else if (isNearWhite(cur)) { slotTextColors[i] = '#161616'; slotColorsChanged = true; }
-  }
-  if (slotColorsChanged) renderLayoutBoard();
 }
 
 let currentPopoverKey = null;
@@ -1529,41 +953,17 @@ function updateColorUI(key, hex) {
   if (currentPopoverKey === key) populatePopover(hex);
 }
 
-// markCustomized defaults to true: any normal call (popover hex/RGB edits,
-// the SV/hue picker, linked-color propagation) means the user deliberately
-// chose this color, so it's flagged as customized and toggleDarkMode() will
-// leave it alone from then on. toggleDarkMode's own internal flip is the
-// one caller that passes markCustomized=false, since that's the automatic
-// black<->white swap, not a user choice — it must NOT set the flag itself.
-function setColor(key, hex, visited, markCustomized) {
+function setColor(key, hex, visited) {
   if (!isValidHex(hex)) return;
   if (hex.charAt(0) !== '#') hex = '#' + hex;
   hex = hex.toUpperCase();
-  if (markCustomized === undefined) markCustomized = true;
 
   visited = visited || {};
   if (visited[key]) return;
   visited[key] = true;
 
   colorState[key] = hex;
-  if (markCustomized) colorCustomized[key] = true;
   updateColorUI(key, hex);
-  // Keep every fixed text field's Edit-button preview swatch in sync too —
-  // cheap (only 7 of them) and correct no matter which caller changed the
-  // color (popover, dark-mode-toggle flip, or reset-to-default).
-  editTriggerRefreshers.forEach(function(fn) { fn(); });
-
-  // The callout box "P" icon color link is one-way (top logo P -> callout
-  // P, never the reverse), so it's handled separately from the symmetric
-  // linkRules below rather than as another entry there. visited['pColor']
-  // is only true here when this call is itself the propagation triggered
-  // by the block further down — i.e. this is a direct edit of calloutPColor
-  // (typed/picked by the user), so break the link rather than fight it.
-  if (key === 'calloutPColor' && !visited.pColor) {
-    calloutPColorLinked = false;
-    const calloutLinkCb = document.getElementById('linkCalloutPColor');
-    if (calloutLinkCb) calloutLinkCb.checked = false;
-  }
 
   for (let i = 0; i < linkRules.length; i++) {
     const rule = linkRules[i];
@@ -1573,16 +973,7 @@ function setColor(key, hex, visited, markCustomized) {
     if (rule.a === key) other = rule.b;
     else if (rule.b === key) other = rule.a;
     if (other && !visited[other]) {
-      setColor(other, hex, visited, markCustomized);
-    }
-  }
-
-  // One-way propagation: the top logo "P" color pushes to the callout box
-  // "P" color whenever the link checkbox is checked, but changing the
-  // callout box "P" color never pushes back (see the auto-unlink above).
-  if (key === 'pColor') {
-    if (calloutPColorLinked && !visited.calloutPColor) {
-      setColor('calloutPColor', hex, visited, markCustomized);
+      setColor(other, hex, visited);
     }
   }
 }
@@ -1685,12 +1076,7 @@ function wirePopover() {
     });
   });
   document.getElementById('popoverReset').addEventListener('click', function() {
-    if (currentPopoverKey) {
-      setColor(currentPopoverKey, colorDefaults[currentPopoverKey]);
-      // Resetting hands control back to the dark mode toggle — it's no
-      // longer a manual customization once it matches the default again.
-      colorCustomized[currentPopoverKey] = false;
-    }
+    if (currentPopoverKey) setColor(currentPopoverKey, colorDefaults[currentPopoverKey]);
   });
   document.getElementById('popoverClose').addEventListener('click', function(e) {
     e.stopPropagation();
@@ -1726,257 +1112,17 @@ function initColorControls() {
   document.getElementById('linkPBColors').addEventListener('change', function(e) {
     if (e.target.checked) setColor('pColor', colorState.pColor);
   });
+  document.getElementById('linkHighlightPColors').addEventListener('change', function(e) {
+    if (e.target.checked) setColor('pColor', colorState.pColor);
+  });
 
-  initCalloutBoxStyleButton();
-}
+  document.getElementById('calloutBgOpacity').addEventListener('input', function(e) {
+    calloutBgOpacity = parseInt(e.target.value, 10);
+    document.getElementById('calloutBgOpacityVal').textContent = calloutBgOpacity + '%';
+  });
 
-// "Edit Box Style" button at the top of the Callout Box card — combines
-// Callout Box Border color, the callout "P" icon color (with its link-to-
-// logo checkbox), and the box's Background color+opacity into one popup,
-// same idea as every other Edit Style button on the page.
-function initCalloutBoxStyleButton() {
-  const container = document.getElementById('calloutBoxStyleTrigger');
-  if (!container) return;
-  const trigger = buildEditTrigger(
-    function() { return { color: colorState.calloutBgColor, opacity: calloutBgOpacity }; },
-    function(refreshSwatch) {
-      const contentSection = document.createElement('div');
-
-      contentSection.appendChild(buildEditModalColorRow({
-        label: 'Border Color',
-        get: function() { return colorState.calloutBorderColor; },
-        set: function(hex) { setColor('calloutBorderColor', hex); }
-      }));
-
-      const pHeading = document.createElement('div');
-      pHeading.className = 'edit-modal-section-title';
-      pHeading.textContent = 'Callout Box "P" Icon Color';
-      contentSection.appendChild(pHeading);
-
-      const linkRow = document.createElement('div');
-      linkRow.className = 'link-row';
-      linkRow.style.cssText = 'margin:2px 0 10px; padding-bottom:0; border-bottom:none;';
-      const linkCb = document.createElement('input');
-      linkCb.type = 'checkbox';
-      linkCb.id = 'linkCalloutPColor';
-      linkCb.checked = calloutPColorLinked;
-      linkCb.addEventListener('change', function(e) {
-        calloutPColorLinked = e.target.checked;
-        // Passing visited={pColor:true} makes this read as "came from the
-        // top P color" (see setColor()'s auto-unlink check), so re-checking
-        // the box snaps the callout P back into sync without immediately
-        // unchecking itself again.
-        if (e.target.checked) setColor('calloutPColor', colorState.pColor, { pColor: true });
-      });
-      const linkLabel = document.createElement('label');
-      linkLabel.setAttribute('for', 'linkCalloutPColor');
-      linkLabel.style.cssText = 'font-size:11px; font-weight:600;';
-      linkLabel.textContent = 'Link to top logo "P" color';
-      linkRow.appendChild(linkCb);
-      linkRow.appendChild(linkLabel);
-      contentSection.appendChild(linkRow);
-
-      contentSection.appendChild(buildEditModalColorRow({
-        label: 'Color',
-        get: function() { return colorState.calloutPColor; },
-        set: function(hex) { setColor('calloutPColor', hex); }
-      }));
-
-      openEditModal({
-        title: 'Edit Callout Box Style',
-        contentSection: contentSection,
-        background: {
-          color: {
-            get: function() { return colorState.calloutBgColor; },
-            set: function(v) { setColor('calloutBgColor', v); }
-          },
-          opacity: {
-            get: function() { return calloutBgOpacity; },
-            set: function(v) { calloutBgOpacity = v; calloutBgOpacityCustomized = true; }
-          }
-        },
-        onClose: refreshSwatch
-      });
-    },
-    false,
-    'Edit Box Style',
-    false
-  );
-  container.appendChild(trigger);
-}
-
-// Every fixed text field that gets an "Edit Style" button (color + font
-// together), paired with its color state key, the id of its actual sidebar
-// input/textarea (fieldId — usually the same as key, except footer), and
-// the id of the container div that used to hold its standalone swatch.
-// Footer Text's content stays locked (it's the fixed brand address, see the
-// readonly #footerUrl input), but its color and font are still flyer
-// styling like everything else here, so it gets the same Edit button
-// instead of the old standalone color swatch. hideSwatch drops the little
-// color-preview square next to the button — used for the Headlines &
-// Tagline / Callout Box fields, since the color is already visible right
-// inside the popup and a second preview next to the button was redundant;
-// Footer keeps its swatch since that wasn't asked for.
-const TEXT_FIELD_EDIT_ROWS = [
-  { key: 'headline1', fieldId: 'headline1', colorKey: 'headline1Color', container: 'swatch_headline1Color', title: 'Edit Headline Line 1', hideSwatch: true },
-  { key: 'headline2', fieldId: 'headline2', colorKey: 'headline2Color', container: 'swatch_headline2Color', title: 'Edit Headline Line 2', hideSwatch: true },
-  { key: 'tagline',   fieldId: 'tagline',   colorKey: 'taglineColor',   container: 'swatch_taglineColor',   title: 'Edit Tagline', hideSwatch: true },
-  { key: 'fitLine1',  fieldId: 'fitLine1',  colorKey: 'fitLine1Color',  container: 'swatch_fitLine1Color',  title: 'Edit Callout Line 1', hideSwatch: true },
-  { key: 'fitLine2',  fieldId: 'fitLine2',  colorKey: 'fitLine2Color',  container: 'swatch_fitLine2Color',  title: 'Edit Callout Line 2', hideSwatch: true },
-  { key: 'fitDesc',   fieldId: 'fitDesc',   colorKey: 'fitDescColor',   container: 'swatch_fitDescColor',   title: 'Edit Callout Description', hideSwatch: true },
-  { key: 'finePrint', fieldId: 'finePrint', colorKey: 'finePrintColor', container: 'swatch_finePrintColor', title: 'Edit Fine Print', hideSwatch: true },
-  { key: 'footer',    fieldId: 'footerUrl', colorKey: 'footerTextColor', container: 'swatch_footerTextColor', title: 'Edit Footer Text Style' }
-];
-
-// Applies a field's current color + font directly to its own sidebar
-// input/textarea, so what's typed there always shows in the style that's
-// actually selected — not just on a small swatch off to the side.
-function styleTextField(fieldEl, color, font) {
-  if (!fieldEl) return;
-  fieldEl.style.color = color;
-  fieldEl.style.fontFamily = font;
-}
-
-function initTextFieldEditButtons() {
-  TEXT_FIELD_EDIT_ROWS.forEach(function(row) {
-    const container = document.getElementById(row.container);
-    if (!container) return;
-    container.innerHTML = '';
-
-    const fieldEl = document.getElementById(row.fieldId);
-    styleTextField(fieldEl, colorState[row.colorKey], fontState[row.key]);
-    // Color changes can also come from outside this row (dark mode's
-    // automatic flip, "reset to default", etc.), so re-apply on every
-    // color change globally rather than only from this row's own modal —
-    // the same registry the little preview swatches already use.
-    editTriggerRefreshers.push(function() {
-      styleTextField(fieldEl, colorState[row.colorKey], fontState[row.key]);
-    });
-
-    const trigger = buildEditTrigger(
-      function() { return { color: colorState[row.colorKey], opacity: 100 }; },
-      function(refreshSwatch) {
-        // A second, live-styled copy of the field right inside the modal —
-        // same idea as the grid feature's Add Text preview — so color/font
-        // choices show up on the actual words as they're picked, not just
-        // on the swatch. Typing here writes straight back into the real
-        // sidebar field, since that's the one thing the flyer actually
-        // reads from; the footer field stays read-only in both places.
-        const previewInput = document.createElement('input');
-        previewInput.type = 'text';
-        previewInput.className = 'edit-modal-preview-input';
-        previewInput.value = fieldEl ? fieldEl.value : '';
-        previewInput.style.color = colorState[row.colorKey];
-        previewInput.style.fontFamily = fontState[row.key];
-        if (fieldEl && fieldEl.readOnly) {
-          previewInput.readOnly = true;
-        } else if (fieldEl) {
-          previewInput.addEventListener('input', function(e) { fieldEl.value = e.target.value; });
-        }
-        const previewWrap = document.createElement('div');
-        previewWrap.className = 'edit-modal-row';
-        previewWrap.appendChild(previewInput);
-        const contentSection = document.createElement('div');
-        contentSection.appendChild(previewWrap);
-
-        // Shared color/font handlers for the field's own text — built once
-        // so the tagline case (below) can place them inline, above its
-        // Flank Lines divider, while every other row gets them the normal
-        // way via openEditModal()'s color/font config keys.
-        const colorHandlers = {
-          get: function() { return colorState[row.colorKey]; },
-          set: function(hex) {
-            setColor(row.colorKey, hex);
-            previewInput.style.color = hex;
-          }
-        };
-        const fontHandlers = {
-          get: function() { return fontState[row.key]; },
-          set: function(v) {
-            fontState[row.key] = v;
-            previewInput.style.fontFamily = v;
-            styleTextField(fieldEl, colorState[row.colorKey], v);
-          }
-        };
-
-        // Tagline Flank Lines color — the short decorative lines on either
-        // side of the tagline — folded in here since it's just another
-        // piece of the tagline's overall style, same idea as everything
-        // else that's moved into its field's own Edit Style popup. Color
-        // and Font go directly above the divider so it's clear they apply
-        // to the tagline text itself, not the flank lines.
-        if (row.key === 'tagline') {
-          contentSection.appendChild(buildEditModalColorRow(colorHandlers));
-          contentSection.appendChild(buildEditModalFontRow(fontHandlers));
-
-          const flankHeading = document.createElement('div');
-          flankHeading.className = 'edit-modal-section-title';
-          flankHeading.textContent = 'Flank Lines Color';
-          contentSection.appendChild(flankHeading);
-          contentSection.appendChild(buildEditModalColorRow({
-            label: 'Color',
-            get: function() { return colorState.taglineFlankColor; },
-            set: function(hex) { setColor('taglineFlankColor', hex); }
-          }));
-        }
-
-        // Footer Background Style (solid vs. radiating glow) and its color
-        // used to be their own separate row on the main page — folded in
-        // here since they're just another piece of the footer's overall
-        // style, same idea as Callout Box Background/Border moving into
-        // the callout box's own Edit Box Style popup.
-        if (row.key === 'footer') {
-          const bgHeading = document.createElement('div');
-          bgHeading.className = 'edit-modal-section-title';
-          bgHeading.textContent = 'Background';
-          contentSection.appendChild(bgHeading);
-
-          const bgRow = document.createElement('div');
-          bgRow.className = 'slot-text-color-row edit-modal-row';
-
-          const bgColorInput = document.createElement('input');
-          bgColorInput.type = 'color';
-          bgColorInput.className = 'slot-text-color';
-          bgColorInput.value = colorState.footerBgColor;
-          bgColorInput.addEventListener('input', function(e) { setColor('footerBgColor', e.target.value); });
-          bgRow.appendChild(bgColorInput);
-
-          const bgStyleSelect = document.createElement('select');
-          bgStyleSelect.className = 'slot-text-align';
-          [
-            { v: 'solid', label: 'Solid (Default)' },
-            { v: 'center', label: 'Radiate From Center' },
-            { v: 'left', label: 'Radiate From Left' },
-            { v: 'right', label: 'Radiate From Right' }
-          ].forEach(function(opt) {
-            const o = document.createElement('option');
-            o.value = opt.v;
-            o.textContent = opt.label;
-            if (footerBgGradientMode === opt.v) o.selected = true;
-            bgStyleSelect.appendChild(o);
-          });
-          bgStyleSelect.addEventListener('change', function(e) { footerBgGradientMode = e.target.value; });
-          bgRow.appendChild(bgStyleSelect);
-
-          contentSection.appendChild(bgRow);
-        }
-
-        openEditModal({
-          title: row.title,
-          contentSection: contentSection,
-          // Already placed inline above (before the Flank Lines divider)
-          // for the tagline row, so skip the normal auto-appended rows to
-          // avoid showing Color/Font twice.
-          color: row.key === 'tagline' ? undefined : colorHandlers,
-          font: row.key === 'tagline' ? undefined : fontHandlers,
-          onClose: refreshSwatch
-        });
-      },
-      true,
-      undefined,
-      !row.hideSwatch
-    );
-    container.appendChild(trigger);
+  document.getElementById('footerBgGradientMode').addEventListener('change', function(e) {
+    footerBgGradientMode = e.target.value;
   });
 }
 
@@ -2009,104 +1155,39 @@ function syncColumnLayout(n) {
   }
 }
 
-// Quick-start shapes for the layout template gallery. Each is a cols x rows
-// grid of physical feature slots, filled left-to-right/top-to-bottom
-// (Feature 1 = top-left, etc.), with zero or more rectangular merges
-// applied on top — e.g. "3 Top + Wide Bottom" is a 3x2 grid whose bottom
-// row is merged into one wide banner, giving 3 boxes on top and 1 wide box
-// below in a single click instead of arranging columns and merging by hand.
-const LAYOUT_TEMPLATES = [
-  { label: '2 Across',            cols: 2, rows: 1, merges: [] },
-  { label: '2 Stacked',           cols: 1, rows: 2, merges: [] },
-  { label: '3 Across',            cols: 3, rows: 1, merges: [] },
-  { label: '2x2 Grid',            cols: 2, rows: 2, merges: [] },
-  { label: 'Wide Top + 2',        cols: 2, rows: 2, merges: [{ c0: 0, c1: 1, r0: 0, r1: 0 }] },
-  { label: '2 + Wide Bottom',     cols: 2, rows: 2, merges: [{ c0: 0, c1: 1, r0: 1, r1: 1 }] },
-  { label: 'Wide Top + 3',        cols: 3, rows: 2, merges: [{ c0: 0, c1: 2, r0: 0, r1: 0 }] },
-  { label: '3 Top + Wide Bottom', cols: 3, rows: 2, merges: [{ c0: 0, c1: 2, r0: 1, r1: 1 }] }
-];
+// Lets someone type an exact grid shape instead of dragging. Fills
+// column-major (down each column, then across) using "Rows" as the stack
+// height per column — the same fill order syncColumnLayout already uses,
+// just driven by an explicit number instead of the fixed STACK_TARGET. If
+// there are more features than Columns x Rows can hold, extra columns are
+// added automatically beyond what was requested so nothing gets dropped.
+function applyGridLayout() {
+  let cols = parseInt(document.getElementById('gridCols').value, 10);
+  let rows = parseInt(document.getElementById('gridRows').value, 10);
+  if (!cols || cols < 1) cols = 1;
+  if (!rows || rows < 1) rows = 1;
+  cols = Math.min(cols, 12);
+  rows = Math.min(rows, 12);
+  document.getElementById('gridCols').value = cols;
+  document.getElementById('gridRows').value = rows;
 
-function buildLayoutTemplateGallery() {
-  const gallery = document.getElementById('layoutTemplateGallery');
-  gallery.innerHTML = '';
-  LAYOUT_TEMPLATES.forEach(function(tpl) {
-    const btn = document.createElement('div');
-    btn.className = 'template-btn';
-    btn.title = 'Arrange the grid as ' + tpl.label.toLowerCase();
-
-    const icon = document.createElement('div');
-    icon.className = 'template-btn-icon';
-    icon.style.gridTemplateColumns = 'repeat(' + tpl.cols + ', 1fr)';
-    icon.style.gridTemplateRows = 'repeat(' + tpl.rows + ', 1fr)';
-
-    // Draw the icon as the same set of visible blocks the template will
-    // actually produce: one block per merge rectangle, plus one block for
-    // every cell the merges don't cover.
-    const covered = {};
-    tpl.merges.forEach(function(m) {
-      for (let c = m.c0; c <= m.c1; c++) {
-        for (let r = m.r0; r <= m.r1; r++) covered[c + ',' + r] = true;
-      }
-    });
-    tpl.merges.forEach(function(m) {
-      const span = document.createElement('span');
-      span.style.gridColumn = (m.c0 + 1) + ' / ' + (m.c1 + 2);
-      span.style.gridRow = (m.r0 + 1) + ' / ' + (m.r1 + 2);
-      icon.appendChild(span);
-    });
-    for (let r = 0; r < tpl.rows; r++) {
-      for (let c = 0; c < tpl.cols; c++) {
-        if (covered[c + ',' + r]) continue;
-        const span = document.createElement('span');
-        span.style.gridColumn = String(c + 1);
-        span.style.gridRow = String(r + 1);
-        icon.appendChild(span);
-      }
-    }
-    btn.appendChild(icon);
-
-    const label = document.createElement('div');
-    label.className = 'template-btn-label';
-    label.textContent = tpl.label;
-    btn.appendChild(label);
-
-    btn.addEventListener('click', function() { applyLayoutTemplate(tpl); });
-    gallery.appendChild(btn);
-  });
-}
-
-// Sets the Features count to exactly what the template's grid needs (like
-// typing a new number and letting renderSlots() grow or trim every parallel
-// slot array), then lays those slots out in the template's shape and
-// applies its merges — replacing whatever layout/merges were there before,
-// the same way clicking Arrange does.
-function applyLayoutTemplate(tpl) {
-  const required = tpl.cols * tpl.rows;
-  document.getElementById('slotCount').value = required;
-  renderSlots();
-
-  const indexGrid = [];
+  const n = slotImages.length;
   const newLayout = [];
-  for (let c = 0; c < tpl.cols; c++) newLayout.push([]);
-  let idx = 0;
-  for (let r = 0; r < tpl.rows; r++) {
-    indexGrid.push([]);
-    for (let c = 0; c < tpl.cols; c++) {
-      indexGrid[r].push(idx);
-      newLayout[c].push(idx);
-      idx++;
+  let col = [];
+  for (let i = 0; i < n; i++) {
+    col.push(i);
+    if (col.length >= rows) {
+      newLayout.push(col);
+      col = [];
     }
   }
+  if (col.length) newLayout.push(col);
+
   columnLayout = newLayout;
-
-  mergeGroups = tpl.merges.map(function(m) {
-    const slots = [];
-    for (let r = m.r0; r <= m.r1; r++) {
-      for (let c = m.c0; c <= m.c1; c++) slots.push(indexGrid[r][c]);
-    }
-    return { slots: slots };
-  });
-
+  // The old merge geometry was computed against the previous layout and
+  // won't line up with the new one, so clear it rather than leave stale
+  // merges pointing at the wrong neighbors.
+  mergeGroups = [];
   renderLayoutBoard();
 }
 
@@ -2128,218 +1209,24 @@ function renderSlots() {
   const newModes = [];
   const newTexts = [];
   const newTextColors = [];
-  const newTextColorsCustomized = [];
   const newTextAligns = [];
-  const newTextFonts = [];
-  const newBgColors = [];
-  const newBgOpacities = [];
   for (let i = 0; i < n; i++) {
     newImages.push(slotImages[i] || null);
     // No default mode — nothing is pre-selected/highlighted until the user
     // actually clicks one of the three option buttons.
     newModes.push(slotModes[i] || null);
     newTexts.push(slotTexts[i] || '');
-    newTextColors.push(slotTextColors[i] || (isDarkMode ? '#FFFFFF' : '#161616'));
-    newTextColorsCustomized.push(!!slotTextColorsCustomized[i]);
+    newTextColors.push(slotTextColors[i] || '#161616');
     newTextAligns.push(slotTextAligns[i] || 'center');
-    newTextFonts.push(slotTextFonts[i] || fontDefaults.fitDesc);
-    newBgColors.push(slotBgColors[i] || '#FFFFFF');
-    newBgOpacities.push(slotBgOpacities[i] != null ? slotBgOpacities[i] : 0);
   }
   slotImages = newImages;
   slotModes = newModes;
   slotTexts = newTexts;
   slotTextColors = newTextColors;
-  slotTextColorsCustomized = newTextColorsCustomized;
   slotTextAligns = newTextAligns;
-  slotTextFonts = newTextFonts;
-  slotBgColors = newBgColors;
-  slotBgOpacities = newBgOpacities;
 
   syncColumnLayout(n);
   renderLayoutBoard();
-}
-
-// Builds and opens the Edit modal for one grid feature slot. Content type
-// (text / upload / library) lives at the top as its own section, followed
-// by whichever style tools currently apply: text color/font/alignment only
-// when the slot is in text mode, background color/opacity always.
-function openSlotEditModal(slotIdx) {
-  const contentRow = document.createElement('div');
-  contentRow.className = 'slot-mode-row edit-modal-row';
-  [
-    { key: 'text', label: 'Add Text' },
-    { key: 'upload', label: 'Upload Image' },
-    { key: 'library', label: 'Choose From Library' }
-  ].forEach(function(opt) {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'slot-mode-btn' + (slotModes[slotIdx] === opt.key ? ' active' : '');
-    btn.textContent = opt.label;
-    btn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      slotModes[slotIdx] = opt.key;
-      renderLayoutBoard();
-      if (opt.key === 'text') {
-        // Stay open and rebuild the modal in place, so color/font/align
-        // rows appear immediately for the newly-chosen text mode.
-        openSlotEditModal(slotIdx);
-      } else {
-        // Upload/library hand off to their own dedicated flow (file picker
-        // or the image library browser) — close this modal first rather
-        // than stacking two overlays on screen.
-        closeEditModal();
-        if (opt.key === 'library') {
-          openImgLibraryModal(slotIdx);
-        } else {
-          // Same one-click behavior as before — picking "Upload Image"
-          // opens the file picker immediately rather than just revealing a
-          // dropzone that needs a second click. renderLayoutBoard() above
-          // already rebuilt the card with a fresh (still-hidden) file
-          // input, so grab that fresh element rather than a stale one.
-          const newCard = document.querySelector('.layout-slot[data-slot-index="' + slotIdx + '"]');
-          const fileInput = newCard && newCard.querySelector('input[type="file"]');
-          if (fileInput) fileInput.click();
-        }
-      }
-    });
-    contentRow.appendChild(btn);
-  });
-  // Wraps contentRow (and, in text mode, the live preview textarea below
-  // it) so openEditModal() has one element to drop in — appendChild()ing
-  // contentRow directly and then trying to insert a sibling next to it
-  // wouldn't work, since it has no parent until the modal body adopts it.
-  const contentSection = document.createElement('div');
-  contentSection.appendChild(contentRow);
-
-  const cfg = {
-    title: 'Edit Feature ' + (slotIdx + 1),
-    contentSection: contentSection,
-    background: {
-      color: {
-        get: function() { return slotBgColors[slotIdx] || '#FFFFFF'; },
-        set: function(v) { slotBgColors[slotIdx] = v; }
-      },
-      opacity: {
-        get: function() { return slotBgOpacities[slotIdx] != null ? slotBgOpacities[slotIdx] : 0; },
-        set: function(v) { slotBgOpacities[slotIdx] = v; }
-      }
-    },
-    // Rebuild the sidebar card behind the modal so its preview picks up
-    // anything that changed while the modal was open (text typed here,
-    // color/font/background adjusted, mode switched, etc.) instead of
-    // showing stale content until some other interaction re-renders it.
-    onClose: function() { renderLayoutBoard(); }
-  };
-  if (slotModes[slotIdx] === 'text') {
-    // A real, editable text box right inside the modal — styled live with
-    // whatever color/font is currently picked — so color and font choices
-    // are visible on the person's actual text as they make them, not just
-    // on the swatch/dropdown. Sits below the content-type buttons.
-    const previewTextarea = document.createElement('textarea');
-    previewTextarea.className = 'edit-modal-textarea';
-    previewTextarea.rows = 3;
-    previewTextarea.placeholder = 'Feature text (multiple lines OK)';
-    previewTextarea.value = slotTexts[slotIdx] || '';
-    previewTextarea.style.color = slotTextColors[slotIdx] || '#161616';
-    previewTextarea.style.fontFamily = slotTextFonts[slotIdx] || fontDefaults.fitDesc;
-    previewTextarea.addEventListener('input', function(e) {
-      slotTexts[slotIdx] = e.target.value;
-    });
-    const previewWrap = document.createElement('div');
-    previewWrap.className = 'edit-modal-row';
-    previewWrap.appendChild(previewTextarea);
-    contentSection.appendChild(previewWrap);
-
-    cfg.color = {
-      get: function() { return slotTextColors[slotIdx] || '#161616'; },
-      set: function(v) {
-        slotTextColors[slotIdx] = v;
-        slotTextColorsCustomized[slotIdx] = true;
-        previewTextarea.style.color = v;
-      }
-    };
-    cfg.font = {
-      get: function() { return slotTextFonts[slotIdx] || fontDefaults.fitDesc; },
-      set: function(v) {
-        slotTextFonts[slotIdx] = v;
-        previewTextarea.style.fontFamily = v;
-      }
-    };
-    cfg.align = {
-      get: function() { return slotTextAligns[slotIdx] || 'center'; },
-      set: function(v) { slotTextAligns[slotIdx] = v; }
-    };
-  }
-  openEditModal(cfg);
-}
-
-// Builds the preview box for a grid slot's sidebar card: shows what the
-// slot will actually look like (background fill at its own opacity, plus
-// styled text or the chosen image — or a quiet hint if nothing's been
-// picked yet). The Edit button that opens the modal for all of this sits
-// up in the card's header row instead of on top of the box, so it never
-// covers any of the preview.
-function buildSlotPreviewBox(slotIdx) {
-  const box = document.createElement('div');
-  box.className = 'slot-preview-box';
-
-  const bg = document.createElement('div');
-  bg.className = 'slot-preview-bg';
-  box.appendChild(bg);
-
-  const content = document.createElement('div');
-  content.className = 'slot-preview-content';
-  box.appendChild(content);
-
-  // A hidden file input is still needed here even though there's no
-  // visible upload zone anymore — picking "Upload Image" inside the modal
-  // closes the modal and clicks this input to open the OS file picker
-  // (see openSlotEditModal()).
-  const fileInput = document.createElement('input');
-  fileInput.type = 'file';
-  fileInput.accept = 'image/*';
-  fileInput.style.display = 'none';
-  fileInput.addEventListener('change', function(e) { handleSlotUpload(slotIdx, e); });
-  box.appendChild(fileInput);
-
-  const mode = slotModes[slotIdx] || null;
-  const opacity = slotBgOpacities[slotIdx] != null ? slotBgOpacities[slotIdx] : 0;
-  const rgb = hexToRgb(slotBgColors[slotIdx] || '#FFFFFF');
-  bg.style.backgroundColor = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + (opacity / 100) + ')';
-
-  if (mode === 'text') {
-    content.style.alignItems = slotTextAligns[slotIdx] === 'top' ? 'flex-start' : slotTextAligns[slotIdx] === 'bottom' ? 'flex-end' : 'center';
-    const textEl = document.createElement('div');
-    textEl.className = 'slot-preview-text';
-    if (slotTexts[slotIdx]) {
-      textEl.textContent = slotTexts[slotIdx];
-      textEl.style.color = slotTextColors[slotIdx] || '#161616';
-      textEl.style.fontFamily = slotTextFonts[slotIdx] || fontDefaults.fitDesc;
-    } else {
-      textEl.textContent = 'No text yet';
-      textEl.classList.add('slot-preview-hint');
-    }
-    content.appendChild(textEl);
-  } else if (mode === 'library' || mode === 'upload') {
-    if (slotImages[slotIdx]) {
-      const img = document.createElement('img');
-      img.src = slotImages[slotIdx].src;
-      content.appendChild(img);
-    } else {
-      const hint = document.createElement('div');
-      hint.className = 'slot-preview-hint';
-      hint.textContent = mode === 'library' ? 'No image chosen yet' : 'No image uploaded yet';
-      content.appendChild(hint);
-    }
-  } else {
-    const hint = document.createElement('div');
-    hint.className = 'slot-preview-hint';
-    hint.textContent = 'Click Edit to add text or an image';
-    content.appendChild(hint);
-  }
-
-  return box;
 }
 
 function createLayoutSlotEl(slotIdx, colIdx, rowIdx) {
@@ -2355,17 +1242,6 @@ function createLayoutSlotEl(slotIdx, colIdx, rowIdx) {
   if (myGroupHidden) card.classList.add('merge-hidden');
 
   card.addEventListener('dragstart', function(e) {
-    // The card itself is draggable (for reordering slots), but interactive
-    // controls inside it — color swatches, range sliders, selects, text
-    // inputs — need real mouse drags of their own (e.g. dragging a slider
-    // thumb). Without this guard the browser reads that same mouse-down-
-    // and-move gesture as "drag the whole card" instead, silently swapping
-    // grid slots whenever someone tries to adjust a slider or pick a color.
-    const tag = e.target.tagName;
-    if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || tag === 'BUTTON' || tag === 'LABEL') {
-      e.preventDefault();
-      return;
-    }
     draggedSlotIndex = slotIdx;
     card.classList.add('dragging');
     e.dataTransfer.effectAllowed = 'move';
@@ -2382,34 +1258,182 @@ function createLayoutSlotEl(slotIdx, colIdx, rowIdx) {
   handle.textContent = '⠿';
   card.appendChild(handle);
 
-  // Label and Edit button share a row so the button sits right next to the
-  // heading instead of floating on top of the preview below, where it
-  // would otherwise cover part of the actual text/image.
-  const headerRow = document.createElement('div');
-  headerRow.className = 'slot-header-row';
-
   const label = document.createElement('div');
   label.className = 'slot-label';
   label.textContent = 'Feature ' + (slotIdx + 1);
-  headerRow.appendChild(label);
+  card.appendChild(label);
 
-  const editBtn = document.createElement('button');
-  editBtn.type = 'button';
-  editBtn.className = 'edit-trigger-btn slot-header-edit-btn';
-  editBtn.textContent = 'Edit';
-  editBtn.addEventListener('mousedown', function(e) { e.stopPropagation(); });
-  editBtn.addEventListener('click', function(e) {
-    e.stopPropagation();
-    openSlotEditModal(slotIdx);
+  // No default — stays unset (nothing highlighted, no panel shown) until
+  // the user actually clicks one of the three option buttons below.
+  const mode = slotModes[slotIdx] || null;
+
+  // Three-way mode selector: Add Text / Upload Image / Choose From Library.
+  // 'upload' and 'library' both leave the slot in "image" content — they
+  // only differ in which panel/action is shown below — while 'text' swaps
+  // the whole panel for a text input + color picker.
+  const modeRow = document.createElement('div');
+  modeRow.className = 'slot-mode-row';
+  [
+    { key: 'text', label: 'Add Text' },
+    { key: 'upload', label: 'Upload Image' },
+    { key: 'library', label: 'Choose From Library' }
+  ].forEach(function(opt) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'slot-mode-btn' + (mode === opt.key ? ' active' : '');
+    btn.textContent = opt.label;
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      slotModes[slotIdx] = opt.key;
+      renderLayoutBoard();
+      if (opt.key === 'library') {
+        openImgLibraryModal(slotIdx);
+      } else if (opt.key === 'upload') {
+        // Same one-click behavior as the background upload button — clicking
+        // "Upload Image" opens the file picker immediately instead of just
+        // revealing a dropzone that needs a second click.
+        const newCard = document.querySelector('.layout-slot[data-slot-index="' + slotIdx + '"]');
+        const fileInput = newCard && newCard.querySelector('input[type="file"]');
+        if (fileInput) fileInput.click();
+      }
+    });
+    modeRow.appendChild(btn);
   });
-  headerRow.appendChild(editBtn);
+  card.appendChild(modeRow);
 
-  card.appendChild(headerRow);
+  if (mode === 'text') {
+    const textPanel = document.createElement('div');
+    textPanel.className = 'slot-text-panel';
 
-  // Everything for this slot — content type, text, color, font, alignment,
-  // background — lives behind the Edit button above. The box below is a
-  // clean, unobstructed live preview of how the slot will actually render.
-  card.appendChild(buildSlotPreviewBox(slotIdx));
+    const textInput = document.createElement('textarea');
+    textInput.className = 'slot-text-input';
+    textInput.placeholder = 'Feature text (multiple lines OK)';
+    textInput.rows = 3;
+    textInput.value = slotTexts[slotIdx] || '';
+    textInput.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+    textInput.addEventListener('click', function(e) { e.stopPropagation(); });
+    textInput.addEventListener('input', function(e) {
+      slotTexts[slotIdx] = e.target.value;
+    });
+    textPanel.appendChild(textInput);
+
+    const colorRow = document.createElement('div');
+    colorRow.className = 'slot-text-color-row';
+    const colorLabel = document.createElement('span');
+    colorLabel.className = 'slot-text-color-label';
+    colorLabel.textContent = 'Color';
+    const colorInput = document.createElement('input');
+    colorInput.type = 'color';
+    colorInput.className = 'slot-text-color';
+    colorInput.value = slotTextColors[slotIdx] || '#161616';
+    // Hex field alongside the swatch, matching every other color control in
+    // the app — typing a hex code works here too, not just picking visually.
+    const hexInput = document.createElement('input');
+    hexInput.type = 'text';
+    hexInput.className = 'slot-text-color-hex';
+    hexInput.maxLength = 7;
+    hexInput.placeholder = '#RRGGBB';
+    hexInput.value = (slotTextColors[slotIdx] || '#161616').toUpperCase();
+
+    [colorInput, hexInput].forEach(function(el) {
+      el.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+      el.addEventListener('click', function(e) { e.stopPropagation(); });
+    });
+    colorInput.addEventListener('input', function(e) {
+      slotTextColors[slotIdx] = e.target.value;
+      hexInput.value = e.target.value.toUpperCase();
+    });
+    hexInput.addEventListener('change', function(e) {
+      let v = e.target.value.trim();
+      if (v && v.charAt(0) !== '#') v = '#' + v;
+      if (isValidHex(v)) {
+        v = v.toUpperCase();
+        slotTextColors[slotIdx] = v;
+        colorInput.value = v;
+        hexInput.value = v;
+      } else {
+        hexInput.value = (slotTextColors[slotIdx] || '#161616').toUpperCase();
+      }
+    });
+
+    colorRow.appendChild(colorLabel);
+    colorRow.appendChild(colorInput);
+    colorRow.appendChild(hexInput);
+    textPanel.appendChild(colorRow);
+
+    const alignRow = document.createElement('div');
+    alignRow.className = 'slot-text-color-row';
+    const alignLabel = document.createElement('span');
+    alignLabel.className = 'slot-text-color-label';
+    alignLabel.textContent = 'Align';
+    const alignSelect = document.createElement('select');
+    alignSelect.className = 'slot-text-align';
+    [
+      { v: 'top', label: 'Top' },
+      { v: 'center', label: 'Center' },
+      { v: 'bottom', label: 'Bottom' }
+    ].forEach(function(opt) {
+      const o = document.createElement('option');
+      o.value = opt.v;
+      o.textContent = opt.label;
+      if ((slotTextAligns[slotIdx] || 'center') === opt.v) o.selected = true;
+      alignSelect.appendChild(o);
+    });
+    alignSelect.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+    alignSelect.addEventListener('click', function(e) { e.stopPropagation(); });
+    alignSelect.addEventListener('change', function(e) {
+      slotTextAligns[slotIdx] = e.target.value;
+    });
+    alignRow.appendChild(alignLabel);
+    alignRow.appendChild(alignSelect);
+    textPanel.appendChild(alignRow);
+
+    card.appendChild(textPanel);
+  } else if (mode === 'library') {
+    const libPanel = document.createElement('div');
+    libPanel.className = 'upload-zone';
+    if (slotImages[slotIdx]) {
+      const thumb = document.createElement('img');
+      thumb.src = slotImages[slotIdx].src;
+      thumb.className = 'preview-thumb';
+      libPanel.appendChild(thumb);
+    }
+    const libLabelSpan = document.createElement('div');
+    libLabelSpan.className = 'upload-label';
+    libLabelSpan.innerHTML = slotImages[slotIdx] ? '<span>Change from library</span>' : '<span>Browse library</span>';
+    libPanel.appendChild(libLabelSpan);
+    libPanel.addEventListener('click', function(e) {
+      e.stopPropagation();
+      openImgLibraryModal(slotIdx);
+    });
+    card.appendChild(libPanel);
+  } else if (mode === 'upload') {
+    // The "Upload Image" button above already opens the file picker directly
+    // — no need for a second clickable "Click to upload" zone here. This
+    // input stays hidden and is only ever triggered programmatically by
+    // that button; this panel just shows a preview once an image is chosen.
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.style.display = 'none';
+    input.addEventListener('change', function(e) { handleSlotUpload(slotIdx, e); });
+    card.appendChild(input);
+
+    if (slotImages[slotIdx]) {
+      const thumb = document.createElement('img');
+      thumb.src = slotImages[slotIdx].src;
+      thumb.className = 'preview-thumb';
+      card.appendChild(thumb);
+    }
+  } else {
+    // No option picked yet — show nothing but a quiet hint rather than
+    // defaulting (and highlighting) one of the three buttons for them.
+    const hint = document.createElement('div');
+    hint.className = 'ctrl-hint';
+    hint.style.textAlign = 'center';
+    hint.textContent = 'Choose an option above';
+    card.appendChild(hint);
+  }
 
   if (myGroupHidden) {
     const badge = document.createElement('div');
@@ -2440,73 +1464,35 @@ function createLayoutSlotEl(slotIdx, colIdx, rowIdx) {
 
   if (myGroupIsAnchor) {
     const bounds = myGroup ? getGroupBounds(myGroup) : { minCol: colIdx, maxCol: colIdx, minRow: rowIdx, maxRow: rowIdx };
+    const dirLabel = { left: 'to the left', right: 'to the right', up: 'above', down: 'below' };
 
-    // A seam sits in the gap between this feature and its neighbor to the
-    // right (dir 'right') or below (dir 'down') — only those two directions
-    // are ever built (never left/up) so each boundary gets exactly one
-    // seam, owned by the anchor on its left/top side. The seam bundles
-    // three controls: a border on/off + color bar (hidden once merged,
-    // since merged features share one cell with no line between them), and
-    // a small merge/split circle riding on top of the bar.
-    function addSeam(dir, testCol, testRow) {
+    function addDirButton(dir, testCol, testRow, trigger) {
       if (!columnLayout[testCol] || columnLayout[testCol][testRow] === undefined) return;
       const otherSlot = columnLayout[testCol][testRow];
-      const merged = !!(myGroup && myGroup.slots.indexOf(otherSlot) !== -1);
-      const isVertical = dir === 'right';
-
-      const seam = document.createElement('div');
-      seam.className = isVertical ? 'seam-v' : 'seam-h';
-
-      if (!merged) {
-        const b = getSlotBorders(slotIdx);
-        const edge = isVertical ? b.right : b.bottom;
-
-        const bar = document.createElement('div');
-        bar.className = 'seam-bar';
-        bar.style.background = edge.on ? (edge.color || DEFAULT_BORDER_COLOR) : '#ddd';
-        bar.title = (edge.on ? 'Hide' : 'Show') + ' the border ' + (isVertical ? 'to the right of' : 'below') + ' Feature ' + (slotIdx + 1);
-        bar.addEventListener('mousedown', function(e) { e.stopPropagation(); });
-        bar.addEventListener('click', function(e) {
-          e.stopPropagation();
-          edge.on = !edge.on;
-          renderLayoutBoard();
-        });
-        seam.appendChild(bar);
-
-        const colorInput = document.createElement('input');
-        colorInput.type = 'color';
-        colorInput.className = 'seam-color-input';
-        colorInput.value = edge.color || DEFAULT_BORDER_COLOR;
-        colorInput.style.opacity = edge.on ? '1' : '0.35';
-        colorInput.title = 'Border color ' + (isVertical ? 'to the right of' : 'below') + ' Feature ' + (slotIdx + 1);
-        colorInput.addEventListener('mousedown', function(e) { e.stopPropagation(); });
-        colorInput.addEventListener('click', function(e) { e.stopPropagation(); });
-        colorInput.addEventListener('change', function(e) {
-          edge.color = e.target.value.toUpperCase();
-          edge.on = true;
-          borderColorsCustomized[slotIdx + '_' + (isVertical ? 'right' : 'bottom')] = true;
-          renderLayoutBoard();
-        });
-        seam.appendChild(colorInput);
-      }
-
+      const active = !!(myGroup && myGroup.slots.indexOf(otherSlot) !== -1);
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'seam-merge-btn' + (merged ? ' active' : '');
-      btn.textContent = isVertical ? '⟷' : '↕';
-      btn.title = merged ? 'Merged — click to split' : 'Merge with the feature ' + (isVertical ? 'to the right' : 'below');
-      btn.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+      btn.className = 'merge-btn merge-btn-' + dir + (active ? ' active' : '');
+      btn.textContent = (dir === 'up' || dir === 'down') ? '↕' : '⟷';
+      btn.title = active ? 'Merged — click to split' : 'Merge with the feature ' + dirLabel[dir];
       btn.addEventListener('click', function(e) {
         e.stopPropagation();
-        mergeOrSplit(slotIdx, otherSlot);
+        trigger();
       });
-      seam.appendChild(btn);
-
-      card.appendChild(seam);
+      card.appendChild(btn);
     }
 
-    addSeam('right', bounds.maxCol + 1, bounds.minRow);
-    addSeam('down', bounds.minCol, bounds.maxRow + 1);
+    // Only show the "right" and "down" buttons (never "left"/"up") so each
+    // boundary between two images gets exactly one merge button, sitting
+    // between them, instead of a duplicate pointing back from each side.
+    // Every possible merge is still reachable this way, since the anchor on
+    // the left/top side of any boundary can always initiate it.
+    addDirButton('right', bounds.maxCol + 1, bounds.minRow, function() {
+      mergeOrSplit(slotIdx, columnLayout[bounds.maxCol + 1][bounds.minRow]);
+    });
+    addDirButton('down', bounds.minCol, bounds.maxRow + 1, function() {
+      mergeOrSplit(slotIdx, columnLayout[bounds.minCol][bounds.maxRow + 1]);
+    });
   }
 
   return card;
@@ -2597,6 +1583,8 @@ function renderLayoutBoard() {
     board.appendChild(colEl);
     board.appendChild(makeGap(colIdx + 1));
   });
+
+  renderBorderBoard();
 }
 
 /* ---- Custom Elements ("+ Add Element": headers, standard text, images) ---- */
@@ -2608,13 +1596,11 @@ function createCustomElement(type) {
     type: type, // 'header' | 'text' | 'image'
     text: type === 'header' ? 'NEW HEADER' : type === 'text' ? 'New standard text' : '',
     color: '#161616',
-    font: type === 'header' ? fontDefaults.headline1 : fontDefaults.fitLine1,
     mode: null, // image elements only: 'text' | 'upload' | 'library'
     image: null,
     imgText: '',
     imgTextColor: '#161616',
-    imgTextAlign: 'center',
-    imgTextFont: fontDefaults.fitDesc
+    imgTextAlign: 'center'
   };
   customElements.push(el);
   ensureElementOffset(id);
@@ -2663,65 +1649,52 @@ function createCustomElementCard(el) {
   card.appendChild(label);
 
   if (el.type === 'header' || el.type === 'text') {
-    const defaultFont = el.type === 'header' ? fontDefaults.headline1 : fontDefaults.fitLine1;
     const ig = document.createElement('div');
     ig.className = 'ig';
     const input = document.createElement('input');
     input.type = 'text';
     input.value = el.text;
     input.placeholder = el.type === 'header' ? 'Header text' : 'Text';
-    input.style.color = el.color;
-    input.style.fontFamily = el.font || defaultFont;
     input.addEventListener('input', function(e) { el.text = e.target.value; });
     ig.appendChild(input);
     card.appendChild(ig);
 
-    const editRow = buildEditTrigger(
-      function() { return { color: el.color, opacity: 100 }; },
-      function(refreshSwatch) {
-        // Live-styled preview mirroring this element's own field, same as
-        // the grid feature's Add Text preview — typing here also writes
-        // back into the real sidebar input above.
-        const previewInput = document.createElement('input');
-        previewInput.type = 'text';
-        previewInput.className = 'edit-modal-preview-input';
-        previewInput.value = input.value;
-        previewInput.style.color = el.color;
-        previewInput.style.fontFamily = el.font || defaultFont;
-        previewInput.addEventListener('input', function(e) {
-          input.value = e.target.value;
-          el.text = e.target.value;
-        });
-        const previewWrap = document.createElement('div');
-        previewWrap.className = 'edit-modal-row';
-        previewWrap.appendChild(previewInput);
-        const contentSection = document.createElement('div');
-        contentSection.appendChild(previewWrap);
-
-        openEditModal({
-          title: 'Edit ' + (el.type === 'header' ? 'Header' : 'Standard Text') + ' Style',
-          contentSection: contentSection,
-          color: {
-            get: function() { return el.color; },
-            set: function(v) {
-              el.color = v;
-              input.style.color = v;
-              previewInput.style.color = v;
-            }
-          },
-          font: {
-            get: function() { return el.font || defaultFont; },
-            set: function(v) {
-              el.font = v;
-              input.style.fontFamily = v;
-              previewInput.style.fontFamily = v;
-            }
-          },
-          onClose: refreshSwatch
-        });
+    const colorRow = document.createElement('div');
+    colorRow.className = 'slot-text-color-row';
+    colorRow.style.marginTop = '6px';
+    const colorLabel = document.createElement('span');
+    colorLabel.className = 'slot-text-color-label';
+    colorLabel.textContent = 'Color';
+    const colorInput = document.createElement('input');
+    colorInput.type = 'color';
+    colorInput.className = 'slot-text-color';
+    colorInput.value = el.color;
+    const hexInput = document.createElement('input');
+    hexInput.type = 'text';
+    hexInput.className = 'slot-text-color-hex';
+    hexInput.maxLength = 7;
+    hexInput.placeholder = '#RRGGBB';
+    hexInput.value = el.color.toUpperCase();
+    colorInput.addEventListener('input', function(e) {
+      el.color = e.target.value;
+      hexInput.value = e.target.value.toUpperCase();
+    });
+    hexInput.addEventListener('change', function(e) {
+      let v = e.target.value.trim();
+      if (v && v.charAt(0) !== '#') v = '#' + v;
+      if (isValidHex(v)) {
+        v = v.toUpperCase();
+        el.color = v;
+        colorInput.value = v;
+        hexInput.value = v;
+      } else {
+        hexInput.value = el.color.toUpperCase();
       }
-    );
-    card.appendChild(editRow);
+    });
+    colorRow.appendChild(colorLabel);
+    colorRow.appendChild(colorInput);
+    colorRow.appendChild(hexInput);
+    card.appendChild(colorRow);
   } else if (el.type === 'image') {
     const modeRow = document.createElement('div');
     modeRow.className = 'slot-mode-row';
@@ -2758,61 +1731,67 @@ function createCustomElementCard(el) {
       textInput.placeholder = 'Element text (multiple lines OK)';
       textInput.rows = 3;
       textInput.value = el.imgText || '';
-      textInput.style.color = el.imgTextColor || '#161616';
-      textInput.style.fontFamily = el.imgTextFont || fontDefaults.fitDesc;
       textInput.addEventListener('input', function(e) { el.imgText = e.target.value; });
       textPanel.appendChild(textInput);
 
-      const editRow = buildEditTrigger(
-        function() { return { color: el.imgTextColor || '#161616', opacity: 100 }; },
-        function(refreshSwatch) {
-          // Live-styled preview mirroring the textarea above, same as the
-          // grid feature's Add Text preview — typing here also writes back
-          // into the real sidebar textarea.
-          const previewTextarea = document.createElement('textarea');
-          previewTextarea.className = 'edit-modal-textarea';
-          previewTextarea.rows = 3;
-          previewTextarea.value = textInput.value;
-          previewTextarea.style.color = el.imgTextColor || '#161616';
-          previewTextarea.style.fontFamily = el.imgTextFont || fontDefaults.fitDesc;
-          previewTextarea.addEventListener('input', function(e) {
-            textInput.value = e.target.value;
-            el.imgText = e.target.value;
-          });
-          const previewWrap = document.createElement('div');
-          previewWrap.className = 'edit-modal-row';
-          previewWrap.appendChild(previewTextarea);
-          const contentSection = document.createElement('div');
-          contentSection.appendChild(previewWrap);
-
-          openEditModal({
-            title: 'Edit Image Text Style',
-            contentSection: contentSection,
-            color: {
-              get: function() { return el.imgTextColor || '#161616'; },
-              set: function(v) {
-                el.imgTextColor = v;
-                textInput.style.color = v;
-                previewTextarea.style.color = v;
-              }
-            },
-            font: {
-              get: function() { return el.imgTextFont || fontDefaults.fitDesc; },
-              set: function(v) {
-                el.imgTextFont = v;
-                textInput.style.fontFamily = v;
-                previewTextarea.style.fontFamily = v;
-              }
-            },
-            align: {
-              get: function() { return el.imgTextAlign || 'center'; },
-              set: function(v) { el.imgTextAlign = v; }
-            },
-            onClose: refreshSwatch
-          });
+      const colorRow = document.createElement('div');
+      colorRow.className = 'slot-text-color-row';
+      const colorLabel = document.createElement('span');
+      colorLabel.className = 'slot-text-color-label';
+      colorLabel.textContent = 'Color';
+      const colorInput = document.createElement('input');
+      colorInput.type = 'color';
+      colorInput.className = 'slot-text-color';
+      colorInput.value = el.imgTextColor || '#161616';
+      const hexInput = document.createElement('input');
+      hexInput.type = 'text';
+      hexInput.className = 'slot-text-color-hex';
+      hexInput.maxLength = 7;
+      hexInput.placeholder = '#RRGGBB';
+      hexInput.value = (el.imgTextColor || '#161616').toUpperCase();
+      colorInput.addEventListener('input', function(e) {
+        el.imgTextColor = e.target.value;
+        hexInput.value = e.target.value.toUpperCase();
+      });
+      hexInput.addEventListener('change', function(e) {
+        let v = e.target.value.trim();
+        if (v && v.charAt(0) !== '#') v = '#' + v;
+        if (isValidHex(v)) {
+          v = v.toUpperCase();
+          el.imgTextColor = v;
+          colorInput.value = v;
+          hexInput.value = v;
+        } else {
+          hexInput.value = (el.imgTextColor || '#161616').toUpperCase();
         }
-      );
-      textPanel.appendChild(editRow);
+      });
+      colorRow.appendChild(colorLabel);
+      colorRow.appendChild(colorInput);
+      colorRow.appendChild(hexInput);
+      textPanel.appendChild(colorRow);
+
+      const alignRow = document.createElement('div');
+      alignRow.className = 'slot-text-color-row';
+      const alignLabel = document.createElement('span');
+      alignLabel.className = 'slot-text-color-label';
+      alignLabel.textContent = 'Align';
+      const alignSelect = document.createElement('select');
+      alignSelect.className = 'slot-text-align';
+      [
+        { v: 'top', label: 'Top' },
+        { v: 'center', label: 'Center' },
+        { v: 'bottom', label: 'Bottom' }
+      ].forEach(function(opt) {
+        const o = document.createElement('option');
+        o.value = opt.v;
+        o.textContent = opt.label;
+        if ((el.imgTextAlign || 'center') === opt.v) o.selected = true;
+        alignSelect.appendChild(o);
+      });
+      alignSelect.addEventListener('change', function(e) { el.imgTextAlign = e.target.value; });
+      alignRow.appendChild(alignLabel);
+      alignRow.appendChild(alignSelect);
+      textPanel.appendChild(alignRow);
 
       card.appendChild(textPanel);
     } else if (el.mode === 'library') {
@@ -2874,18 +1853,109 @@ function initCustomElementControls() {
   renderCustomElementsList();
 }
 
-// Shows/hides every border in the grid at once (see the "Show all" /
-// "Hide all" links next to the layout board). Leaves each segment's own
-// custom color untouched — only the on/off state changes.
+function createHToggle(slotIdx, isOn, gridCol, gridRow) {
+  const ht = document.createElement('div');
+  ht.className = 'border-h-toggle' + (isOn ? ' on' : '');
+  ht.style.gridColumn = String(gridCol);
+  ht.style.gridRow = String(gridRow);
+  ht.title = 'Toggle border below image ' + (slotIdx + 1);
+  ht.innerHTML = '<div class="bar"></div>';
+  ht.addEventListener('click', function() {
+    const b = getSlotBorders(slotIdx);
+    b.bottom = !b.bottom;
+    renderBorderBoard();
+  });
+  return ht;
+}
+
+function createVToggle(slotIdx, isOn, gridCol, gridRow) {
+  const vt = document.createElement('div');
+  vt.className = 'border-v-toggle' + (isOn ? ' on' : '');
+  vt.style.gridColumn = String(gridCol);
+  vt.style.gridRow = String(gridRow);
+  vt.title = 'Toggle border to the right of image ' + (slotIdx + 1);
+  vt.innerHTML = '<div class="bar"></div>';
+  vt.addEventListener('click', function() {
+    const b = getSlotBorders(slotIdx);
+    b.right = !b.right;
+    renderBorderBoard();
+  });
+  return vt;
+}
+
+function renderBorderBoard() {
+  validateMergeGroups();
+
+  const board = document.getElementById('borderBoard');
+  board.innerHTML = '';
+
+  const numCols = columnLayout.length;
+  const maxRows = Math.max.apply(null, columnLayout.map(function(c) { return c.length; }));
+
+  const colTemplate = [];
+  for (let c = 0; c < numCols; c++) {
+    colTemplate.push('34px');
+    if (c < numCols - 1) colTemplate.push('10px');
+  }
+  const rowTemplate = [];
+  for (let r = 0; r < maxRows; r++) {
+    rowTemplate.push('34px');
+    if (r < maxRows - 1) rowTemplate.push('10px');
+  }
+  board.style.gridTemplateColumns = colTemplate.join(' ');
+  board.style.gridTemplateRows = rowTemplate.join(' ');
+
+  columnLayout.forEach(function(colArray, colIdx) {
+    colArray.forEach(function(slotIdx, rowIdx) {
+      const group = findGroupForSlot(slotIdx);
+      if (group && groupAnchor(group) !== slotIdx) return;
+
+      const bounds = group ? getGroupBounds(group) : { minCol: colIdx, maxCol: colIdx, minRow: rowIdx, maxRow: rowIdx };
+      const isMerged = !!group && group.slots.length > 1;
+      const gridCol = bounds.minCol * 2 + 1;
+      const gridRow = bounds.minRow * 2 + 1;
+      const colSpanTracks = 2 * (bounds.maxCol - bounds.minCol + 1) - 1;
+      const rowSpanTracks = 2 * (bounds.maxRow - bounds.minRow + 1) - 1;
+
+      const box = document.createElement('div');
+      box.className = 'border-cell' + (isMerged ? ' border-cell-merged' : '');
+      box.textContent = (isMerged ? '⬒ ' : '') + String(slotIdx + 1);
+      if (isMerged) box.title = 'Merged banner image (Image ' + (slotIdx + 1) + ')';
+      box.style.gridColumn = colSpanTracks > 1 ? gridCol + ' / span ' + colSpanTracks : String(gridCol);
+      box.style.gridRow = rowSpanTracks > 1 ? gridRow + ' / span ' + rowSpanTracks : String(gridRow);
+      board.appendChild(box);
+
+      const bs = getSlotBorders(slotIdx);
+
+      if (bounds.maxRow < colArray.length - 1) {
+        const ht = createHToggle(slotIdx, bs.bottom, gridCol, gridRow + rowSpanTracks);
+        if (colSpanTracks > 1) {
+          ht.classList.add('border-h-toggle-wide');
+          ht.style.gridColumn = gridCol + ' / span ' + colSpanTracks;
+        }
+        board.appendChild(ht);
+      }
+      if (bounds.maxCol < numCols - 1) {
+        const vt = createVToggle(slotIdx, bs.right, gridCol + colSpanTracks, gridRow);
+        if (rowSpanTracks > 1) {
+          vt.classList.add('border-v-toggle-tall');
+          vt.style.gridRow = gridRow + ' / span ' + rowSpanTracks;
+        }
+        board.appendChild(vt);
+      }
+    });
+  });
+}
+
 function setAllBorders(state) {
   columnLayout.forEach(function(colArray) {
     colArray.forEach(function(slotIdx) {
       const b = getSlotBorders(slotIdx);
-      b.right.on = state;
-      b.bottom.on = state;
+      b.right = state;
+      b.bottom = state;
     });
   });
-  renderLayoutBoard();
+  renderBorderBoard();
 }
 
 function handleSlotUpload(idx, e) {
@@ -3360,6 +2430,10 @@ function initBackgroundControls() {
   // a "Loading…" flash. openBgLibraryModal() still handles fetching (and
   // retrying on error) itself if this hasn't resolved yet.
   fetchBgLibraryTree().catch(function() {});
+  document.getElementById('backgroundOpacity').addEventListener('input', function(e) {
+    backgroundImageOpacity = parseInt(e.target.value, 10);
+    document.getElementById('backgroundOpacityVal').textContent = backgroundImageOpacity + '%';
+  });
 }
 
 // Draws `img` into the full DESIGN_W x DESIGN_H canvas area, cropping
@@ -3381,227 +2455,6 @@ function drawBackgroundCover(ctx, img, W, H) {
     sy = (img.naturalHeight - sh) / 2;
   }
   ctx.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
-}
-
-/* ---- AI Optimize ----
-   "Optimize With AI" analyzes the currently-selected background image's
-   colors and picks contrast-safe text/accent/background colors for every
-   styleable element on the flyer (logo, headline/tagline, callout box,
-   footer). This is a pure client-side color-theory heuristic — dominant-hue
-   extraction plus luminance-based contrast — not a network call to a real
-   AI model, so there's no API key or per-use cost. It deliberately leaves
-   fonts alone: picking a font that matches an image's mood needs actual
-   visual understanding, which pixel math can't do. */
-
-// Perceived brightness of an RGB triplet, 0 (black) to 1 (white).
-function relLuminance(r, g, b) {
-  return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-}
-
-// Near-black or near-white — whichever reads clearly against a surface of
-// the given luminance.
-function contrastTextColor(lum) {
-  return lum > 0.55 ? '#161616' : '#FFFFFF';
-}
-
-// Draws `img` cropped to the flyer's 8.5x11 aspect ratio (the same crop
-// drawBackgroundCover() uses for the real render) into a small offscreen
-// canvas, then walks every pixel once to gather what optimizeWithAI()
-// needs: an overall average color + brightness variance (how "busy" the
-// image is), a top-band average (roughly where the logo/headline/tagline
-// sit) and a bottom-band average (roughly the footer bar), and a weighted
-// histogram of hues for picking a brand-style accent color pair.
-function sampleBackgroundStats(img) {
-  const W = 120, H = Math.round(W * (11 / 8.5));
-  const cnv = document.createElement('canvas');
-  cnv.width = W; cnv.height = H;
-  const cctx = cnv.getContext('2d');
-  drawBackgroundCover(cctx, img, W, H);
-  const data = cctx.getImageData(0, 0, W, H).data;
-
-  const topMaxY = Math.round(H * 0.22);
-  const bottomMinY = Math.round(H * 0.93);
-
-  let sumR = 0, sumG = 0, sumB = 0, sumLum = 0, sumLumSq = 0, n = 0;
-  let topR = 0, topG = 0, topB = 0, topN = 0;
-  let botR = 0, botG = 0, botB = 0, botN = 0;
-  // 12 hue buckets (30 degrees each); weight = saturation * value so vivid
-  // pixels count far more than washed-out ones, and near-gray/near-black/
-  // near-white pixels are skipped entirely — they carry no hue information.
-  const hueWeight = new Array(12).fill(0);
-  const hueWeightedSum = new Array(12).fill(0);
-
-  for (let y = 0; y < H; y++) {
-    for (let x = 0; x < W; x++) {
-      const i = (y * W + x) * 4;
-      const r = data[i], g = data[i + 1], b = data[i + 2];
-      const lum = relLuminance(r, g, b);
-      sumR += r; sumG += g; sumB += b; sumLum += lum; sumLumSq += lum * lum; n++;
-      if (y < topMaxY) { topR += r; topG += g; topB += b; topN++; }
-      if (y >= bottomMinY) { botR += r; botG += g; botB += b; botN++; }
-
-      // Saturation alone is what separates a colorful pixel from a
-      // near-white/near-gray one — a fully-lit, fully-saturated brand color
-      // (v close to 1) is exactly the kind of pixel this should catch, so
-      // there's no upper bound on v here, only a floor to exclude near-black.
-      const hsv = rgbToHsv(r, g, b);
-      if (hsv.s >= 0.18 && hsv.v >= 0.15) {
-        const bucket = Math.floor(hsv.h / 30) % 12;
-        const weight = hsv.s * hsv.v;
-        hueWeight[bucket] += weight;
-        hueWeightedSum[bucket] += hsv.h * weight;
-      }
-    }
-  }
-
-  const avgLum = sumLum / n;
-  const ranked = hueWeight
-    .map(function(w, idx) { return { idx: idx, weight: w }; })
-    .filter(function(b) { return b.weight > 0; })
-    .sort(function(a, b) { return b.weight - a.weight; });
-  function bucketHue(idx) { return hueWeightedSum[idx] / hueWeight[idx]; }
-
-  return {
-    overall: { lum: avgLum, variance: sumLumSq / n - avgLum * avgLum },
-    top: topN ? { lum: relLuminance(topR / topN, topG / topN, topB / topN) } : null,
-    bottom: botN ? { lum: relLuminance(botR / botN, botG / botN, botB / botN) } : null,
-    // Total hue "signal" strength relative to pixel count — low means the
-    // image is mostly gray/neutral (a black & white photo, plain concrete,
-    // etc.) and shouldn't be trusted to pick an accent hue from.
-    hueSignal: ranked.reduce(function(s, b) { return s + b.weight; }, 0) / n,
-    hue1: ranked[0] ? bucketHue(ranked[0].idx) : null,
-    hue2: ranked[1] && Math.abs(ranked[1].idx - ranked[0].idx) >= 3 ? bucketHue(ranked[1].idx) : null
-  };
-}
-
-// Builds a vivid, brand-weight accent color from a hue (0-360). Uses a
-// fixed saturation/value rather than the image's actual (often washed-out)
-// saturation, so the result reads like a deliberate design choice rather
-// than a literal color-picked pixel.
-function accentFromHue(h, sat, val) {
-  const rgb = hsvToRgb(((h % 360) + 360) % 360, sat != null ? sat : 0.92, val != null ? val : 0.94);
-  return rgbToHex(rgb.r, rgb.g, rgb.b);
-}
-
-// Sets a colorState field the way the AI optimizer should: skip it
-// entirely if the user already customized it by hand and "Ignore previous
-// changes" isn't checked, and — when it does write — never mark the field
-// as user-customized (markCustomized:false), so a later default-mode run
-// can still freely adjust the AI's own previous picks.
-function aiSetColor(key, hex, ignorePrevious) {
-  if (!ignorePrevious && colorCustomized[key]) return;
-  setColor(key, hex, undefined, false);
-}
-
-function optimizeWithAI() {
-  if (!backgroundImage) {
-    alert('Choose a background image first — the AI optimizer picks colors based on what’s behind the flyer.');
-    return;
-  }
-
-  const ignorePreviousCb = document.getElementById('aiIgnorePreviousChanges');
-  const ignorePrevious = !!(ignorePreviousCb && ignorePreviousCb.checked);
-
-  const stats = sampleBackgroundStats(backgroundImage);
-
-  // Accent pair: pulled from the image's dominant hue(s) when it actually
-  // has enough color signal (a colorful photo or graphic background);
-  // falls back to the app's own brand orange/red when the image is mostly
-  // neutral (grayscale, concrete, plain white) so the flyer doesn't end up
-  // with a dull gray accent.
-  let accent1, accent2;
-  if (stats.hueSignal > 0.02 && stats.hue1 != null) {
-    accent1 = accentFromHue(stats.hue1);
-    accent2 = stats.hue2 != null
-      ? accentFromHue(stats.hue2)
-      // No second distinct hue cluster — use a neighboring hue at a deeper
-      // value instead, mirroring the relationship between the app's own
-      // default accent pair (FC5D01 / EF4123).
-      : accentFromHue(stats.hue1 - 15, 0.92, 0.80);
-  } else {
-    accent1 = colorDefaults.pColor;
-    accent2 = colorDefaults.headline2Color;
-  }
-  const accentRgb = hexToRgb(accent1);
-  const accentText = contrastTextColor(relLuminance(accentRgb.r, accentRgb.g, accentRgb.b));
-
-  const topText = contrastTextColor(stats.top ? stats.top.lum : stats.overall.lum);
-  const overallLight = stats.overall.lum > 0.55;
-  const calloutBg = overallLight ? '#FFFFFF' : '#161616';
-  const calloutText = overallLight ? '#161616' : '#FFFFFF';
-  const calloutFinePrint = overallLight ? '#333333' : '#DDDDDD';
-  // Busier/higher-contrast images need a more opaque card to stay legible;
-  // calmer ones can let more of the photo show through.
-  const calloutOpacity = Math.round(Math.max(55, Math.min(92, 60 + stats.overall.variance * 300)));
-  // Feature (grid) slots sit over the raw photo, same as the callout box's
-  // fill would if it had none — so they get the same light/dark contrast
-  // call as the callout box's own text.
-  const gridSlotTextColor = calloutText;
-
-  aiSetColor('pColor', accent1, ignorePrevious);
-  aiSetColor('bowlingColor', accent1, ignorePrevious);
-  aiSetColor('pureItColor', topText, ignorePrevious);
-  aiSetColor('headline1Color', topText, ignorePrevious);
-  aiSetColor('headline2Color', accent2, ignorePrevious);
-  aiSetColor('taglineColor', topText, ignorePrevious);
-  aiSetColor('taglineFlankColor', accent1, ignorePrevious);
-  aiSetColor('calloutBorderColor', accent1, ignorePrevious);
-  aiSetColor('calloutBgColor', calloutBg, ignorePrevious);
-  aiSetColor('calloutPColor', accent1, ignorePrevious);
-  aiSetColor('fitLine1Color', calloutText, ignorePrevious);
-  aiSetColor('fitLine2Color', accent2, ignorePrevious);
-  aiSetColor('fitDescColor', calloutText, ignorePrevious);
-  aiSetColor('finePrintColor', calloutFinePrint, ignorePrevious);
-  aiSetColor('footerBgColor', accent1, ignorePrevious);
-  aiSetColor('footerTextColor', accentText, ignorePrevious);
-
-  if (ignorePrevious || !calloutBgOpacityCustomized) calloutBgOpacity = calloutOpacity;
-
-  // A text-mode slot's color only gets flagged "customized" once the user
-  // actually picks one in its Edit modal (see openSlotEditModal()) — added
-  // text with no color choice yet stays uncustomized, so this fills it in
-  // the same way toggleDarkMode() does for these slots.
-  let slotTextChanged = false;
-  for (let i = 0; i < slotModes.length; i++) {
-    if (slotModes[i] !== 'text') continue;
-    if (!slotTexts[i]) continue;
-    if (!ignorePrevious && slotTextColorsCustomized[i]) continue;
-    if (slotTextColors[i] !== gridSlotTextColor) {
-      slotTextColors[i] = gridSlotTextColor;
-      slotTextChanged = true;
-    }
-  }
-  if (slotTextChanged) renderLayoutBoard();
-
-  // Grid seam (Feature border) colors — same accent as everything else,
-  // same "leave it alone once the user has picked one" rule via
-  // borderColorsCustomized (edge.color itself starts out null, but once
-  // this writes a color the null-check alone can no longer tell an AI pick
-  // apart from a manual one, hence the separate flag).
-  let bordersChanged = false;
-  for (let i = 0; i < slotModes.length; i++) {
-    const b = getSlotBorders(i);
-    ['right', 'bottom'].forEach(function(side) {
-      const key = i + '_' + side;
-      if (!ignorePrevious && borderColorsCustomized[key]) return;
-      if (b[side].color !== accent1) {
-        b[side].color = accent1;
-        bordersChanged = true;
-      }
-    });
-  }
-  if (bordersChanged) renderLayoutBoard();
-
-  // Show the result rather than leaving the person to scroll and find it
-  // themselves — previewFlyer() already does exactly that (render +
-  // scrollIntoView), same as clicking "Preview Image" would.
-  previewFlyer();
-}
-
-function initAiOptimizeButton() {
-  const btn = document.getElementById('aiOptimizeBtn');
-  if (!btn) return;
-  btn.addEventListener('click', optimizeWithAI);
 }
 
 function val(id, fallback) {
@@ -3778,11 +2631,11 @@ function wrapMultilineText(ctx, text, maxWidth) {
 // typed, additionally auto-wrapping any line that's too wide, then shrinks
 // (re-wrapping each time) until the whole block fits, down to minSize.
 // `align` is 'top' | 'center' (default) | 'bottom'.
-function drawTextContain(ctx, text, cx, cy, cw, ch, color, align, padRatio, fontFamily) {
+function drawTextContain(ctx, text, cx, cy, cw, ch, color, align, padRatio) {
   padRatio = padRatio || 0.86;
   align = align || 'center';
   const maxW = cw * padRatio, maxH = ch * padRatio;
-  const family = fontFamily || "'Montserrat', 'Oswald', sans-serif";
+  const family = "'Montserrat', 'Oswald', sans-serif";
   const maxSize = 34, minSize = 12;
   let size = maxSize, lines = [], lineHeight = 0;
   while (size >= minSize) {
@@ -4137,10 +2990,8 @@ function drawSlantedHeadlineLine(ctx, text, cx, y, maxW, fontStr, color) {
 // page load/refresh, or when the user clicks "Reset positions". The footer
 // bar is deliberately left out — it's excluded from dragging and resizing
 // entirely (it always sits flush along the bottom edge, so moving or
-// resizing it independently doesn't make sense). Fine print is left out
-// too, now that it's drawn inside the callout box itself — it moves and
-// resizes along with 'calloutBox' rather than having its own handle.
-const DRAG_ELEMENT_KEYS = ['logo', 'headline1', 'headline2', 'tagline', 'grid', 'calloutBox'];
+// resizing it independently doesn't make sense).
+const DRAG_ELEMENT_KEYS = ['logo', 'headline1', 'headline2', 'tagline', 'grid', 'calloutBox', 'finePrint'];
 
 // The full set of draggable keys at any moment — the fixed built-ins plus
 // one entry per user-added custom element (id doubles as its drag key).
@@ -4340,20 +3191,13 @@ function renderFlyerToCanvas(interactive) {
   const TAGLINE_H = tagline ? 66 * TOP_ROWS_SCALE : 20;
   const GRID_TOP_GAP = 38;
   const FITBOX_GAP = 38;
-  // Fine print now lives inside the callout box as one more line of text —
-  // effectively a "Callout Line 3" directly under the description, in the
-  // same left-aligned text column, just kept at its own smaller size/color/
-  // font. CB_HEIGHT stays the fixed size of just the icon/headline1/
-  // headline2/description area (used below to keep that content centered
-  // the same way it always was); FITBOX_H is the box's actual total drawn
-  // height, with fine print's line added on using the same small gap scale
-  // as the gap between Callout Line 2 and the description, not a separate
-  // padded-off section.
+  const FITBOX_H = CB_HEIGHT; // fixed per spec — content is constrained to fit inside, not the other way around
+  // Fine print sized up to match, with just enough gap above (to the box)
+  // and below (to the footer) to keep it from touching either — no extra
+  // decorative whitespace.
   const FINEPRINT_SIZE = 20;
-  const FP_GAP = finePrint ? 10 * CB_SCALE : 0;
-  const FP_H = finePrint ? Math.round(FINEPRINT_SIZE * 1.2) : 0;
-  const FP_BOTTOM_MARGIN = finePrint ? 14 * CB_SCALE : 0; // small close-out so it doesn't touch the border
-  const FITBOX_H = CB_HEIGHT + FP_GAP + FP_H + FP_BOTTOM_MARGIN;
+  const FINEPRINT_GAP = finePrint ? 8 : 0;
+  const FINEPRINT_H = finePrint ? Math.round(FINEPRINT_SIZE * 1.2) : 0;
   const FOOTER_GAP = 10;
   const FOOTER_H = 86;
 
@@ -4363,7 +3207,7 @@ function renderFlyerToCanvas(interactive) {
   const DESIGN_H = Math.round(DESIGN_W * (11 / 8.5));
 
   const FIXED_H = HEADER_H + HEADLINE_H + TAGLINE_H + GRID_TOP_GAP
-                + FITBOX_GAP + FITBOX_H
+                + FITBOX_GAP + FITBOX_H + FINEPRINT_GAP + FINEPRINT_H
                 + FOOTER_GAP + FOOTER_H;
 
   const MIN_ROW_H = 90;
@@ -4415,7 +3259,7 @@ function renderFlyerToCanvas(interactive) {
   const line2Baseline = line1Baseline + LINE_GAP + hSize2 * CAP_RATIO;
 
   if (headline1) {
-    const h1FontStr = "400 " + Math.round(hSize1) + "px " + fontState.headline1;
+    const h1FontStr = "400 " + Math.round(hSize1) + "px 'Bebas Neue', 'Anton', 'Arial Narrow', sans-serif";
     elementPivots.headline1 = { x: DESIGN_W/2, y: line1Baseline - hSize1 * CAP_RATIO / 2 };
     ctx.save();
     applyElementTransform(ctx, 'headline1');
@@ -4428,7 +3272,7 @@ function renderFlyerToCanvas(interactive) {
   }
 
   if (headline2) {
-    const h2FontStr = "400 " + Math.round(hSize2) + "px " + fontState.headline2;
+    const h2FontStr = "400 " + Math.round(hSize2) + "px 'Bebas Neue', 'Anton', 'Arial Narrow', sans-serif";
     elementPivots.headline2 = { x: DESIGN_W/2, y: line2Baseline - hSize2 * CAP_RATIO / 2 };
     ctx.save();
     applyElementTransform(ctx, 'headline2');
@@ -4448,8 +3292,8 @@ function renderFlyerToCanvas(interactive) {
     applyElementTransform(ctx, 'tagline');
     ctx.fillStyle = colorState.taglineColor;
     ctx.textAlign = 'center';
-    const taglineW = drawSmallCaps(ctx, tagline, DESIGN_W/2, taglineY + 7, "800 21px " + fontState.tagline, 5, true);
-    ctx.strokeStyle = colorState.taglineFlankColor; ctx.lineWidth = 3;
+    const taglineW = drawSmallCaps(ctx, tagline, DESIGN_W/2, taglineY + 7, "800 21px 'Montserrat', 'Oswald', sans-serif", 5, true);
+    ctx.strokeStyle = colorState.highlightColor; ctx.lineWidth = 3;
     const lineGap = 22, lineLen = 80;
     ctx.beginPath();
     ctx.moveTo(DESIGN_W/2 - taglineW/2 - lineGap - lineLen, taglineY);
@@ -4488,22 +3332,9 @@ function renderFlyerToCanvas(interactive) {
       const drawW = cellW * (bounds.maxCol - bounds.minCol + 1);
       const drawH = cellH * (bounds.maxRow - bounds.minRow + 1);
 
-      // Background fill, drawn first so text/images sit on top. Uses the
-      // exact same (unpadded) cell rectangle as the border gap calculations
-      // below, so adjacent cells always butt edge-to-edge regardless of
-      // each one's opacity.
-      const bgOpacity = slotBgOpacities[slotIdx];
-      if (bgOpacity) {
-        ctx.save();
-        ctx.globalAlpha = bgOpacity / 100;
-        ctx.fillStyle = slotBgColors[slotIdx] || '#FFFFFF';
-        ctx.fillRect(cellX, cellY, drawW, drawH);
-        ctx.restore();
-      }
-
       if (slotModes[slotIdx] === 'text') {
         if (slotTexts[slotIdx]) {
-          drawTextContain(ctx, slotTexts[slotIdx], cellX, cellY, drawW, drawH, slotTextColors[slotIdx] || '#161616', slotTextAligns[slotIdx] || 'center', null, slotTextFonts[slotIdx] || fontDefaults.fitDesc);
+          drawTextContain(ctx, slotTexts[slotIdx], cellX, cellY, drawW, drawH, slotTextColors[slotIdx] || '#161616', slotTextAligns[slotIdx] || 'center');
         }
       } else {
         const img = slotImages[slotIdx];
@@ -4513,9 +3344,7 @@ function renderFlyerToCanvas(interactive) {
       }
 
       const b = getSlotBorders(slotIdx);
-      // Padded (default) leaves a gap so border lines don't touch at
-      // corners; connected runs them fully edge-to-edge.
-      const BORDER_GAP = gridBorderStyle === 'connected' ? 0 : 14;
+      const BORDER_GAP = 14; // keeps border lines from touching at corners
       const BORDER_W = 2;
       // Draw borders as filled rectangles rather than stroked lines. A stroked
       // line's on-screen weight depends on where its centerline falls relative
@@ -4524,15 +3353,14 @@ function renderFlyerToCanvas(interactive) {
       // does), which made the two look like different thicknesses/sharpness
       // even at matching lineWidth. A fillRect has no centerline ambiguity —
       // both directions render identically.
-      if (bounds.maxCol < numCols - 1 && b.right.on) {
-        ctx.fillStyle = b.right.color || DEFAULT_BORDER_COLOR;
+      ctx.fillStyle = colorState.highlightColor;
+      if (bounds.maxCol < numCols - 1 && b.right) {
         const vx = Math.round(cellX + drawW - BORDER_W / 2);
         const vy0 = Math.round(cellY + BORDER_GAP);
         const vy1 = Math.round(cellY + drawH - BORDER_GAP);
         ctx.fillRect(vx, vy0, BORDER_W, vy1 - vy0);
       }
-      if (bounds.maxRow < colArray.length - 1 && b.bottom.on) {
-        ctx.fillStyle = b.bottom.color || DEFAULT_BORDER_COLOR;
+      if (bounds.maxRow < colArray.length - 1 && b.bottom) {
         const hy = Math.round(cellY + drawH - BORDER_W / 2);
         const hx0 = Math.round(cellX + BORDER_GAP);
         const hx1 = Math.round(cellX + drawW - BORDER_GAP);
@@ -4544,12 +3372,7 @@ function renderFlyerToCanvas(interactive) {
   elementBounds.grid = { x: gridX, y: gridY, w: gridW, h: GRID_H };
 
   y = gridY + GRID_H + FITBOX_GAP;
-  // fbH is the box's full drawn height, fine print included (see FITBOX_H
-  // above) — the border/fill are drawn at this height, but the icon and
-  // headline/body content below are still centered against just CB_HEIGHT
-  // (the icon/headline/body area alone) so adding fine print grows the box
-  // downward without shifting anything that was already centered above it.
-  const fbX = (DESIGN_W - CB_WIDTH) / 2, fbY = y, fbW = CB_WIDTH, fbH = FITBOX_H, radius = CB_RADIUS;
+  const fbX = (DESIGN_W - CB_WIDTH) / 2, fbY = y, fbW = CB_WIDTH, fbH = CB_HEIGHT, radius = CB_RADIUS;
   elementPivots.calloutBox = { x: fbX + fbW / 2, y: fbY + fbH / 2 };
   ctx.save();
   applyElementTransform(ctx, 'calloutBox');
@@ -4572,22 +3395,19 @@ function renderFlyerToCanvas(interactive) {
     ctx.fill();
   }
   fitboxPath();
-  ctx.strokeStyle = colorState.calloutBorderColor; ctx.lineWidth = CB_BORDER_W;
+  ctx.strokeStyle = colorState.highlightColor; ctx.lineWidth = CB_BORDER_W;
   ctx.stroke();
 
-  // Icon column: a fixed-width column holding the centered "P" icon. It's
-  // centered against the box's full height (fbH, fine print included) so
-  // adding a fine print line re-centers the icon rather than leaving it
-  // pinned to the old, shorter icon/headline/body area alone.
+  // Icon column: a fixed-width column holding the centered "P" icon — it
+  // never moves regardless of how much text is in the two columns beside it.
+  // (No circle outline anymore — just the icon glyph itself, same position.)
   const iconColX = fbX + CB_PAD_LEFT;
   const iconCx = iconColX + CB_ICON_COL_W / 2, iconCy = fbY + fbH / 2;
 
   // "P" icon from the Pure It Bowling logo — cropped to just the glyph
   // (transparent padding trimmed off) and centered inside the icon circle.
-  // The glyph's color is its own "Callout Box 'P' Icon Color" (colorState.
-  // calloutPColor), which defaults to matching the top logo's "P" Icon
-  // Color and can be kept in sync via the "Link to top logo P color"
-  // checkbox — see setColor()'s one-way propagation for pColor.
+  // The glyph itself (not the circle around it) is tied to the logo's own
+  // "P" Icon Color, so the two stay in sync if that's changed.
   const pBBox = getOpaqueBBox(pIconLayerImg);
   if (pBBox) {
     const pIconBoxSize = CB_ICON_DIAM * 0.80;
@@ -4602,7 +3422,7 @@ function renderFlyerToCanvas(interactive) {
     // A small optical nudge right/down balances the margins visually.
     const pCx = iconCx + CB_ICON_DIAM * 0.05, pCy = iconCy + CB_ICON_DIAM * 0.02;
     const pDx = pCx - pDrawW / 2, pDy = pCy - pDrawH / 2;
-    drawRecoloredLayerCropped(ctx, pIconLayerImg, colorState.calloutPColor, pBBox, pDx, pDy, pDrawW, pDrawH);
+    drawRecoloredLayerCropped(ctx, pIconLayerImg, colorState.pColor, pBBox, pDx, pDy, pDrawW, pDrawH);
   }
 
   // Text column begins exactly the spec'd gap to the right of the icon
@@ -4620,7 +3440,7 @@ function renderFlyerToCanvas(interactive) {
   const h1BlockH = fitLine1 ? CB_H1_SIZE + CB_H1_GAP : 0;
   const h2BlockH = fitLine2 ? CB_H2_SIZE + CB_H2_GAP : 0;
   const totalContentH = h1BlockH + h2BlockH + bodyBlockH;
-  let ty = fbY + (CB_HEIGHT - totalContentH) / 2;
+  let ty = fbY + (fbH - totalContentH) / 2;
 
   ctx.textAlign = 'left';
   if (fitLine1) {
@@ -4633,7 +3453,7 @@ function renderFlyerToCanvas(interactive) {
     // more headroom than 5% to actually fit a 636px column, so the floor here
     // is much lower to make sure it always does.
     if ('letterSpacing' in ctx) ctx.letterSpacing = CB_H1_TRACKING + 'px';
-    fitText(ctx, fitLine1, textX, ty + CB_H1_SIZE * CAP_RATIO, calloutLineMaxW, "800 " + Math.round(CB_H1_SIZE) + "px " + fontState.fitLine1, 16);
+    fitText(ctx, fitLine1, textX, ty + CB_H1_SIZE * CAP_RATIO, calloutLineMaxW, "800 " + Math.round(CB_H1_SIZE) + "px 'Montserrat', 'Archivo Black', sans-serif", 16);
     if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
     ty += CB_H1_SIZE + CB_H1_GAP;
   }
@@ -4641,56 +3461,59 @@ function renderFlyerToCanvas(interactive) {
   if (fitLine2) {
     ctx.fillStyle = colorState.fitLine2Color;
     if ('letterSpacing' in ctx) ctx.letterSpacing = CB_H2_TRACKING + 'px';
-    fitText(ctx, fitLine2, textX, ty + CB_H2_SIZE * CAP_RATIO, calloutLineMaxW, "800 " + Math.round(CB_H2_SIZE) + "px " + fontState.fitLine2, 16);
+    fitText(ctx, fitLine2, textX, ty + CB_H2_SIZE * CAP_RATIO, calloutLineMaxW, "800 " + Math.round(CB_H2_SIZE) + "px 'Montserrat', 'Archivo Black', sans-serif", 16);
     if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
     ty += CB_H2_SIZE + CB_H2_GAP;
   }
 
   // Body copy: regular description color/weight, except the word "FREE"
   // which renders bold in the highlight/accent color.
-  const bodyFont = "500 " + Math.round(CB_BODY_SIZE) + "px " + fontState.fitDesc;
-  const bodyBoldFont = "800 " + Math.round(CB_BODY_SIZE) + "px " + fontState.fitDesc;
+  const bodyFont = "500 " + Math.round(CB_BODY_SIZE) + "px 'Montserrat', 'Oswald', sans-serif";
+  const bodyBoldFont = "800 " + Math.round(CB_BODY_SIZE) + "px 'Montserrat', 'Archivo Black', sans-serif";
   for (let i = 0; i < descLines.length; i++) {
     const lineY = ty + CB_BODY_SIZE * 0.75 + i * CB_BODY_LINE_HEIGHT;
     // "FREE" matches "A PROFESSIONAL FIT." (fitLine2Color) rather than the
     // general highlight color, so the two stay in sync if that's changed.
     drawLineWithFreeHighlight(ctx, descLines[i], textX, lineY, bodyFont, colorState.fitDescColor, bodyBoldFont, colorState.fitLine2Color);
   }
-
-  // Fine print draws as one more line directly under the description, in
-  // the same left-aligned text column (textX/calloutLineMaxW) as Callout
-  // Line 1/2 and the description — just its own smaller size, font, and
-  // color — rather than as a separately centered, separately padded block.
-  // It's still within the callout box's own transform (ctx.restore() below)
-  // so it moves and resizes together with the box as one unit.
-  if (finePrint) {
-    const finePrintFontStr = "500 " + FINEPRINT_SIZE + "px " + fontState.finePrint;
-    const fpY = fbY + CB_HEIGHT + FP_GAP;
-    ctx.textAlign = 'left';
-    ctx.fillStyle = colorState.finePrintColor;
-    fitText(ctx, finePrint, textX, fpY + Math.round(FINEPRINT_SIZE * 1.07), calloutLineMaxW, finePrintFontStr, 15);
-  }
   ctx.restore();
   elementBounds.calloutBox = { x: fbX, y: fbY, w: fbW, h: fbH };
 
+  // Fine print and footer both key off the callout box's un-offset (fbY/fbH)
+  // position, not wherever the box was dragged to — each element's default
+  // placement stays anchored to the base layout so dragging one element
+  // doesn't reflow anything else.
+  y = fbY + fbH + FINEPRINT_GAP;
+  if (finePrint) {
+    const finePrintFontStr = "500 " + FINEPRINT_SIZE + "px 'Montserrat', 'Oswald', sans-serif";
+    elementPivots.finePrint = { x: DESIGN_W/2, y: y + FINEPRINT_H / 2 };
+    ctx.save();
+    applyElementTransform(ctx, 'finePrint');
+    ctx.textAlign = 'center';
+    ctx.fillStyle = colorState.finePrintColor;
+    fitText(ctx, finePrint, DESIGN_W / 2, y + Math.round(FINEPRINT_SIZE * 1.07), DESIGN_W - 100, finePrintFontStr, 15);
+    ctx.restore();
+    const fpW = Math.min(measureTextW(ctx, finePrint, finePrintFontStr), DESIGN_W - 100);
+    elementBounds.finePrint = { x: DESIGN_W/2 - fpW/2 - 10, y: y - 6, w: fpW + 20, h: FINEPRINT_H + 14 };
+  } else {
+    elementBounds.finePrint = null;
+  }
+
   // The footer bar is always static — not draggable or resizable — since it
-  // always sits flush along the bottom edge of the page. It keys off the
-  // callout box's un-offset (fbY/fbH) position, not wherever the box was
-  // dragged to, so dragging the box doesn't reflow the footer.
-  y = fbY + fbH + FOOTER_GAP;
+  // always sits flush along the bottom edge of the page.
+  y = y + FINEPRINT_H + FOOTER_GAP;
   const footerCy = y + FOOTER_H / 2;
-  // Footer bar background: solid Footer Background Color, or a radial
-  // "glow" gradient anchored at the center/left/right edge per
-  // footerBgGradientMode (the light source sits at that anchor point and
-  // fades outward).
-  let footerBgFillStyle = colorState.footerBgColor;
+  // Footer bar background: solid highlight color, or a radial "glow"
+  // gradient anchored at the center/left/right edge per footerBgGradientMode
+  // (the light source sits at that anchor point and fades outward).
+  let footerBgFillStyle = colorState.highlightColor;
   if (footerBgGradientMode && footerBgGradientMode !== 'solid') {
     const anchorX = footerBgGradientMode === 'left' ? 0 : footerBgGradientMode === 'right' ? DESIGN_W : DESIGN_W / 2;
     const footerBgR = footerBgGradientMode === 'center' ? DESIGN_W / 2 : DESIGN_W;
     const footerGrad = ctx.createRadialGradient(anchorX, footerCy, 0, anchorX, footerCy, footerBgR);
-    footerGrad.addColorStop(0, lightenColor(colorState.footerBgColor, 0.25));
-    footerGrad.addColorStop(0.55, colorState.footerBgColor);
-    footerGrad.addColorStop(1, darkenColor(colorState.footerBgColor, 0.25));
+    footerGrad.addColorStop(0, lightenColor(colorState.highlightColor, 0.25));
+    footerGrad.addColorStop(0.55, colorState.highlightColor);
+    footerGrad.addColorStop(1, darkenColor(colorState.highlightColor, 0.25));
     footerBgFillStyle = footerGrad;
   }
   ctx.fillStyle = footerBgFillStyle;
@@ -4703,7 +3526,7 @@ function renderFlyerToCanvas(interactive) {
   // so a single probe measurement is enough to solve for it directly.
   const FOOTER_SIDE_PAD = 50;
   const footerAvailW = DESIGN_W - FOOTER_SIDE_PAD * 2;
-  const FOOTER_FONT_FAMILY = fontState.footer || fontDefaults.footer;
+  const FOOTER_FONT_FAMILY = "'Bebas Neue', 'Archivo Black', 'Arial Black', sans-serif";
   const FOOTER_PROBE_SIZE = 100;
   ctx.font = "400 " + FOOTER_PROBE_SIZE + "px " + FOOTER_FONT_FAMILY;
   const probeScale = FOOTER_PROBE_SIZE / 26;
@@ -4739,7 +3562,7 @@ function renderFlyerToCanvas(interactive) {
     const baseY = gridY + GRID_H / 2 + idx * 36;
 
     if (el.type === 'header') {
-      const fontStr = "400 70px " + (el.font || fontDefaults.headline1);
+      const fontStr = "400 70px 'Bebas Neue', 'Anton', 'Arial Narrow', sans-serif";
       const capH = 70 * CAP_RATIO;
       elementPivots[el.id] = { x: baseX, y: baseY };
       if (el.text) {
@@ -4757,7 +3580,7 @@ function renderFlyerToCanvas(interactive) {
       // just centered instead of left-aligned, since this element floats on
       // its own instead of sitting in the callout box's text column.
       const size = 32;
-      const fontStr = "800 " + size + "px " + (el.font || fontDefaults.fitLine1);
+      const fontStr = "800 " + size + "px 'Montserrat', 'Archivo Black', sans-serif";
       elementPivots[el.id] = { x: baseX, y: baseY };
       if (el.text) {
         ctx.save();
@@ -4783,7 +3606,7 @@ function renderFlyerToCanvas(interactive) {
       ctx.save();
       applyElementTransform(ctx, el.id);
       if (el.mode === 'text') {
-        if (el.imgText) drawTextContain(ctx, el.imgText, boxX, boxY, boxW, boxH, el.imgTextColor || '#161616', el.imgTextAlign || 'center', null, el.imgTextFont || fontDefaults.fitDesc);
+        if (el.imgText) drawTextContain(ctx, el.imgText, boxX, boxY, boxW, boxH, el.imgTextColor || '#161616', el.imgTextAlign || 'center');
       } else if (el.image) {
         drawContain(ctx, el.image, boxX, boxY, boxW, boxH);
       }
@@ -4969,13 +3792,9 @@ function generateFinalImage() {
 }
 
 window.addEventListener('DOMContentLoaded', function() {
-  buildLayoutTemplateGallery();
   renderSlots();
   initColorControls();
-  initEditModalControls();
-  initTextFieldEditButtons();
   initBackgroundControls();
-  initAiOptimizeButton();
   initImageLibraryControls();
   initRemovableTextFields();
   initCanvasDragging();
@@ -4992,9 +3811,7 @@ window.addEventListener('DOMContentLoaded', function() {
     e.preventDefault();
     setAllBorders(false);
   });
-  document.getElementById('gridBorderStyle').addEventListener('change', function(e) {
-    gridBorderStyle = e.target.value;
-  });
+  document.getElementById('applyGridBtn').addEventListener('click', applyGridLayout);
 });
 </script>
 </body>
