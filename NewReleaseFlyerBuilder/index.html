@@ -410,13 +410,6 @@
     </div>
 
     <div class="ctrl-hint" id="removeBackgroundWrap" style="margin-top:8px; display:none;"><a href="#" id="removeBackgroundLink">Remove background image</a></div>
-
-    <button type="button" class="ai-optimize-btn" id="aiOptimizeBtn" style="margin-top:14px;">Optimize With AI</button>
-    <div class="ctrl-hint" style="margin-top:6px;">Analyzes your background image and automatically picks text, accent, and background colors (plus callout box opacity) for strong contrast and a matching palette — including Feature text colors and grid border colors. Fonts and layout are left as you set them. Anything you've already customized by hand is left alone unless "Ignore previous changes" is checked below.</div>
-    <div class="link-row" style="margin-top:8px; padding-bottom:0; border-bottom:none;">
-      <input type="checkbox" id="aiIgnorePreviousChanges"/>
-      <label for="aiIgnorePreviousChanges">Ignore previous changes (let AI override colors and opacity you've already set)</label>
-    </div>
   </div>
 </div>
 
@@ -560,6 +553,15 @@
       </div>
     </div>
     <div id="customElementsList"></div>
+  </div>
+</div>
+
+<div id="aiOptimizeSection" style="margin-bottom:14px;">
+  <button type="button" class="ai-optimize-btn" id="aiOptimizeBtn">Optimize With AI</button>
+  <div class="ctrl-hint" style="margin-top:6px;">Analyzes your background image and automatically picks text, accent, and background colors (plus callout box opacity) for strong contrast and a matching palette — including Feature text colors and grid border colors. Fonts and layout are left as you set them. Anything you've already customized by hand is left alone unless "Ignore previous changes" is checked below.</div>
+  <div class="link-row" style="margin-top:8px; padding-bottom:0; border-bottom:none;">
+    <input type="checkbox" id="aiIgnorePreviousChanges"/>
+    <label for="aiIgnorePreviousChanges">Ignore previous changes (let AI override colors and opacity you've already set)</label>
   </div>
 </div>
 
