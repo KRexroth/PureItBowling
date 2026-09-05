@@ -78,8 +78,6 @@
   .ai-optimize-btn{width:100%;border:none;border-radius:8px;padding:11px;background:linear-gradient(135deg, #FC5D01, #EF4123);color:#fff;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;font-family:'Barlow',sans-serif;box-shadow:0 2px 6px rgba(239,65,35,0.25);}
   .ai-optimize-btn:hover{filter:brightness(1.06);}
   .ai-optimize-btn:active{filter:brightness(0.96);}
-
-  .canvas-edit-tooltip{position:fixed;z-index:9999;background:#161616;color:#fff;font-size:11px;font-weight:700;letter-spacing:.03em;padding:5px 10px;border-radius:5px;pointer-events:none;display:none;box-shadow:0 2px 6px rgba(0,0,0,0.28);font-family:'Barlow',sans-serif;white-space:nowrap;}
   .bg-library-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(84px,1fr));gap:8px;margin-bottom:6px;}
   .bg-library-thumb{position:relative;border:2px solid #e6e6e6;border-radius:8px;overflow:hidden;cursor:pointer;aspect-ratio:8.5/11;background:#f5f5f5;padding:0;}
   .bg-library-thumb.selected{border-color:#EF4123;}
@@ -1738,146 +1736,75 @@ function initColorControls() {
 // Callout Box Border color, the callout "P" icon color (with its link-to-
 // logo checkbox), and the box's Background color+opacity into one popup,
 // same idea as every other Edit Style button on the page.
-// Pulled out as its own named function (rather than an inline closure)
-// so both the sidebar's "Edit Box Style" button AND a direct click on the
-// callout box in the Visual Editor preview can open it — see
-// elementEditOpeners / hitClickTarget().
-function openCalloutBoxStyleModal(refreshSwatch) {
-  const contentSection = document.createElement('div');
-
-  contentSection.appendChild(buildEditModalColorRow({
-    label: 'Border Color',
-    get: function() { return colorState.calloutBorderColor; },
-    set: function(hex) { setColor('calloutBorderColor', hex); }
-  }));
-
-  const pHeading = document.createElement('div');
-  pHeading.className = 'edit-modal-section-title';
-  pHeading.textContent = 'Callout Box "P" Icon Color';
-  contentSection.appendChild(pHeading);
-
-  const linkRow = document.createElement('div');
-  linkRow.className = 'link-row';
-  linkRow.style.cssText = 'margin:2px 0 10px; padding-bottom:0; border-bottom:none;';
-  const linkCb = document.createElement('input');
-  linkCb.type = 'checkbox';
-  linkCb.id = 'linkCalloutPColor';
-  linkCb.checked = calloutPColorLinked;
-  linkCb.addEventListener('change', function(e) {
-    calloutPColorLinked = e.target.checked;
-    // Passing visited={pColor:true} makes this read as "came from the
-    // top P color" (see setColor()'s auto-unlink check), so re-checking
-    // the box snaps the callout P back into sync without immediately
-    // unchecking itself again.
-    if (e.target.checked) setColor('calloutPColor', colorState.pColor, { pColor: true });
-  });
-  const linkLabel = document.createElement('label');
-  linkLabel.setAttribute('for', 'linkCalloutPColor');
-  linkLabel.style.cssText = 'font-size:11px; font-weight:600;';
-  linkLabel.textContent = 'Link to top logo "P" color';
-  linkRow.appendChild(linkCb);
-  linkRow.appendChild(linkLabel);
-  contentSection.appendChild(linkRow);
-
-  contentSection.appendChild(buildEditModalColorRow({
-    label: 'Color',
-    get: function() { return colorState.calloutPColor; },
-    set: function(hex) { setColor('calloutPColor', hex); }
-  }));
-
-  openEditModal({
-    title: 'Edit Callout Box Style',
-    contentSection: contentSection,
-    background: {
-      color: {
-        get: function() { return colorState.calloutBgColor; },
-        set: function(v) { setColor('calloutBgColor', v); }
-      },
-      opacity: {
-        get: function() { return calloutBgOpacity; },
-        set: function(v) { calloutBgOpacity = v; calloutBgOpacityCustomized = true; }
-      }
-    },
-    onClose: refreshSwatch || function() {}
-  });
-}
-
 function initCalloutBoxStyleButton() {
   const container = document.getElementById('calloutBoxStyleTrigger');
   if (!container) return;
-  elementEditOpeners.calloutBoxStyle = openCalloutBoxStyleModal;
-  elementEditLabels.calloutBoxStyle = 'Callout Box Style';
   const trigger = buildEditTrigger(
     function() { return { color: colorState.calloutBgColor, opacity: calloutBgOpacity }; },
-    openCalloutBoxStyleModal,
+    function(refreshSwatch) {
+      const contentSection = document.createElement('div');
+
+      contentSection.appendChild(buildEditModalColorRow({
+        label: 'Border Color',
+        get: function() { return colorState.calloutBorderColor; },
+        set: function(hex) { setColor('calloutBorderColor', hex); }
+      }));
+
+      const pHeading = document.createElement('div');
+      pHeading.className = 'edit-modal-section-title';
+      pHeading.textContent = 'Callout Box "P" Icon Color';
+      contentSection.appendChild(pHeading);
+
+      const linkRow = document.createElement('div');
+      linkRow.className = 'link-row';
+      linkRow.style.cssText = 'margin:2px 0 10px; padding-bottom:0; border-bottom:none;';
+      const linkCb = document.createElement('input');
+      linkCb.type = 'checkbox';
+      linkCb.id = 'linkCalloutPColor';
+      linkCb.checked = calloutPColorLinked;
+      linkCb.addEventListener('change', function(e) {
+        calloutPColorLinked = e.target.checked;
+        // Passing visited={pColor:true} makes this read as "came from the
+        // top P color" (see setColor()'s auto-unlink check), so re-checking
+        // the box snaps the callout P back into sync without immediately
+        // unchecking itself again.
+        if (e.target.checked) setColor('calloutPColor', colorState.pColor, { pColor: true });
+      });
+      const linkLabel = document.createElement('label');
+      linkLabel.setAttribute('for', 'linkCalloutPColor');
+      linkLabel.style.cssText = 'font-size:11px; font-weight:600;';
+      linkLabel.textContent = 'Link to top logo "P" color';
+      linkRow.appendChild(linkCb);
+      linkRow.appendChild(linkLabel);
+      contentSection.appendChild(linkRow);
+
+      contentSection.appendChild(buildEditModalColorRow({
+        label: 'Color',
+        get: function() { return colorState.calloutPColor; },
+        set: function(hex) { setColor('calloutPColor', hex); }
+      }));
+
+      openEditModal({
+        title: 'Edit Callout Box Style',
+        contentSection: contentSection,
+        background: {
+          color: {
+            get: function() { return colorState.calloutBgColor; },
+            set: function(v) { setColor('calloutBgColor', v); }
+          },
+          opacity: {
+            get: function() { return calloutBgOpacity; },
+            set: function(v) { calloutBgOpacity = v; calloutBgOpacityCustomized = true; }
+          }
+        },
+        onClose: refreshSwatch
+      });
+    },
     false,
     'Edit Box Style',
     false
   );
   container.appendChild(trigger);
-}
-
-// The logo (top "P" icon + "Pure It"/"Bowling" text) has never had a
-// unified Edit Style popup — its three colors are still set individually
-// via the plain popover swatches in the "Logo Colors" sidebar card (see
-// colorDefs/logoSwatchRow). This modal doesn't replace that; it just gives
-// a direct click on the logo in the Visual Editor preview somewhere to go,
-// reusing the same setColor() calls the swatches already make. The "link"
-// checkbox here mirrors (and drives) the real #linkPBColors checkbox
-// rather than duplicating its logic.
-function openLogoEditModal(refreshSwatch) {
-  const contentSection = document.createElement('div');
-
-  contentSection.appendChild(buildEditModalColorRow({
-    label: '"P" Icon Color',
-    get: function() { return colorState.pColor; },
-    set: function(hex) { setColor('pColor', hex); }
-  }));
-
-  const linkRow = document.createElement('div');
-  linkRow.className = 'link-row';
-  linkRow.style.cssText = 'margin:2px 0 10px; padding-bottom:0; border-bottom:none;';
-  const linkCb = document.createElement('input');
-  linkCb.type = 'checkbox';
-  linkCb.id = 'linkPBColorsModal';
-  const realLinkCb = document.getElementById('linkPBColors');
-  linkCb.checked = !!(realLinkCb && realLinkCb.checked);
-  linkCb.addEventListener('change', function(e) {
-    if (realLinkCb) {
-      realLinkCb.checked = e.target.checked;
-      realLinkCb.dispatchEvent(new Event('change'));
-    }
-  });
-  const linkLabel = document.createElement('label');
-  linkLabel.setAttribute('for', 'linkPBColorsModal');
-  linkLabel.style.cssText = 'font-size:11px; font-weight:600;';
-  linkLabel.textContent = 'Link "P" and "Bowling" colors';
-  linkRow.appendChild(linkCb);
-  linkRow.appendChild(linkLabel);
-  contentSection.appendChild(linkRow);
-
-  contentSection.appendChild(buildEditModalColorRow({
-    label: '"Bowling" Text Color',
-    get: function() { return colorState.bowlingColor; },
-    set: function(hex) { setColor('bowlingColor', hex); }
-  }));
-
-  contentSection.appendChild(buildEditModalColorRow({
-    label: '"Pure It" Text Color',
-    get: function() { return colorState.pureItColor; },
-    set: function(hex) { setColor('pureItColor', hex); }
-  }));
-
-  openEditModal({
-    title: 'Edit Logo Colors',
-    contentSection: contentSection,
-    onClose: refreshSwatch || function() {}
-  });
-}
-
-function initLogoClickEditor() {
-  elementEditOpeners.logo = openLogoEditModal;
-  elementEditLabels.logo = 'Logo Colors';
 }
 
 // Every fixed text field that gets an "Edit Style" button (color + font
@@ -1928,10 +1855,9 @@ function initTextFieldEditButtons() {
       styleTextField(fieldEl, colorState[row.colorKey], fontState[row.key]);
     });
 
-    // Named (rather than inline) so a direct click on this field in the
-    // Visual Editor preview can open the exact same modal as the sidebar's
-    // own Edit Style button — see elementEditOpeners / hitClickTarget().
-    const openFn = function(refreshSwatch) {
+    const trigger = buildEditTrigger(
+      function() { return { color: colorState[row.colorKey], opacity: 100 }; },
+      function(refreshSwatch) {
         // A second, live-styled copy of the field right inside the modal —
         // same idea as the grid feature's Add Text preview — so color/font
         // choices show up on the actual words as they're picked, not just
@@ -2045,15 +1971,9 @@ function initTextFieldEditButtons() {
           // avoid showing Color/Font twice.
           color: row.key === 'tagline' ? undefined : colorHandlers,
           font: row.key === 'tagline' ? undefined : fontHandlers,
-          onClose: refreshSwatch || function() {}
+          onClose: refreshSwatch
         });
-    };
-    elementEditOpeners[row.key] = openFn;
-    elementEditLabels[row.key] = row.title.replace(/^Edit\s+/, '');
-
-    const trigger = buildEditTrigger(
-      function() { return { color: colorState[row.colorKey], opacity: 100 }; },
-      openFn,
+      },
       true,
       undefined,
       !row.hideSwatch
@@ -4252,27 +4172,6 @@ let isPreviewInteractive = false;
 let lastDesignW = 1100, lastDesignH = 0;
 let activeDrag = null; // { key, mode: 'move'|'resize', ... } while a drag is in progress
 
-// Click-to-edit registry for the Visual Editor click handling in
-// initCanvasDragging(): maps a whole-element drag key (or a callout line's
-// own key, or a custom element's id) to the function that opens its Edit
-// modal. Populated by whichever init*() function builds that element's
-// sidebar trigger, so the canvas click path reuses the exact same opener
-// instead of duplicating any modal-building logic.
-let elementEditOpeners = {};
-// Same keys as elementEditOpeners — the human-readable name shown in the
-// "EDIT: ___" tooltip while hovering a click-editable region (see
-// showEditTooltip() in initCanvasDragging()). A 'slot' hit builds its own
-// "Feature N" label on the fly instead of using this map.
-let elementEditLabels = {};
-// Per-slot / per-callout-line hit regions, in the same un-offset design-
-// space as elementBounds.grid / elementBounds.calloutBox — rebuilt every
-// render, read by getDisplaySlotBox()/getDisplayCalloutLineBox() below.
-let gridSlotBounds = [];
-let calloutLineBounds = {};
-// The footer bar's own fixed rectangle — it isn't draggable (see the
-// render code), so this is plain design-space coordinates, no transform.
-let footerBounds = null;
-
 function measureTextW(ctx, text, fontStr) {
   const prevFont = ctx.font;
   ctx.font = fontStr;
@@ -4301,26 +4200,6 @@ function getDisplayBox(key) {
   const tl = transformPoint(b.x, b.y, key);
   const br = transformPoint(b.x + b.w, b.y + b.h, key);
   return { x: tl.x, y: tl.y, w: br.x - tl.x, h: br.y - tl.y };
-}
-
-// Same idea as getDisplayBox(), but for a region nested inside a whole
-// draggable element (a grid slot inside 'grid', a callout line inside
-// 'calloutBox') — the region's base rectangle moves/scales along with its
-// parent's own drag offset, so it's transformed using the PARENT's key
-// rather than having any drag state of its own.
-function getDisplayChildBox(base, parentKey) {
-  if (!base) return null;
-  const tl = transformPoint(base.x, base.y, parentKey);
-  const br = transformPoint(base.x + base.w, base.y + base.h, parentKey);
-  return { x: tl.x, y: tl.y, w: br.x - tl.x, h: br.y - tl.y };
-}
-
-function getDisplaySlotBox(slotIdx) {
-  return getDisplayChildBox(gridSlotBounds[slotIdx], 'grid');
-}
-
-function getDisplayCalloutLineBox(lineKey) {
-  return getDisplayChildBox(calloutLineBounds[lineKey], 'calloutBox');
 }
 
 // Applies one element's current drag offset + resize scale to ctx, in the
@@ -4594,10 +4473,6 @@ function renderFlyerToCanvas(interactive) {
   validateMergeGroups();
 
   elementPivots.grid = { x: gridX + gridW / 2, y: gridY + GRID_H / 2 };
-  // Rebuilt fresh every render — a merged slot's non-anchor members are
-  // skipped below (they're drawn as part of the anchor), so only the
-  // anchor gets an entry, sized to the whole merged block it stands in for.
-  gridSlotBounds = [];
   ctx.save();
   applyElementTransform(ctx, 'grid');
   columnLayout.forEach(function(colArray, colIdx) {
@@ -4614,8 +4489,6 @@ function renderFlyerToCanvas(interactive) {
       const cellY = gridY + bounds.minRow * cellH;
       const drawW = cellW * (bounds.maxCol - bounds.minCol + 1);
       const drawH = cellH * (bounds.maxRow - bounds.minRow + 1);
-      // Base (un-offset) hit region for this slot — see getDisplaySlotBox().
-      gridSlotBounds[slotIdx] = { x: cellX, y: cellY, w: drawW, h: drawH };
 
       // Background fill, drawn first so text/images sit on top. Uses the
       // exact same (unpadded) cell rectangle as the border gap calculations
@@ -4680,10 +4553,6 @@ function renderFlyerToCanvas(interactive) {
   // downward without shifting anything that was already centered above it.
   const fbX = (DESIGN_W - CB_WIDTH) / 2, fbY = y, fbW = CB_WIDTH, fbH = FITBOX_H, radius = CB_RADIUS;
   elementPivots.calloutBox = { x: fbX + fbW / 2, y: fbY + fbH / 2 };
-  // Rebuilt fresh every render, same idea as gridSlotBounds — a removed
-  // line's key is set back to null below so a stale hit region can't
-  // linger after the text is cleared.
-  calloutLineBounds = {};
   ctx.save();
   applyElementTransform(ctx, 'calloutBox');
   function fitboxPath() {
@@ -4768,7 +4637,6 @@ function renderFlyerToCanvas(interactive) {
     if ('letterSpacing' in ctx) ctx.letterSpacing = CB_H1_TRACKING + 'px';
     fitText(ctx, fitLine1, textX, ty + CB_H1_SIZE * CAP_RATIO, calloutLineMaxW, "800 " + Math.round(CB_H1_SIZE) + "px " + fontState.fitLine1, 16);
     if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
-    calloutLineBounds.fitLine1 = { x: textX, y: ty, w: calloutLineMaxW, h: CB_H1_SIZE };
     ty += CB_H1_SIZE + CB_H1_GAP;
   }
 
@@ -4777,7 +4645,6 @@ function renderFlyerToCanvas(interactive) {
     if ('letterSpacing' in ctx) ctx.letterSpacing = CB_H2_TRACKING + 'px';
     fitText(ctx, fitLine2, textX, ty + CB_H2_SIZE * CAP_RATIO, calloutLineMaxW, "800 " + Math.round(CB_H2_SIZE) + "px " + fontState.fitLine2, 16);
     if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
-    calloutLineBounds.fitLine2 = { x: textX, y: ty, w: calloutLineMaxW, h: CB_H2_SIZE };
     ty += CB_H2_SIZE + CB_H2_GAP;
   }
 
@@ -4785,9 +4652,6 @@ function renderFlyerToCanvas(interactive) {
   // which renders bold in the highlight/accent color.
   const bodyFont = "500 " + Math.round(CB_BODY_SIZE) + "px " + fontState.fitDesc;
   const bodyBoldFont = "800 " + Math.round(CB_BODY_SIZE) + "px " + fontState.fitDesc;
-  if (descLines.length) {
-    calloutLineBounds.fitDesc = { x: textX, y: ty, w: calloutLineMaxW, h: bodyBlockH };
-  }
   for (let i = 0; i < descLines.length; i++) {
     const lineY = ty + CB_BODY_SIZE * 0.75 + i * CB_BODY_LINE_HEIGHT;
     // "FREE" matches "A PROFESSIONAL FIT." (fitLine2Color) rather than the
@@ -4807,7 +4671,6 @@ function renderFlyerToCanvas(interactive) {
     ctx.textAlign = 'left';
     ctx.fillStyle = colorState.finePrintColor;
     fitText(ctx, finePrint, textX, fpY + Math.round(FINEPRINT_SIZE * 1.07), calloutLineMaxW, finePrintFontStr, 15);
-    calloutLineBounds.finePrint = { x: textX, y: fpY, w: calloutLineMaxW, h: FINEPRINT_SIZE * 1.3 };
   }
   ctx.restore();
   elementBounds.calloutBox = { x: fbX, y: fbY, w: fbW, h: fbH };
@@ -4834,9 +4697,6 @@ function renderFlyerToCanvas(interactive) {
   }
   ctx.fillStyle = footerBgFillStyle;
   ctx.fillRect(0, y, DESIGN_W, FOOTER_H);
-  // Plain design-space coordinates — the footer bar isn't draggable, so
-  // there's no parent transform to account for (see getDisplayBox() etc.).
-  footerBounds = { x: 0, y: y, w: DESIGN_W, h: FOOTER_H };
 
   // Footer font size is solved from the available width (same idea as the
   // headline) rather than a fixed 40px, since the footer line now carries a
@@ -5001,70 +4861,6 @@ function hitDragTarget(pt) {
   return null;
 }
 
-function pointInBox(pt, box) {
-  return !!box && pt.x >= box.x && pt.x <= box.x + box.w && pt.y >= box.y && pt.y <= box.y + box.h;
-}
-
-// The "Visual Editor" click path: a plain click (no drag) on the canvas
-// opens whichever Edit modal actually applies at that point, checked most-
-// specific-first — a callout line, then a grid slot, before falling back
-// to the callout box or grid as a whole. Every returned key here (besides
-// 'slot', handled separately by index) matches a key already registered in
-// elementEditOpeners, so the caller can just look it up and call it.
-function hitClickTarget(pt) {
-  for (let i = 0; i < CALLOUT_LINE_CLICK_KEYS.length; i++) {
-    const key = CALLOUT_LINE_CLICK_KEYS[i];
-    if (pointInBox(pt, getDisplayCalloutLineBox(key))) return { key: key };
-  }
-  for (let i = 0; i < gridSlotBounds.length; i++) {
-    if (pointInBox(pt, getDisplaySlotBox(i))) return { key: 'slot', slotIndex: i };
-  }
-  if (pointInBox(pt, getDisplayBox('calloutBox'))) return { key: 'calloutBoxStyle' };
-  if (pointInBox(pt, footerBounds)) return { key: 'footer' };
-  for (let i = 0; i < WHOLE_ELEMENT_CLICK_KEYS.length; i++) {
-    const key = WHOLE_ELEMENT_CLICK_KEYS[i];
-    if (pointInBox(pt, getDisplayBox(key))) return { key: key };
-  }
-  return null;
-}
-const CALLOUT_LINE_CLICK_KEYS = ['fitLine1', 'fitLine2', 'fitDesc', 'finePrint'];
-// Custom elements aren't wired up for click-to-edit yet — they vary too
-// much by type/mode to route generically — so they stay drag-only, same
-// as before. The logo IS included (see openLogoEditModal()).
-const WHOLE_ELEMENT_CLICK_KEYS = ['headline1', 'headline2', 'tagline', 'logo'];
-
-// Below this many screen pixels of total movement, a mousedown+mouseup is
-// treated as a click (open that element's Edit modal) rather than a drag —
-// see initCanvasDragging()'s down()/move()/up(). Small enough that an
-// actual drag never feels like it "stuck", big enough to absorb the tiny
-// jitter a real click/tap always has.
-const CLICK_DRAG_THRESHOLD_PX = 4;
-
-// The floating "EDIT: ___" tooltip shown while hovering a click-editable
-// region — a single lazily-created element reused for every hover rather
-// than rebuilt each time, positioned in fixed (viewport) coordinates right
-// next to the cursor.
-let editTooltipEl = null;
-function ensureEditTooltipEl() {
-  if (!editTooltipEl) {
-    editTooltipEl = document.createElement('div');
-    editTooltipEl.className = 'canvas-edit-tooltip';
-    document.body.appendChild(editTooltipEl);
-  }
-  return editTooltipEl;
-}
-function showEditTooltip(hit, clientX, clientY) {
-  const el = ensureEditTooltipEl();
-  const label = hit.key === 'slot' ? ('Feature ' + (hit.slotIndex + 1)) : (elementEditLabels[hit.key] || hit.key);
-  el.textContent = 'EDIT: ' + label;
-  el.style.left = (clientX + 16) + 'px';
-  el.style.top = (clientY + 12) + 'px';
-  el.style.display = 'block';
-}
-function hideEditTooltip() {
-  if (editTooltipEl) editTooltipEl.style.display = 'none';
-}
-
 function initCanvasDragging() {
   const canvas = document.getElementById('flyerCanvas');
 
@@ -5073,103 +4869,35 @@ function initCanvasDragging() {
     return canvasPointToDesign(canvas, t.clientX, t.clientY);
   }
 
-  // Raw (unscaled) screen coordinates, kept separately from the design-
-  // space point — the click/drag movement threshold has to be judged in
-  // real screen pixels so it feels consistent regardless of how much the
-  // canvas is scaled down to fit the page.
-  function clientPointFromEvent(e) {
-    const t = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]) || e;
-    return { x: t.clientX, y: t.clientY };
-  }
-
-  // A completed click (mousedown+mouseup with no real drag in between)
-  // opens whichever field/slot the Visual Editor determines is under the
-  // pointer, reusing the exact same modal the sidebar's own Edit button
-  // opens — see hitClickTarget()/elementEditOpeners.
-  function openEditForClick(pt) {
-    const hit = hitClickTarget(pt);
-    if (!hit) return;
-    if (hit.key === 'slot') {
-      openSlotEditModal(hit.slotIndex);
-    } else if (elementEditOpeners[hit.key]) {
-      elementEditOpeners[hit.key]();
-    }
-  }
-
-  // A click-only region that isn't in DRAG_ELEMENT_KEYS at all (right now,
-  // just the footer bar — it's fixed and can't be moved/resized) never
-  // shows up in hitDragTarget(), so down() would otherwise ignore it
-  // entirely. pendingClick tracks that case in parallel with activeDrag:
-  // no element moves, but mousedown-then-mouseup-without-much-movement
-  // still counts as a click and opens that region's modal.
-  let pendingClick = null;
-
   function down(e) {
     if (!isPreviewInteractive) return;
     const pt = pointFromEvent(e);
     const hit = hitDragTarget(pt);
-    const clientPt = clientPointFromEvent(e);
-    if (hit) {
-      if (hit.mode === 'resize') {
-        const piv = elementPivots[hit.key];
-        const startDist = Math.hypot(pt.x - piv.x, pt.y - piv.y) || 1;
-        activeDrag = { key: hit.key, mode: 'resize', pivot: piv, startDist: startDist, startScale: elementOffsets[hit.key].scale, downClientX: clientPt.x, downClientY: clientPt.y, downPt: pt, moved: false };
-      } else {
-        activeDrag = { key: hit.key, mode: 'move', lastX: pt.x, lastY: pt.y, downClientX: clientPt.x, downClientY: clientPt.y, downPt: pt, moved: false };
-      }
-      canvas.classList.add('dragging');
-      hideEditTooltip();
-      renderFlyerToCanvas(true);
-      e.preventDefault();
-      return;
+    if (!hit) return;
+    if (hit.mode === 'resize') {
+      const piv = elementPivots[hit.key];
+      const startDist = Math.hypot(pt.x - piv.x, pt.y - piv.y) || 1;
+      activeDrag = { key: hit.key, mode: 'resize', pivot: piv, startDist: startDist, startScale: elementOffsets[hit.key].scale };
+    } else {
+      activeDrag = { key: hit.key, mode: 'move', lastX: pt.x, lastY: pt.y };
     }
-    // Not draggable — but might still be a click-only editable region.
-    if (hitClickTarget(pt)) {
-      pendingClick = { downClientX: clientPt.x, downClientY: clientPt.y, downPt: pt, moved: false };
-      e.preventDefault();
-    }
+    canvas.classList.add('dragging');
+    renderFlyerToCanvas(true);
+    e.preventDefault();
   }
 
   function move(e) {
     if (!isPreviewInteractive) return;
-    if (!activeDrag && !pendingClick) {
-      // Hover feedback: a resize handle always wins first (it sits right at
-      // an element's corner, inside a click-editable region's box too), then
-      // a click-editable region gets a pointer cursor + "EDIT: ___" tooltip,
-      // then a plain drag-only element (logo, the whole grid outside any
-      // slot, a custom element) just gets the old "grab" cursor with no
-      // tooltip, since clicking those doesn't open anything yet.
+    if (!activeDrag) {
+      // Hover feedback: show a "grab" or resize cursor whenever the pointer
+      // is over a draggable element or its handle, even before the drag
+      // actually starts.
       const pt = pointFromEvent(e);
-      const dragHit = hitDragTarget(pt);
-      if (dragHit && dragHit.mode === 'resize') {
-        canvas.style.cursor = 'nwse-resize';
-        hideEditTooltip();
-        return;
-      }
-      const clickHit = hitClickTarget(pt);
-      if (clickHit) {
-        const clientPt = clientPointFromEvent(e);
-        canvas.style.cursor = 'pointer';
-        showEditTooltip(clickHit, clientPt.x, clientPt.y);
-      } else {
-        canvas.style.cursor = dragHit ? 'grab' : 'default';
-        hideEditTooltip();
-      }
+      const hit = hitDragTarget(pt);
+      canvas.style.cursor = hit ? (hit.mode === 'resize' ? 'nwse-resize' : 'grab') : 'default';
       return;
     }
-    hideEditTooltip();
-    if (pendingClick && !pendingClick.moved) {
-      const clientPt = clientPointFromEvent(e);
-      const dx = clientPt.x - pendingClick.downClientX, dy = clientPt.y - pendingClick.downClientY;
-      if (Math.hypot(dx, dy) > CLICK_DRAG_THRESHOLD_PX) pendingClick.moved = true;
-    }
-    if (!activeDrag) return; // a pendingClick-only region has nothing to move
     const pt = pointFromEvent(e);
-    if (!activeDrag.moved) {
-      const clientPt = clientPointFromEvent(e);
-      const dx = clientPt.x - activeDrag.downClientX, dy = clientPt.y - activeDrag.downClientY;
-      if (Math.hypot(dx, dy) > CLICK_DRAG_THRESHOLD_PX) activeDrag.moved = true;
-    }
     if (activeDrag.mode === 'resize') {
       const dist = Math.hypot(pt.x - activeDrag.pivot.x, pt.y - activeDrag.pivot.y) || 1;
       const newScale = activeDrag.startScale * (dist / activeDrag.startDist);
@@ -5185,19 +4913,10 @@ function initCanvasDragging() {
   }
 
   function up() {
-    if (pendingClick) {
-      const wasClick = !pendingClick.moved;
-      const clickPt = pendingClick.downPt;
-      pendingClick = null;
-      if (wasClick) openEditForClick(clickPt);
-    }
     if (!activeDrag) return;
-    const wasClick = !activeDrag.moved && activeDrag.mode === 'move';
-    const clickPt = activeDrag.downPt;
     activeDrag = null;
     canvas.classList.remove('dragging');
     if (isPreviewInteractive) renderFlyerToCanvas(true);
-    if (wasClick) openEditForClick(clickPt);
   }
 
   canvas.addEventListener('mousedown', down);
@@ -5206,12 +4925,6 @@ function initCanvasDragging() {
   canvas.addEventListener('touchstart', down, { passive: false });
   window.addEventListener('touchmove', move, { passive: false });
   window.addEventListener('touchend', up);
-  // The tooltip otherwise lingers on screen after the pointer leaves the
-  // canvas entirely (mousemove stops firing, so nothing else would clear it).
-  canvas.addEventListener('mouseleave', function() {
-    if (!activeDrag) canvas.style.cursor = 'default';
-    hideEditTooltip();
-  });
 }
 
 async function previewFlyer() {
@@ -5265,7 +4978,6 @@ window.addEventListener('DOMContentLoaded', function() {
   initTextFieldEditButtons();
   initBackgroundControls();
   initAiOptimizeButton();
-  initLogoClickEditor();
   initImageLibraryControls();
   initRemovableTextFields();
   initCanvasDragging();
