@@ -1903,15 +1903,6 @@ const TEXT_FIELD_EDIT_ROWS = [
   { key: 'footer',    fieldId: 'footerUrl', colorKey: 'footerTextColor', container: 'swatch_footerTextColor', title: 'Edit Footer Text Style' }
 ];
 
-// Applies a field's current color + font directly to its own sidebar
-// input/textarea, so what's typed there always shows in the style that's
-// actually selected — not just on a small swatch off to the side.
-function styleTextField(fieldEl, color, font) {
-  if (!fieldEl) return;
-  fieldEl.style.color = color;
-  fieldEl.style.fontFamily = font;
-}
-
 function initTextFieldEditButtons() {
   TEXT_FIELD_EDIT_ROWS.forEach(function(row) {
     const container = document.getElementById(row.container);
@@ -1919,31 +1910,22 @@ function initTextFieldEditButtons() {
     container.innerHTML = '';
 
     const fieldEl = document.getElementById(row.fieldId);
-    styleTextField(fieldEl, colorState[row.colorKey], fontState[row.key]);
-    // Color changes can also come from outside this row (dark mode's
-    // automatic flip, "reset to default", etc.), so re-apply on every
-    // color change globally rather than only from this row's own modal —
-    // the same registry the little preview swatches already use.
-    editTriggerRefreshers.push(function() {
-      styleTextField(fieldEl, colorState[row.colorKey], fontState[row.key]);
-    });
 
     // Named (rather than inline) so a direct click on this field in the
     // Visual Editor preview can open the exact same modal as the sidebar's
     // own Edit Style button — see elementEditOpeners / hitClickTarget().
     const openFn = function(refreshSwatch) {
-        // A second, live-styled copy of the field right inside the modal —
-        // same idea as the grid feature's Add Text preview — so color/font
-        // choices show up on the actual words as they're picked, not just
-        // on the swatch. Typing here writes straight back into the real
-        // sidebar field, since that's the one thing the flyer actually
-        // reads from; the footer field stays read-only in both places.
+        // A second copy of the field right inside the modal — same idea as
+        // the grid feature's Add Text preview. Typing here writes straight
+        // back into the real sidebar field, since that's the one thing the
+        // flyer actually reads from; the footer field stays read-only in
+        // both places. Deliberately plain text, not styled to match the
+        // chosen color/font — a light color picked for the flyer would be
+        // unreadable against this field's white background.
         const previewInput = document.createElement('input');
         previewInput.type = 'text';
         previewInput.className = 'edit-modal-preview-input';
         previewInput.value = fieldEl ? fieldEl.value : '';
-        previewInput.style.color = colorState[row.colorKey];
-        previewInput.style.fontFamily = fontState[row.key];
         if (fieldEl && fieldEl.readOnly) {
           previewInput.readOnly = true;
         } else if (fieldEl) {
@@ -1961,18 +1943,11 @@ function initTextFieldEditButtons() {
         // way via openEditModal()'s color/font config keys.
         const colorHandlers = {
           get: function() { return colorState[row.colorKey]; },
-          set: function(hex) {
-            setColor(row.colorKey, hex);
-            previewInput.style.color = hex;
-          }
+          set: function(hex) { setColor(row.colorKey, hex); }
         };
         const fontHandlers = {
           get: function() { return fontState[row.key]; },
-          set: function(v) {
-            fontState[row.key] = v;
-            previewInput.style.fontFamily = v;
-            styleTextField(fieldEl, colorState[row.colorKey], v);
-          }
+          set: function(v) { fontState[row.key] = v; }
         };
 
         // Tagline Flank Lines color — the short decorative lines on either
@@ -2323,8 +2298,6 @@ function openSlotEditModal(slotIdx) {
     previewTextarea.rows = 3;
     previewTextarea.placeholder = 'Feature text (multiple lines OK)';
     previewTextarea.value = slotTexts[slotIdx] || '';
-    previewTextarea.style.color = slotTextColors[slotIdx] || '#161616';
-    previewTextarea.style.fontFamily = slotTextFonts[slotIdx] || fontDefaults.fitDesc;
     previewTextarea.addEventListener('input', function(e) {
       slotTexts[slotIdx] = e.target.value;
     });
@@ -2338,15 +2311,11 @@ function openSlotEditModal(slotIdx) {
       set: function(v) {
         slotTextColors[slotIdx] = v;
         slotTextColorsCustomized[slotIdx] = true;
-        previewTextarea.style.color = v;
       }
     };
     cfg.font = {
       get: function() { return slotTextFonts[slotIdx] || fontDefaults.fitDesc; },
-      set: function(v) {
-        slotTextFonts[slotIdx] = v;
-        previewTextarea.style.fontFamily = v;
-      }
+      set: function(v) { slotTextFonts[slotIdx] = v; }
     };
     cfg.align = {
       get: function() { return slotTextAligns[slotIdx] || 'center'; },
@@ -2395,6 +2364,9 @@ function buildSlotPreviewBox(slotIdx) {
     const textEl = document.createElement('div');
     textEl.className = 'slot-preview-text';
     if (slotTexts[slotIdx]) {
+      // This is a preview of the actual rendered result, not an editable
+      // field, so it stays styled in the real color/font — unlike the
+      // plain-text inputs/textareas everywhere text is actually typed.
       textEl.textContent = slotTexts[slotIdx];
       textEl.style.color = slotTextColors[slotIdx] || '#161616';
       textEl.style.fontFamily = slotTextFonts[slotIdx] || fontDefaults.fitDesc;
@@ -2752,8 +2724,6 @@ function createCustomElementCard(el) {
     input.type = 'text';
     input.value = el.text;
     input.placeholder = el.type === 'header' ? 'Header text' : 'Text';
-    input.style.color = el.color;
-    input.style.fontFamily = el.font || defaultFont;
     input.addEventListener('input', function(e) { el.text = e.target.value; });
     ig.appendChild(input);
     card.appendChild(ig);
@@ -2761,15 +2731,14 @@ function createCustomElementCard(el) {
     const editRow = buildEditTrigger(
       function() { return { color: el.color, opacity: 100 }; },
       function(refreshSwatch) {
-        // Live-styled preview mirroring this element's own field, same as
-        // the grid feature's Add Text preview — typing here also writes
-        // back into the real sidebar input above.
+        // A second copy of the field right inside the modal — typing here
+        // also writes back into the real sidebar input above. Plain text,
+        // not styled to match the chosen color/font (a light color would be
+        // unreadable against this field's white background).
         const previewInput = document.createElement('input');
         previewInput.type = 'text';
         previewInput.className = 'edit-modal-preview-input';
         previewInput.value = input.value;
-        previewInput.style.color = el.color;
-        previewInput.style.fontFamily = el.font || defaultFont;
         previewInput.addEventListener('input', function(e) {
           input.value = e.target.value;
           el.text = e.target.value;
@@ -2785,19 +2754,11 @@ function createCustomElementCard(el) {
           contentSection: contentSection,
           color: {
             get: function() { return el.color; },
-            set: function(v) {
-              el.color = v;
-              input.style.color = v;
-              previewInput.style.color = v;
-            }
+            set: function(v) { el.color = v; }
           },
           font: {
             get: function() { return el.font || defaultFont; },
-            set: function(v) {
-              el.font = v;
-              input.style.fontFamily = v;
-              previewInput.style.fontFamily = v;
-            }
+            set: function(v) { el.font = v; }
           },
           onClose: refreshSwatch
         });
@@ -2840,23 +2801,20 @@ function createCustomElementCard(el) {
       textInput.placeholder = 'Element text (multiple lines OK)';
       textInput.rows = 3;
       textInput.value = el.imgText || '';
-      textInput.style.color = el.imgTextColor || '#161616';
-      textInput.style.fontFamily = el.imgTextFont || fontDefaults.fitDesc;
       textInput.addEventListener('input', function(e) { el.imgText = e.target.value; });
       textPanel.appendChild(textInput);
 
       const editRow = buildEditTrigger(
         function() { return { color: el.imgTextColor || '#161616', opacity: 100 }; },
         function(refreshSwatch) {
-          // Live-styled preview mirroring the textarea above, same as the
-          // grid feature's Add Text preview — typing here also writes back
-          // into the real sidebar textarea.
+          // A second copy of the textarea above — typing here also writes
+          // back into the real sidebar textarea. Plain text, not styled to
+          // match the chosen color/font (a light color would be unreadable
+          // against this field's white background).
           const previewTextarea = document.createElement('textarea');
           previewTextarea.className = 'edit-modal-textarea';
           previewTextarea.rows = 3;
           previewTextarea.value = textInput.value;
-          previewTextarea.style.color = el.imgTextColor || '#161616';
-          previewTextarea.style.fontFamily = el.imgTextFont || fontDefaults.fitDesc;
           previewTextarea.addEventListener('input', function(e) {
             textInput.value = e.target.value;
             el.imgText = e.target.value;
@@ -2872,19 +2830,11 @@ function createCustomElementCard(el) {
             contentSection: contentSection,
             color: {
               get: function() { return el.imgTextColor || '#161616'; },
-              set: function(v) {
-                el.imgTextColor = v;
-                textInput.style.color = v;
-                previewTextarea.style.color = v;
-              }
+              set: function(v) { el.imgTextColor = v; }
             },
             font: {
               get: function() { return el.imgTextFont || fontDefaults.fitDesc; },
-              set: function(v) {
-                el.imgTextFont = v;
-                textInput.style.fontFamily = v;
-                previewTextarea.style.fontFamily = v;
-              }
+              set: function(v) { el.imgTextFont = v; }
             },
             align: {
               get: function() { return el.imgTextAlign || 'center'; },
