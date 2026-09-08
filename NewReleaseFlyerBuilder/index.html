@@ -240,9 +240,6 @@
   canvas.interactive{cursor:default;touch-action:none;}
   canvas.dragging{cursor:grabbing !important;}
   #cardWrap{display:none;max-width:720px;margin:0 auto;overflow:hidden;}
-  .share-btn{border:none;border-radius:7px;padding:0;height:42px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;line-height:1;box-sizing:border-box;width:100%;}
-  .share-btn.download{background:#111;color:#fff;}
-  .share-btn.download:hover{background:#333;}
 
   .link-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #eee;}
   .link-row input[type="checkbox"]{width:16px;height:16px;cursor:pointer;accent-color:#EF4123;flex-shrink:0;}
@@ -570,12 +567,9 @@
 <button class="btn" onclick="previewFlyer()">Preview Image</button>
 
 <div id="cardWrap">
-  <div id="dragHint" class="ctrl-hint" style="display:none;text-align:center;margin-bottom:10px;">Drag any outlined element to move it, or drag its corner handle to resize it. The footer bar stays fixed. Your layout is remembered the next time you preview — <a href="#" id="resetPositionsBtn">reset positions</a> to start over. Click <strong>Save Image</strong> below when you're happy.</div>
+  <div id="dragHint" class="ctrl-hint" style="display:none;text-align:center;margin-bottom:10px;">Drag any outlined element to move it, or drag its corner handle to resize it. The footer bar stays fixed. Your layout is remembered the next time you preview — <a href="#" id="resetPositionsBtn">reset positions</a> to start over. Click <strong>Download Image</strong> below when you're happy.</div>
   <canvas id="flyerCanvas"></canvas>
-  <button class="btn" id="generateBtn" onclick="generateFinalImage()" style="display:none;margin-top:14px;">Save Image</button>
-  <div id="dlWrap" style="display:none;margin-top:10px;">
-    <a id="dlBtn" class="share-btn download" download="pure-it-bowling-flyer.png" style="width:100%;display:flex;align-items:center;justify-content:center;height:42px;">Download</a>
-  </div>
+  <button class="btn" id="generateBtn" onclick="generateFinalImage()" style="display:none;margin-top:14px;">Download Image</button>
 </div>
 
 <div id="colorPopover" class="color-popover">
@@ -5177,7 +5171,6 @@ async function previewFlyer() {
   renderFlyerToCanvas(true);
   document.getElementById('dragHint').style.display = 'block';
   document.getElementById('generateBtn').style.display = 'block';
-  document.getElementById('dlWrap').style.display = 'none';
   document.getElementById('cardWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -5199,10 +5192,15 @@ function generateFinalImage() {
   canvas.style.cursor = 'default';
   renderFlyerToCanvas(false);
   document.getElementById('dragHint').style.display = 'none';
-  const dlBtn = document.getElementById('dlBtn');
   const finishedPng = canvas.toDataURL('image/png');
-  dlBtn.href = finishedPng;
-  document.getElementById('dlWrap').style.display = 'block';
+  // Triggers the download directly rather than revealing a separate
+  // Download button — one click on Download Image now does both steps.
+  const tempLink = document.createElement('a');
+  tempLink.href = finishedPng;
+  tempLink.download = 'pure-it-bowling-flyer.png';
+  document.body.appendChild(tempLink);
+  tempLink.click();
+  document.body.removeChild(tempLink);
   logToCloudinary(finishedPng, CLOUDINARY_GENERATED_FLYERS_PRESET);
   document.getElementById('cardWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
