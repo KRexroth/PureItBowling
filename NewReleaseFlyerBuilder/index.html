@@ -395,7 +395,7 @@
       <label for="darkModeToggle">Dark mode (swaps the default black/white text colors)</label>
     </div>
 
-    <div class="ctrl-hint" style="margin-bottom:10px;">Choose a pre-made background from the library, or upload your own. Either way it's cropped to fill the full 8.5"&times;11" page.</div>
+    <div class="ctrl-hint" style="margin-bottom:10px;">Choose a pre-made background from the library, or upload your own. It's cropped to fill the Feed version and stretched to fill the taller Story version — generic backgrounds hold up well stretched.</div>
 
     <div class="bg-btn-row">
       <button type="button" class="bg-upload-btn" id="openBgLibraryBtn">Backgrounds Library</button>
@@ -567,9 +567,9 @@
 <button class="btn" onclick="previewFlyer()">Preview Image</button>
 
 <div id="cardWrap">
-  <div id="dragHint" class="ctrl-hint" style="display:none;text-align:center;margin-bottom:10px;">Drag any outlined element to move it, or drag its corner handle to resize it. The footer bar stays fixed. Your layout is remembered the next time you preview — <a href="#" id="resetPositionsBtn">reset positions</a> to start over. Click <strong>Download Image</strong> below when you're happy.</div>
+  <div id="dragHint" class="ctrl-hint" style="display:none;text-align:center;margin-bottom:10px;">Drag any outlined element to move it, or drag its corner handle to resize it. The footer bar stays fixed. Your layout is remembered the next time you preview — <a href="#" id="resetPositionsBtn">reset positions</a> to start over. Click <strong>Download Images</strong> below when you're happy — it saves a Feed version (Facebook/Instagram posts) and a Story version together.</div>
   <canvas id="flyerCanvas"></canvas>
-  <button class="btn" id="generateBtn" onclick="generateFinalImage()" style="display:none;margin-top:14px;">Download Image</button>
+  <button class="btn" id="generateBtn" onclick="generateFinalImage()" style="display:none;margin-top:14px;">Download Images</button>
 </div>
 
 <div id="colorPopover" class="color-popover">
@@ -3409,6 +3409,15 @@ function drawBackgroundCover(ctx, img, W, H) {
   ctx.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
 }
 
+// Draws `img` stretched to exactly fill the full W x H canvas area, ignoring
+// its natural aspect ratio (the same idea as CSS `background-size: 100% 100%`)
+// — used for the Story export, where the taller 9:16 frame would otherwise
+// need a much more aggressive crop under drawBackgroundCover. Only used for
+// generic stock backgrounds that hold up fine stretched (see FORMAT_SPECS).
+function drawBackgroundStretch(ctx, img, W, H) {
+  ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight, 0, 0, W, H);
+}
+
 /* ---- AI Optimize ----
    "Optimize With AI" analyzes the currently-selected background image's
    colors and picks contrast-safe text/accent/background colors for every
@@ -4314,8 +4323,27 @@ async function ensureFontsReady() {
 // function — nothing about the underlying layout math changes, and a
 // dashed outline is drawn over each draggable element. Non-interactive mode
 // is exactly the same drawing minus the outlines, used for the final image.
-function renderFlyerToCanvas(interactive) {
+// Two export formats share the same underlying flyer design. DESIGN_W (a
+// fixed design-unit width, below) never changes between them, since
+// Facebook/Instagram feed posts and Stories are all 1080px wide in practice —
+// only the *height* differs per format, plus a few vertical-only tuning
+// knobs (never anything that could overflow the fixed width, since those
+// numbers only ever feed into already-shrink-to-fit text calls or pure
+// vertical spacing) so Story reads with visibly bigger, more legible text
+// and headroom instead of just a taller, emptier image grid.
+const FORMAT_SPECS = {
+  // Shared by Facebook and Instagram feed posts (both use a 4:5 crop today).
+  feed:  { aspect: 1350 / 1080, textScale: 1.00, sidePadIn: 0.75, topRowsScale: 0.90, bgFit: 'cover',   filenameSuffix: 'feed'  },
+  // Facebook & Instagram Stories (9:16). Background stretches to fill the
+  // taller frame instead of cropping (the stock backgrounds are generic
+  // enough to hold up stretched), and text/spacing scale up to use the
+  // extra vertical room this format has over the feed crop.
+  story: { aspect: 1920 / 1080, textScale: 1.28, sidePadIn: 0.45, topRowsScale: 1.00, bgFit: 'stretch', filenameSuffix: 'story' }
+};
+
+function renderFlyerToCanvas(interactive, format, targetCanvas) {
   isPreviewInteractive = interactive;
+  const fmt = FORMAT_SPECS[format] || FORMAT_SPECS.feed;
   const headline1 = fieldVal('headline1', 'NEW RELEASES');
   const headline2 = fieldVal('headline2', 'HAVE ARRIVED');
   const tagline   = fieldVal('tagline', 'THE LATEST. THE HOTTEST. THE MOST INNOVATIVE.');
@@ -4334,7 +4362,7 @@ function renderFlyerToCanvas(interactive) {
 
   const DESIGN_W = 1100;
   const PAD_X = 70;
-  const canvas = document.getElementById('flyerCanvas');
+  const canvas = targetCanvas || document.getElementById('flyerCanvas');
   const SCALE = 2;
 
   canvas.width = DESIGN_W * SCALE;
@@ -4351,25 +4379,32 @@ function renderFlyerToCanvas(interactive) {
   // the spec's "no transparency" rule, since that's a feature added earlier
   // at explicit request.
   const CB_SCALE = DESIGN_W / 1080;
+  // CB_VSCALE additionally applies the format's textScale, but only to
+  // constants that are either purely vertical (box height/padding/gaps) or
+  // feed into a shrink-to-fit text call (fitText/wrapText already clamp
+  // these down if a bigger requested size wouldn't fit the column) — never
+  // to a horizontal/width constant, since DESIGN_W is identical between
+  // formats and a scaled-up width would overflow the fixed-width page.
+  const CB_VSCALE = CB_SCALE * fmt.textScale;
   const CB_WIDTH = 920 * CB_SCALE;
-  const CB_HEIGHT = 172 * CB_SCALE;
+  const CB_HEIGHT = 172 * CB_VSCALE;
   const CB_RADIUS = 22 * CB_SCALE;
-  const CB_BORDER_W = 4 * CB_SCALE;
-  const CB_PAD_TOP = 24 * CB_SCALE;
-  const CB_PAD_BOTTOM = 24 * CB_SCALE;
+  const CB_BORDER_W = 4 * CB_VSCALE;
+  const CB_PAD_TOP = 24 * CB_VSCALE;
+  const CB_PAD_BOTTOM = 24 * CB_VSCALE;
   const CB_PAD_LEFT = 34 * CB_SCALE;
   const CB_PAD_RIGHT = 34 * CB_SCALE;
   const CB_ICON_COL_W = 170 * CB_SCALE;
   const CB_ICON_GAP = 46 * CB_SCALE;
   const CB_ICON_DIAM = 154 * CB_SCALE;
   const CB_TEXT_COL_W = CB_WIDTH - CB_PAD_LEFT - CB_PAD_RIGHT - CB_ICON_COL_W - CB_ICON_GAP;
-  const CB_H1_SIZE = 42 * CB_SCALE;
-  const CB_H1_TRACKING = 8 * CB_SCALE;
-  const CB_H1_GAP = 4 * CB_SCALE;
-  const CB_H2_SIZE = 49 * CB_SCALE;
-  const CB_H2_TRACKING = 4 * CB_SCALE;
-  const CB_H2_GAP = 10 * CB_SCALE;
-  const CB_BODY_SIZE = 30 * CB_SCALE;
+  const CB_H1_SIZE = 42 * CB_VSCALE;
+  const CB_H1_TRACKING = 8 * CB_VSCALE;
+  const CB_H1_GAP = 4 * CB_VSCALE;
+  const CB_H2_SIZE = 49 * CB_VSCALE;
+  const CB_H2_TRACKING = 4 * CB_VSCALE;
+  const CB_H2_GAP = 10 * CB_VSCALE;
+  const CB_BODY_SIZE = 30 * CB_VSCALE;
   const CB_BODY_LINE_HEIGHT = CB_BODY_SIZE * 1.10;
 
   ctx.font = "500 " + Math.round(CB_BODY_SIZE) + "px 'Montserrat', 'Oswald', sans-serif";
@@ -4386,7 +4421,11 @@ function renderFlyerToCanvas(interactive) {
   // (HEADLINE_H below), so the band grows to fit the headline instead of the
   // headline shrinking to fit a fixed band.
   const QUARTER_INCH = (DESIGN_W / 8.5) / 4;
-  const HEADLINE_SIDE_PAD = (DESIGN_W / 8.5) * 0.75; // 3/4" left/right margin around the headline
+  // Side margin around the headline. Story uses a tighter margin than feed
+  // (same fixed DESIGN_W between formats) so the width-fit below naturally
+  // solves for a bigger headline font on Story, instead of scaling a font
+  // size directly and risking an overflow past the available width.
+  const HEADLINE_SIDE_PAD = (DESIGN_W / 8.5) * fmt.sidePadIn;
   const headlineFontFamily = "400 100px 'Bebas Neue', 'Anton', 'Arial Narrow', sans-serif";
   const headlineMaxW = DESIGN_W - 2 * HEADLINE_SIDE_PAD;
   const CAP_RATIO = 0.72; // approx cap-height as a fraction of em size for this typeface
@@ -4398,15 +4437,15 @@ function renderFlyerToCanvas(interactive) {
   // grows the grid automatically). A removed headline line (or the tagline)
   // contributes zero height instead of the empty-string/probe-size fallback,
   // so its band collapses too and that space also flows into the grid.
-  const TOP_ROWS_SCALE = 0.9;
+  const TOP_ROWS_SCALE = fmt.topRowsScale;
   const hSize1 = headline1 ? fitFontSizeToWidth(ctx, headline1, headlineFontFamily, headlineMaxW) * TOP_ROWS_SCALE : 0;
   const hSize2 = headline2 ? fitFontSizeToWidth(ctx, headline2, headlineFontFamily, headlineMaxW) * TOP_ROWS_SCALE : 0;
 
-  const HEADER_H = 200;
+  const HEADER_H = 200 * fmt.textScale;
   const HEADLINE_H = 2 * QUARTER_INCH + hSize1 * CAP_RATIO + (headline1 && headline2 ? LINE_GAP : 0) + hSize2 * CAP_RATIO;
-  const TAGLINE_H = tagline ? 66 * TOP_ROWS_SCALE : 20;
-  const GRID_TOP_GAP = 38;
-  const FITBOX_GAP = 38;
+  const TAGLINE_H = tagline ? 66 * TOP_ROWS_SCALE * fmt.textScale : 20 * fmt.textScale;
+  const GRID_TOP_GAP = 38 * fmt.textScale;
+  const FITBOX_GAP = 38 * fmt.textScale;
   // Fine print now lives inside the callout box as one more line of text —
   // effectively a "Callout Line 3" directly under the description, in the
   // same left-aligned text column, just kept at its own smaller size/color/
@@ -4416,18 +4455,24 @@ function renderFlyerToCanvas(interactive) {
   // height, with fine print's line added on using the same small gap scale
   // as the gap between Callout Line 2 and the description, not a separate
   // padded-off section.
-  const FINEPRINT_SIZE = 20;
-  const FP_GAP = finePrint ? 10 * CB_SCALE : 0;
+  // Rounded to a whole pixel: fitText() (used to draw this below) parses the
+  // size back out of the font string with a \d+px regex, which silently
+  // misreads a decimal value like "25.6px" as just "6" and falls back to
+  // whatever font was last set on the canvas — producing wildly oversized,
+  // overflowing text. Every size fed through fitText must stay an integer.
+  const FINEPRINT_SIZE = Math.round(20 * fmt.textScale);
+  const FP_GAP = finePrint ? 10 * CB_VSCALE : 0;
   const FP_H = finePrint ? Math.round(FINEPRINT_SIZE * 1.2) : 0;
-  const FP_BOTTOM_MARGIN = finePrint ? 14 * CB_SCALE : 0; // small close-out so it doesn't touch the border
+  const FP_BOTTOM_MARGIN = finePrint ? 14 * CB_VSCALE : 0; // small close-out so it doesn't touch the border
   const FITBOX_H = CB_HEIGHT + FP_GAP + FP_H + FP_BOTTOM_MARGIN;
-  const FOOTER_GAP = 10;
-  const FOOTER_H = 86;
+  const FOOTER_GAP = 10 * fmt.textScale;
+  const FOOTER_H = 86 * fmt.textScale;
 
-  // Always lock the page to 8.5" x 11" (portrait letter) proportions, no matter
-  // how the image columns are stacked — the image area flexes to fill whatever
+  // Page proportions come from the current export format (feed = 4:5, shared
+  // by Facebook/Instagram feed posts; story = 9:16) rather than a fixed
+  // 8.5x11 print ratio — the image grid area still flexes to fill whatever
   // space is left over after every other fixed-height section is accounted for.
-  const DESIGN_H = Math.round(DESIGN_W * (11 / 8.5));
+  const DESIGN_H = Math.round(DESIGN_W * fmt.aspect);
 
   const FIXED_H = HEADER_H + HEADLINE_H + TAGLINE_H + GRID_TOP_GAP
                 + FITBOX_GAP + FITBOX_H
@@ -4454,13 +4499,17 @@ function renderFlyerToCanvas(interactive) {
   if (backgroundImage && backgroundImage.complete && backgroundImage.naturalWidth > 0 && backgroundImageOpacity > 0) {
     ctx.save();
     ctx.globalAlpha = backgroundImageOpacity / 100;
-    drawBackgroundCover(ctx, backgroundImage, DESIGN_W, DESIGN_H);
+    if (fmt.bgFit === 'stretch') {
+      drawBackgroundStretch(ctx, backgroundImage, DESIGN_W, DESIGN_H);
+    } else {
+      drawBackgroundCover(ctx, backgroundImage, DESIGN_W, DESIGN_H);
+    }
     ctx.restore();
   }
 
   let y = 15;
   if (pIconLayerImg.complete && pIconLayerImg.naturalWidth > 0) {
-    const logoH = 170, logoW = logoH * (pIconLayerImg.naturalWidth / pIconLayerImg.naturalHeight);
+    const logoH = 170 * fmt.textScale, logoW = logoH * (pIconLayerImg.naturalWidth / pIconLayerImg.naturalHeight);
     const lx = DESIGN_W / 2 - logoW / 2, ly = y;
     elementPivots.logo = { x: DESIGN_W / 2, y: ly + logoH / 2 };
     ctx.save();
@@ -4515,9 +4564,9 @@ function renderFlyerToCanvas(interactive) {
     applyElementTransform(ctx, 'tagline');
     ctx.fillStyle = colorState.taglineColor;
     ctx.textAlign = 'center';
-    const taglineW = drawSmallCaps(ctx, tagline, DESIGN_W/2, taglineY + 7, "800 21px " + fontState.tagline, 5, true);
+    const taglineW = drawSmallCaps(ctx, tagline, DESIGN_W/2, taglineY + 7, "800 " + Math.round(21 * fmt.textScale) + "px " + fontState.tagline, 5, true);
     ctx.strokeStyle = colorState.taglineFlankColor; ctx.lineWidth = 3;
-    const lineGap = 22, lineLen = 80;
+    const lineGap = 22 * fmt.textScale, lineLen = 80 * fmt.textScale;
     ctx.beginPath();
     ctx.moveTo(DESIGN_W/2 - taglineW/2 - lineGap - lineLen, taglineY);
     ctx.lineTo(DESIGN_W/2 - taglineW/2 - lineGap, taglineY);
@@ -4797,7 +4846,7 @@ function renderFlyerToCanvas(interactive) {
   const probeTextW = ctx.measureText(footerUrl).width;
   if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
   let FOOTER_FONT_SIZE = FOOTER_PROBE_SIZE * (footerAvailW / probeTextW);
-  FOOTER_FONT_SIZE = Math.max(14, Math.min(40, FOOTER_FONT_SIZE));
+  FOOTER_FONT_SIZE = Math.max(14 * fmt.textScale, Math.min(40 * fmt.textScale, FOOTER_FONT_SIZE));
 
   const footerScale = FOOTER_FONT_SIZE / 26;
   ctx.font = "400 " + FOOTER_FONT_SIZE + "px " + FOOTER_FONT_FAMILY;
@@ -5182,6 +5231,17 @@ function resetPositions() {
   if (isPreviewInteractive) renderFlyerToCanvas(true);
 }
 
+// Triggers a direct browser download of a data URL — shared by both exports
+// below rather than revealing a separate Download button per format.
+function triggerDownload(dataUrl, filename) {
+  const tempLink = document.createElement('a');
+  tempLink.href = dataUrl;
+  tempLink.download = filename;
+  document.body.appendChild(tempLink);
+  tempLink.click();
+  document.body.removeChild(tempLink);
+}
+
 function generateFinalImage() {
   if (window.goatcounter && window.goatcounter.count) {
     window.goatcounter.count({ path: 'generate-flyer', title: 'Generate Image clicked', event: true });
@@ -5190,18 +5250,24 @@ function generateFinalImage() {
   const canvas = document.getElementById('flyerCanvas');
   canvas.classList.remove('interactive', 'dragging');
   canvas.style.cursor = 'default';
-  renderFlyerToCanvas(false);
   document.getElementById('dragHint').style.display = 'none';
-  const finishedPng = canvas.toDataURL('image/png');
-  // Triggers the download directly rather than revealing a separate
-  // Download button — one click on Download Image now does both steps.
-  const tempLink = document.createElement('a');
-  tempLink.href = finishedPng;
-  tempLink.download = 'pure-it-bowling-flyer.png';
-  document.body.appendChild(tempLink);
-  tempLink.click();
-  document.body.removeChild(tempLink);
-  logToCloudinary(finishedPng, CLOUDINARY_GENERATED_FLYERS_PRESET);
+
+  // Story is rendered first, to a throwaway offscreen canvas, so it never
+  // touches the visible canvas. renderFlyerToCanvas() also updates the
+  // shared drag/hit-test globals (elementBounds, lastDesignW/H, etc.) as a
+  // side effect — rendering Feed last (below, onto the real canvas) leaves
+  // those globals, and what's on screen, consistent with each other.
+  const storyCanvas = document.createElement('canvas');
+  renderFlyerToCanvas(false, 'story', storyCanvas);
+  const storyPng = storyCanvas.toDataURL('image/png');
+  triggerDownload(storyPng, 'pure-it-bowling-flyer-story.png');
+  logToCloudinary(storyPng, CLOUDINARY_GENERATED_FLYERS_PRESET);
+
+  renderFlyerToCanvas(false, 'feed');
+  const feedPng = canvas.toDataURL('image/png');
+  triggerDownload(feedPng, 'pure-it-bowling-flyer-feed.png');
+  logToCloudinary(feedPng, CLOUDINARY_GENERATED_FLYERS_PRESET);
+
   document.getElementById('cardWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
