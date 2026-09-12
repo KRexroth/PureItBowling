@@ -253,7 +253,7 @@
     <div class="stat-row">
       <label class="toggle"><input type="checkbox" id="show_spare" checked><span class="slider"></span></label>
       <div class="stat-inputs triple">
-        <div class="ig ig-pct"><label>Spare %</label><input type="text" id="spareP"/></div>
+        <div class="ig ig-pct"><label>Makeable Spare %</label><input type="text" id="spareP"/></div>
         <div class="ig"><label>Made</label><input type="text" id="spareMade"/></div>
         <div class="ig"><label>Attempts</label><input type="text" id="spareAtt"/></div>
       </div>
@@ -569,17 +569,13 @@
 <!-- Platform selector (shown once card is generated) -->
 <div id="platformWrap" style="display:none;max-width:720px;margin:0 auto 10px;">
   <div class="platform-bar">
-    <button class="plat-btn active" data-w="1200" data-h="630" data-name="Facebook" onclick="selectPlatform(this)">
-      <span class="plat-name">Facebook</span>
+    <button class="plat-btn active" data-w="1080" data-h="1350" data-name="Social Post" onclick="selectPlatform(this)">
+      <span class="plat-name">Social Post</span>
+      <span style="display:block;font-size:9px;opacity:.7;margin-top:2px;">4:5</span>
     </button>
-    <button class="plat-btn" data-w="1080" data-h="1080" data-name="Instagram" onclick="selectPlatform(this)">
-      <span class="plat-name">Instagram</span>
-    </button>
-    <button class="plat-btn" data-w="1080" data-h="1920" data-name="Snapchat" onclick="selectPlatform(this)">
-      <span class="plat-name">Snapchat</span>
-    </button>
-    <button class="plat-btn" data-w="1600" data-h="900" data-name="Twitter/X" onclick="selectPlatform(this)">
-      <span class="plat-name">Twitter / X</span>
+    <button class="plat-btn" data-w="1080" data-h="1920" data-name="Story" onclick="selectPlatform(this)">
+      <span class="plat-name">Story</span>
+      <span style="display:block;font-size:9px;opacity:.7;margin-top:2px;">9:16</span>
     </button>
   </div>
 </div>
@@ -681,7 +677,7 @@ function updateMode() {
   updateVisibility();
 }
 
-let currentPlatform = { w: 1200, h: 630, name: 'Facebook' };
+let currentPlatform = { w: 1080, h: 1350, name: 'Social Post' };
 
 function selectPlatform(el) {
   document.querySelectorAll('.plat-btn').forEach(b => b.classList.remove('active'));
@@ -750,7 +746,8 @@ function generateCard() {
   const showTop = showTopToggle && topParts.length > 0;
   // Fixed design constants
   const TOP_H = showTop ? 60 : 0;
-  const LEFT_W = 280;
+  const isStory = currentPlatform.name === 'Story';
+  const LEFT_W = isStory ? 180 : 280;
   const BOT_H = 170;
   const FOOT_H = 46;
   const DESIGN_W = 1080;
@@ -857,7 +854,7 @@ function generateCard() {
   ] : [
     { id: 'show_fba',    label: 'FIRST BALL AVG', pctRaw: rawVal('fba'),     madeRaw: '', attRaw: '', isAvg: true },
     { id: 'show_strike', label: 'STRIKE %',       pctRaw: rawVal('strikeP'), madeRaw: rawVal('strikeMade'), attRaw: rawVal('strikeAtt') },
-    { id: 'show_spare',  label: 'SPARE %',        pctRaw: rawVal('spareP'),  madeRaw: rawVal('spareMade'),  attRaw: rawVal('spareAtt') },
+    { id: 'show_spare',  label: 'MAKEABLE SPARE %',        pctRaw: rawVal('spareP'),  madeRaw: rawVal('spareMade'),  attRaw: rawVal('spareAtt') },
     { id: 'show_single', label: 'SINGLE PIN %',   pctRaw: rawVal('singleP'), madeRaw: rawVal('singleMade'), attRaw: rawVal('singleAtt') },
     { id: 'show_multi',  label: 'MULTI PIN %',    pctRaw: rawVal('multiP'),  madeRaw: rawVal('multiMade'),  attRaw: rawVal('multiAtt') },
     { id: 'show_split',  label: 'SPLIT %',        pctRaw: rawVal('splitP'),  madeRaw: rawVal('splitMade'),  attRaw: rawVal('splitAtt') },
@@ -900,13 +897,15 @@ function generateCard() {
     const yTop = TOP_H + i * statH;
     const yMid = yTop + statH / 2;
 
+    const hasFrac = !s.isAvg && (s.made || s.att);
+
     // Big pct/value
     ctx.textAlign = 'center';
     ctx.fillStyle = ORANGE;
     fitText(s.pct, LEFT_W / 2, yMid - 6, LEFT_W - 16, "900 46px 'Barlow Condensed', sans-serif", 14);
 
     // Made/Attempts fraction
-    if (!s.isAvg && (s.made || s.att)) {
+    if (hasFrac) {
       let fraction;
       if (s.made && s.att) {
         fraction = s.made + ' / ' + s.att;
@@ -915,13 +914,37 @@ function generateCard() {
       } else {
         fraction = s.att + ' att';
       }
-      ctx.fillStyle = 'rgba(200,200,200,0.9)';
-      fitText(fraction, LEFT_W / 2, yMid + 14, LEFT_W - 16, "700 14px 'Barlow', sans-serif", 8);
+      ctx.fillStyle = 'rgba(200,200,200,0.95)';
+      fitText(fraction, LEFT_W / 2, yMid + 22, LEFT_W - 16, "700 22px 'Barlow', sans-serif", 8);
     }
 
-    // Label
+    // Label — anchored a fixed gap below the fraction (or value if no fraction)
+    const lblX = LEFT_W / 2;
+    const lblMaxW = LEFT_W - 14;
+    const lblFont = "700 26px 'Barlow', sans-serif";
+    const lblLineH = 28;   // line height for wrapped text
+    const lblGap   = 10;   // gap between fraction (or value) and label
+    // Top of label block = bottom of whatever is above it + gap
+    const aboveY = hasFrac ? yMid + 22 : yMid - 6;
+    const lblY1  = aboveY + lblGap + lblLineH;  // baseline of first label line
+    ctx.font = lblFont;
     ctx.fillStyle = GRAY;
-    fitText(s.label, LEFT_W / 2, yMid + (s.isAvg ? 20 : 34), LEFT_W - 16, "700 16px 'Barlow', sans-serif", 8);
+    const lblWords = s.label.split(' ');
+    let line1 = '', line2 = '';
+    for (let wi = 0; wi < lblWords.length; wi++) {
+      const test = line1 ? line1 + ' ' + lblWords[wi] : lblWords[wi];
+      if (ctx.measureText(test).width > lblMaxW && line1) {
+        line2 = lblWords.slice(wi).join(' ');
+        break;
+      }
+      line1 = test;
+    }
+    if (line2) {
+      ctx.fillText(line1, lblX, lblY1);
+      ctx.fillText(line2, lblX, lblY1 + lblLineH);
+    } else {
+      fitText(s.label, lblX, lblY1, lblMaxW, lblFont, 8);
+    }
 
     // Divider
     if (i < leftStats.length - 1) {
@@ -1038,7 +1061,7 @@ function generateCard() {
       ctx.fillStyle = WHITE;
       fitText(valStr, cx, botY + BOT_H * 0.58, slotW - 12, "900 46px 'Barlow Condensed', sans-serif", 14);
       ctx.fillStyle = ORANGE;
-      fitText(layoutLabel, cx, botY + BOT_H * 0.84, slotW - 12, "700 16px 'Barlow', sans-serif", 8);
+      fitText(layoutLabel, cx, botY + BOT_H * 0.88, slotW - 12, "700 26px 'Barlow', sans-serif", 8);
       slotIndex++;
       if (hasSpecs) drawDivider(LEFT_W + slotIndex * slotW);
     }
@@ -1050,7 +1073,7 @@ function generateCard() {
       ctx.fillStyle = WHITE;
       fitText(s.value, cx, botY + BOT_H * 0.58, slotW - 12, "900 52px 'Barlow Condensed', sans-serif", 14);
       ctx.fillStyle = ORANGE;
-      fitText(s.label, cx, botY + BOT_H * 0.84, slotW - 12, "700 16px 'Barlow', sans-serif", 8);
+      fitText(s.label, cx, botY + BOT_H * 0.88, slotW - 12, "700 26px 'Barlow', sans-serif", 8);
       slotIndex++;
     });
   } else {
@@ -1066,7 +1089,7 @@ function generateCard() {
       ctx.fillStyle = WHITE;
       fitText(s.value, cx, botY + BOT_H * 0.58, slotW - 12, "900 58px 'Barlow Condensed', sans-serif", 14);
       ctx.fillStyle = ORANGE;
-      fitText(s.label, cx, botY + BOT_H * 0.84, slotW - 12, "700 18px 'Barlow', sans-serif", 8);
+      fitText(s.label, cx, botY + BOT_H * 0.88, slotW - 12, "700 29px 'Barlow', sans-serif", 8);
     });
   }
 
