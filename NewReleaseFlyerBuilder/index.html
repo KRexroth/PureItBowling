@@ -493,8 +493,8 @@
     <div class="ctrl-group" style="margin-top:14px;">
       <label for="gridBorderStyle">Border Style</label>
       <select id="gridBorderStyle">
-        <option value="padded" selected>Padded (gap at corners)</option>
-        <option value="connected">Connected (lines touch)</option>
+        <option value="padded">Padded (gap at corners)</option>
+        <option value="connected" selected>Connected (lines touch)</option>
       </select>
     </div>
   </div>
@@ -639,7 +639,7 @@ let slotBorders = {};
 let borderColorsCustomized = {};
 // 'padded' (default) leaves a small gap around each border line so corners
 // don't touch; 'connected' removes that gap so lines run edge-to-edge.
-let gridBorderStyle = 'padded';
+let gridBorderStyle = 'connected';
 
 // User-added elements from "+ Add Element" — headers, standard text, and
 // images that float freely on the flyer instead of living in the feature
@@ -4387,7 +4387,6 @@ function renderFlyerToCanvas(interactive, format, targetCanvas) {
   // formats and a scaled-up width would overflow the fixed-width page.
   const CB_VSCALE = CB_SCALE * fmt.textScale;
   const CB_WIDTH = 920 * CB_SCALE;
-  const CB_HEIGHT = 172 * CB_VSCALE;
   const CB_RADIUS = 22 * CB_SCALE;
   const CB_BORDER_W = 4 * CB_VSCALE;
   const CB_PAD_TOP = 24 * CB_VSCALE;
@@ -4409,6 +4408,20 @@ function renderFlyerToCanvas(interactive, format, targetCanvas) {
 
   ctx.font = "500 " + Math.round(CB_BODY_SIZE) + "px 'Montserrat', 'Oswald', sans-serif";
   const descLines = fitDesc ? wrapText(ctx, fitDesc, CB_TEXT_COL_W) : [];
+
+  // The box's content-area height (icon/Line1/Line2/description, excluding
+  // fine print) has to be at least tall enough to hold that text with equal
+  // padding above and below — it can't just be a flat scaled guess, because
+  // a bigger font in the same fixed-width column can wrap onto more lines
+  // than the base spec size ever needed to, which used to push the top line
+  // up past the box's top border. cbTotalContentH is reused below (ty) so
+  // the same numbers that sized the box are the ones used to center within
+  // it — the two can never disagree.
+  const cbBodyBlockH = descLines.length * CB_BODY_LINE_HEIGHT;
+  const cbH1BlockH = fitLine1 ? CB_H1_SIZE + CB_H1_GAP : 0;
+  const cbH2BlockH = fitLine2 ? CB_H2_SIZE + CB_H2_GAP : 0;
+  const cbTotalContentH = cbH1BlockH + cbH2BlockH + cbBodyBlockH;
+  const CB_HEIGHT = Math.max(172 * CB_VSCALE, cbTotalContentH + CB_PAD_TOP + CB_PAD_BOTTOM);
 
   // Solve the two headline lines' font sizes purely from the available
   // width — the reference flyer's headline reads big and bold, but it still
@@ -4635,8 +4648,8 @@ function renderFlyerToCanvas(interactive, format, targetCanvas) {
       }
 
       const b = getSlotBorders(slotIdx);
-      // Padded (default) leaves a gap so border lines don't touch at
-      // corners; connected runs them fully edge-to-edge.
+      // Connected (default) runs border lines fully edge-to-edge at
+      // corners; padded leaves a small gap instead.
       const BORDER_GAP = gridBorderStyle === 'connected' ? 0 : 14;
       const BORDER_W = 2;
       // Draw borders as filled rectangles rather than stroked lines. A stroked
@@ -4738,15 +4751,11 @@ function renderFlyerToCanvas(interactive, format, targetCanvas) {
 
   // The whole text block (headline1 + gap + headline2 + gap + body) is
   // centered vertically as a group within the box, per the spec's
-  // alignment rules — matching how the icon is centered too.
-  // A removed callout line drops out of the block-height sum entirely (not
-  // just skipped when drawing) so the remaining lines + body copy stay
-  // tightly centered instead of leaving a gap where it used to sit.
-  const bodyBlockH = descLines.length * CB_BODY_LINE_HEIGHT;
-  const h1BlockH = fitLine1 ? CB_H1_SIZE + CB_H1_GAP : 0;
-  const h2BlockH = fitLine2 ? CB_H2_SIZE + CB_H2_GAP : 0;
-  const totalContentH = h1BlockH + h2BlockH + bodyBlockH;
-  let ty = fbY + (CB_HEIGHT - totalContentH) / 2;
+  // alignment rules — matching how the icon is centered too. Reuses
+  // cbTotalContentH (computed above, before CB_HEIGHT) rather than
+  // recomputing it, so the box is always at least as tall as this centers
+  // against — equal padding above and below is guaranteed, never negative.
+  let ty = fbY + (CB_HEIGHT - cbTotalContentH) / 2;
 
   ctx.textAlign = 'left';
   if (fitLine1) {
@@ -4779,7 +4788,7 @@ function renderFlyerToCanvas(interactive, format, targetCanvas) {
   const bodyFont = "500 " + Math.round(CB_BODY_SIZE) + "px " + fontState.fitDesc;
   const bodyBoldFont = "800 " + Math.round(CB_BODY_SIZE) + "px " + fontState.fitDesc;
   if (descLines.length) {
-    calloutLineBounds.fitDesc = { x: textX, y: ty, w: calloutLineMaxW, h: bodyBlockH };
+    calloutLineBounds.fitDesc = { x: textX, y: ty, w: calloutLineMaxW, h: cbBodyBlockH };
   }
   for (let i = 0; i < descLines.length; i++) {
     const lineY = ty + CB_BODY_SIZE * 0.75 + i * CB_BODY_LINE_HEIGHT;
