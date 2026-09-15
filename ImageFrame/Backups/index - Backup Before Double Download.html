@@ -583,7 +583,7 @@
 <div id="cardWrap" style="display:none;max-width:720px;margin:0 auto;">
   <canvas id="scoreCard"></canvas>
   <div style="margin-top:10px;">
-    <a id="dlBtn" class="share-btn download" href="#" onclick="event.preventDefault(); downloadBoth();" style="width:100%;display:flex;align-items:center;justify-content:center;height:42px;">Download Both</a>
+    <a id="dlBtn" class="share-btn download" download="pure-it-bowling-score.png" style="width:100%;display:flex;align-items:center;justify-content:center;height:42px;">Download</a>
   </div>
 </div>
 
@@ -1119,33 +1119,10 @@ function generateCard() {
   document.getElementById('cardWrap').style.display = 'block';
   ctx.restore();
   document.getElementById('cardWrap').scrollIntoView({behavior:'smooth', block:'start'});
-}
-
-function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
-
-async function downloadBoth() {
-  const platforms = [
-    { w: 1080, h: 1350, name: 'Social Post' },
-    { w: 1080, h: 1920, name: 'Story' }
-  ];
-  const originalPlatform = currentPlatform;
-  const canvas = document.getElementById('scoreCard');
-
-  for (const p of platforms) {
-    currentPlatform = p;
-    generateCard();
-    const link = document.createElement('a');
-    link.download = 'pure-it-bowling-' + p.name.toLowerCase().replace(/[^a-z0-9]+/g,'-') + '.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-    await delay(400);
-  }
-
-  currentPlatform = originalPlatform;
-  document.querySelectorAll('.plat-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.name === originalPlatform.name);
-  });
-  generateCard();
+  const dataUrl = canvas.toDataURL('image/png');
+  const dlBtn = document.getElementById('dlBtn');
+  dlBtn.href = dataUrl;
+  dlBtn.download = 'pure-it-bowling-' + currentPlatform.name.toLowerCase().replace(/[^a-z0-9]+/g,'-') + '.png';
 }
 updateMode();
 document.documentElement.style.setProperty('--accent', accentColor);
