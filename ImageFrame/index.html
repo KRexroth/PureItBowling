@@ -902,9 +902,23 @@ function generateCard() {
     // Big pct/value
     ctx.textAlign = 'center';
     ctx.fillStyle = ORANGE;
-    fitText(s.pct, LEFT_W / 2, yMid - 6, LEFT_W - 16, "900 46px 'Barlow Condensed', sans-serif", 14);
+    const valueBaselineY = yMid - 6;
+    fitText(s.pct, LEFT_W / 2, valueBaselineY, LEFT_W - 16, "900 46px 'Barlow Condensed', sans-serif", 14);
+    const valueBottomY = valueBaselineY + (ctx.measureText(s.pct).actualBoundingBoxDescent || 0);
 
-    // Made/Attempts fraction
+    // Label geometry (computed before drawing it, so the fraction can be centered against it)
+    const lblX = LEFT_W / 2;
+    const lblMaxW = LEFT_W - 14;
+    const lblFont = "700 26px 'Barlow', sans-serif";
+    const lblLineH = 28;   // line height for wrapped text
+    const lblGap   = 10;   // gap between fraction (or value) and label
+    // Top of label block = bottom of whatever is above it + gap
+    const aboveY = hasFrac ? yMid + 22 : valueBottomY;
+    const lblY1  = aboveY + lblGap + lblLineH;  // baseline of first label line
+    ctx.font = lblFont;
+    const lblTopY = lblY1 - (ctx.measureText(s.label).actualBoundingBoxAscent || 19);
+
+    // Made/Attempts fraction — vertically centered in the gap between the value and the label
     if (hasFrac) {
       let fraction;
       if (s.made && s.att) {
@@ -914,19 +928,16 @@ function generateCard() {
       } else {
         fraction = s.att + ' att';
       }
+      const fracFont = "700 28px 'Barlow', sans-serif";
+      ctx.font = fracFont;
+      const fm = ctx.measureText(fraction);
+      const fracHalfGlyph = ((fm.actualBoundingBoxAscent || 20) - (fm.actualBoundingBoxDescent || 0)) / 2;
+      const gapCenterY = (valueBottomY + lblTopY) / 2;
+      const fracBaselineY = gapCenterY + fracHalfGlyph;
       ctx.fillStyle = 'rgba(200,200,200,0.95)';
-      fitText(fraction, LEFT_W / 2, yMid + 22, LEFT_W - 16, "700 22px 'Barlow', sans-serif", 8);
+      fitText(fraction, LEFT_W / 2, fracBaselineY, LEFT_W - 16, fracFont, 8);
     }
 
-    // Label — anchored a fixed gap below the fraction (or value if no fraction)
-    const lblX = LEFT_W / 2;
-    const lblMaxW = LEFT_W - 14;
-    const lblFont = "700 26px 'Barlow', sans-serif";
-    const lblLineH = 28;   // line height for wrapped text
-    const lblGap   = 10;   // gap between fraction (or value) and label
-    // Top of label block = bottom of whatever is above it + gap
-    const aboveY = hasFrac ? yMid + 22 : yMid - 6;
-    const lblY1  = aboveY + lblGap + lblLineH;  // baseline of first label line
     ctx.font = lblFont;
     ctx.fillStyle = GRAY;
     const lblWords = s.label.split(' ');
