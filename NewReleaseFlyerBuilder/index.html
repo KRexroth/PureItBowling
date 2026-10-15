@@ -314,6 +314,7 @@
   .pibg-ball-row{display:flex;align-items:center;gap:10px;}
   .pibg-seg{display:flex;gap:6px;}
   .pibg-seg button{flex:1;border:1px solid #ddd;border-radius:6px;padding:7px 4px;background:#fafafa;color:#888;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;cursor:pointer;font-family:'Barlow',sans-serif;}
+  .pibg-seg-grid{display:grid;grid-template-columns:1fr 1fr;}
   .pibg-seg button.active{background:#EF4123;border-color:#EF4123;color:#fff;}
   .pibg-swatches{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
   .pibg-swatches input[type="color"]{width:38px;height:30px;padding:0;border:1px solid #ddd;border-radius:5px;cursor:pointer;background:none;}
@@ -340,6 +341,8 @@
   .pibg-ball-promote{position:absolute;left:0;right:0;bottom:0;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;text-align:center;color:#fff;background:rgba(0,0,0,.55);border:none;border-radius:0 0 6px 6px;cursor:pointer;padding:1px 0;display:none;}
   .pibg-ball:hover .pibg-ball-promote{display:block;}
   .pibg-swatch{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:#888;}
+  .pibg-basecolor{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:11px;color:#888;}
+  .pibg-basecolor input[type="color"]{width:38px;height:28px;padding:0;border:1px solid #ddd;border-radius:5px;cursor:pointer;background:none;}
   .pibg-swatch label{display:flex;align-items:center;gap:3px;cursor:pointer;}
 </style>
 </head>
@@ -482,9 +485,17 @@
           </div>
 
           <span class="pibg-label">Style</span>
-          <div class="pibg-seg" id="pibgStyleSeg">
+          <div class="pibg-seg pibg-seg-grid" id="pibgStyleSeg">
             <button type="button" data-v="grunge" class="active">Modern + Grunge</button>
             <button type="button" data-v="minimal">Minimal</button>
+            <button type="button" data-v="flame">Flame</button>
+            <button type="button" data-v="geo">Geometric</button>
+          </div>
+
+          <span class="pibg-label">Layout</span>
+          <div class="pibg-seg" id="pibgLayoutSeg">
+            <button type="button" data-v="corners" class="active">Corners</button>
+            <button type="button" data-v="full">Full Background</button>
           </div>
 
           <div class="pibg-row2" style="margin-top:2px;">
@@ -494,6 +505,13 @@
                 <option value="marble">Fluid Marble</option>
                 <option value="mix">Marble + Brush</option>
                 <option value="brush">Brush Strokes</option>
+              </select>
+            </div>
+            <div id="pibgPatternWrap" style="display:none;">
+              <span class="pibg-label">Pattern</span>
+              <select id="pibgPattern">
+                <option value="triangles">Triangles</option>
+                <option value="hex">Hexagons</option>
               </select>
             </div>
             <div id="pibgMotifWrap" style="display:none;">
@@ -508,7 +526,12 @@
               <select id="pibgBase">
                 <option value="dark">Charcoal</option>
                 <option value="tint">Ball Color</option>
+                <option value="custom">Custom Color</option>
               </select>
+              <div id="pibgBaseColorWrap" class="pibg-basecolor" style="display:none;">
+                <input type="color" id="pibgBaseColor" value="#1c1c22" title="Custom Base Color"/>
+                <span>Pick Base Color</span>
+              </div>
             </div>
           </div>
           <div id="pibgGrungeExtras">
@@ -516,7 +539,7 @@
             <label class="pibg-check" id="pibgPopWrap"><input type="checkbox" id="pibgPop"/> Use Logo Color As Accent <span class="pibg-mini" id="pibgPopSwatch"></span></label>
           </div>
 
-          <span class="pibg-label">Open Center <span id="pibgOpenVal" style="text-transform:none;color:#aaa;font-weight:600;">Default</span></span>
+          <span class="pibg-label"><span id="pibgOpenLbl">Open Center</span> <span id="pibgOpenVal" style="text-transform:none;color:#aaa;font-weight:600;">Default</span></span>
           <input type="range" id="pibgOpen" min="0.85" max="1.15" step="0.05" value="1"/>
 
           <button type="button" class="pibg-secondary pibg-variation" id="pibgVariationBtn">New Variation</button>
@@ -5722,6 +5745,8 @@ var PIBG = (function () {
   Flyer.prototype.setOpen = function (o) {
     this.open = o; this.edge = Math.min(0.9, Math.max(0.4, 0.57 + (o - 1) * 0.7)); this.shift = this.edge - 0.43;
   };
+  // lower bound for |s| when placing bars/lines: corner layout keeps them in the corners, full layout anywhere
+  Flyer.prototype.sLo = function (lo, cap) { return this.layout === 'full' ? 0.02 : Math.min(lo + this.shift, cap); };
   Flyer.prototype.px = function (i) { return ((i % this.W) - this.W / 2) / (this.W / 2); };
   Flyer.prototype.py = function (i) { return (Math.floor(i / this.W) - this.H / 2) / (this.H / 2); };
   // per-pixel color source: [r,g,b] constant, or {R,G,B} arrays
@@ -5741,16 +5766,18 @@ var PIBG = (function () {
       R[i] = 1 - (1 - R[i]) * (1 - r * a); G[i] = 1 - (1 - G[i]) * (1 - g * a); B[i] = 1 - (1 - B[i]) * (1 - b * a);
     }
   };
-  Flyer.prototype.aniso = function (acrossPx, alongPx, octaves) {
+  Flyer.prototype.aniso = function (acrossPx, alongPx, octaves, alongS) {
     var n = 1024, f = new Noise(n, n, this.rng).fbm(24, octaves || 4, 0.6), out = new Float32Array(this.N_);
     var ox = this.rng.random() * n, oy = this.rng.random() * n;
     var sa = this.D / (alongPx * this.k / 24), sc = this.D / (acrossPx * this.k / 24);
-    for (var i = 0; i < this.N_; i++) out[i] = sampleBilinear(f, n, n, this.t[i] * sa + ox, this.s[i] * sc + oy, 'wrap');
+    var A = alongS ? this.s : this.t, C = alongS ? this.t : this.s;   // alongS: streaks point toward the center (flames)
+    for (var i = 0; i < this.N_; i++) out[i] = sampleBilinear(f, n, n, A[i] * sa + ox, C[i] * sc + oy, 'wrap');
     return out;
   };
   Flyer.prototype.base = function (mode, grunge) {
     var p = this.pal.primary, c;
-    if (mode === 'tint') c = adj(p, { s: 0.9, v_abs: 0.30 });
+    if (mode === 'custom' && this.baseColor) c = this.baseColor.slice();   // exact color picked by the user
+    else if (mode === 'tint') c = adj(p, { s: 0.9, v_abs: 0.30 });
     else { var t = adj(p, { v_abs: 0.08 }); c = [0.075 * 0.85 + t[0] * 0.15, 0.075 * 0.85 + t[1] * 0.15, 0.08 * 0.85 + t[2] * 0.15]; }
     var tex = this.N.fbm(this.W / 4, 7, 0.55), fine = this.N.fbm(20 * this.k, 3, 0.6), i;
     var crack = null, crackGate = null, blot = null, spk = null;
@@ -5774,6 +5801,10 @@ var PIBG = (function () {
   };
   Flyer.prototype.region = function (inner, outer, wobble, sides) {
     var n = this.N.fbm(this.W / 2.2, 4, 0.5, 4), out = new Float32Array(this.N_);
+    if (this.layout === 'full') {   // artwork everywhere, with patchy variation; the center gets faded in protect()
+      for (var j = 0; j < this.N_; j++) out[j] = 0.55 + 0.45 * smoothstep(0.2, 0.8, n[j]);
+      return out;
+    }
     inner += this.shift; outer = Math.min(outer + this.shift, 1.05);
     for (var i = 0; i < this.N_; i++) {
       var nn = n[i] - 0.5, diag = smoothstep(inner, outer, Math.abs(this.s[i]) + wobble * nn);
@@ -5967,6 +5998,16 @@ var PIBG = (function () {
   Flyer.prototype.protect = function () {
     if (!this.baseR) return;
     var n = this.N.fbm(this.W / 3, 3, 0.5, 4);
+    if (this.layout === 'full') {
+      // fade (not erase) the artwork in a central oval so text still reads; Open Center slider sets how strong/wide
+      var dim = Math.min(0.95, Math.max(0.5, 0.86 + (this.open - 1) * 1.2)), rad = 0.95 + (this.open - 1) * 0.8;
+      for (var j = 0; j < this.N_; j++) {
+        var px = this.px(j), py = this.py(j), e = Math.sqrt(px * px / 0.75 + py * py / 0.8) / rad + 0.08 * (n[j] - 0.5);
+        var kp = dim * (1 - smoothstep(0.32, 1.05, e)); if (kp <= 0) continue;
+        this.R[j] += (this.baseR[j] - this.R[j]) * kp; this.G[j] += (this.baseG[j] - this.G[j]) * kp; this.B[j] += (this.baseB[j] - this.B[j]) * kp;
+      }
+      return;
+    }
     for (var i = 0; i < this.N_; i++) {
       var keep = 1 - smoothstep(this.edge - 0.05, this.edge + 0.015, Math.abs(this.s[i]) + 0.06 * (n[i] - 0.5));
       if (keep <= 0) continue;
@@ -6027,7 +6068,7 @@ var PIBG = (function () {
     [-1, 1].forEach(function (side) {
       var nb = rng.int(4, 7);
       for (var b = 0; b < nb; b++) {
-        var s0 = side * rng.uniform(Math.min(0.34 + F.shift, 0.92), 1.0), w = rng.uniform(0.008, 0.07) * (rng.random() < 0.6 ? 1 : 0.35), r = rng.random();
+        var s0 = side * rng.uniform(F.sLo(0.34, 0.92), 1.0), w = rng.uniform(0.008, 0.07) * (rng.random() < 0.6 ? 1 : 0.35), r = rng.random();
         var col = r < 0.35 ? DARK : (r < 0.7 ? p : (useSilver ? silver : (p2 || adj(p, { v: 0.6 })))), tf = null;
         if (p3 && side > 0 && col === p2) col = p3;
         if (rng.random() < 0.5) { var t0 = rng.uniform(-0.5, 0.5); tf = [t0, t0 + rng.sign() * rng.uniform(0.1, 0.4)]; }
@@ -6035,7 +6076,7 @@ var PIBG = (function () {
       }
       var nl = rng.int(2, 5);
       for (var l = 0; l < nl; l++) {
-        var s1 = side * rng.uniform(Math.min(0.30 + F.shift, 0.9), 0.98), t1 = rng.uniform(-0.4, 0.4), tf1 = [t1, t1 + rng.sign() * rng.uniform(0.1, 0.35)];
+        var s1 = side * rng.uniform(F.sLo(0.30, 0.9), 0.98), t1 = rng.uniform(-0.4, 0.4), tf1 = [t1, t1 + rng.sign() * rng.uniform(0.1, 0.35)];
         var lc = (o.pop && p2 && l % 2 === 0) ? hot(p2) : mix(p, WHITE, 0.25);
         F.line(s1, lc, rng.uniform(2, 5), 0.85, 16, tf1);
       }
@@ -6057,7 +6098,8 @@ var PIBG = (function () {
   }
   function recipeMinimal(F, pal, o, prog) {
     var rng = F.rng, W = F.W, H = F.H, p = pal.primary, n = F.N_, i;
-    var pB = (o.multi && pal.second) ? pal.second : p;   // bottom-right corner color (multi-ball only; single balls keep the approved look)
+    var pB = (o.multi && pal.second) ? pal.second : p;   // waves: bottom-right color (multi-ball only; single balls keep the approved look)
+    var full = F.layout === 'full';
     F.base(o.base, 0.5); prog(0.12);
     F.grit = F.N.fbm(14 * F.k, 4, 0.62);
     if (o.motif === 'arcs') {
@@ -6065,24 +6107,40 @@ var PIBG = (function () {
       var rot = (-45 + rng.uniform(-8, 8)) * Math.PI / 180;
       var A = half * (rng.uniform(0.86, 0.95) + 0.5 * F.shift), B = half * (rng.uniform(0.56, 0.64) + F.shift);
       var cr = Math.cos(rot), sr = Math.sin(rot), sheen = F.aniso(10, 160, 3), spn = F.N.fbm(F.W / 5, 3, 0.5, 4);
-      var fill = adj(p, { v: 0.30 }), fillB = adj(pB, { v: 0.30 }), C = { R: new Float32Array(n), G: new Float32Array(n), B: new Float32Array(n) }, Ao = new Float32Array(n), As = new Float32Array(n);
+      // Portal: selected 2nd color takes the bottom-right sweep, 3rd color the inner accent arcs
+      var q2 = pal.second || p, q3 = pal.third || null;
+      var fill = adj(p, { v: 0.30 }), fillB = adj(q2, { v: 0.30 }), C = { R: new Float32Array(n), G: new Float32Array(n), B: new Float32Array(n) }, Ao = new Float32Array(n), As = new Float32Array(n);
       for (i = 0; i < n; i++) {
         var x = (i % W) - cx, y = Math.floor(i / W) - cy, e = Math.sqrt(Math.pow((x * cr + y * sr) / A, 2) + Math.pow((-x * sr + y * cr) / B, 2));
-        var out = smoothstep(0.98, 1.25, e), m = 0.7 + 0.7 * sheen[i], bw = smoothstep(-0.15, 0.15, F.s[i]);
+        var out = smoothstep(0.98, 1.25, e); if (full) out = Math.max(out, 0.5);
+        var m = 0.7 + 0.7 * sheen[i], bw = smoothstep(-0.15, 0.15, F.s[i]);
         C.R[i] = (fill[0] + (fillB[0] - fill[0]) * bw) * m; C.G[i] = (fill[1] + (fillB[1] - fill[1]) * bw) * m; C.B[i] = (fill[2] + (fillB[2] - fill[2]) * bw) * m; Ao[i] = out * 0.95;
         As[i] = out * smoothstep(0.62, 0.78, F.grit[i]) * smoothstep(0.3, 0.7, spn[i]) * 0.55;
       }
       F.over(C, Ao); F.over(p, As); prog(0.35);
-      var arcCol = function (k, side) { var c = side > 0 ? pB : p; return k < 2 ? hot(c) : c; };
+      var arcCol = function (k, side) {
+        var c = side > 0 ? q2 : p;
+        if (q3 && (k === 2 || k === 3)) c = q3;
+        return k < 2 ? hot(c) : c;
+      };
       for (var k = 0; k < 5; k++) {
         var f = 1.0 + 0.045 * k + 0.015 * rng.random(), side = k % 2 === 0 ? 1 : -1, c = 90 * side + rng.uniform(-15, 15), span = rng.uniform(50, 80);
         F.arc(cx, cy, A * f, B * f, rot + rng.uniform(-0.03, 0.03), arcCol(k, side), 6 - k * 0.8, 60 - 8 * k, 1.0 - 0.13 * k,
           [(c - span) * Math.PI / 180, (c + span) * Math.PI / 180], 380 - 50 * k, 0.85 - 0.12 * k);
         prog(0.35 + 0.08 * k);
       }
+      if (full) {   // full page: echo the portal with smaller rings toward the middle
+        var fs = [0.42, 0.58, 0.72, 0.86];
+        for (var kk = 0; kk < fs.length; kk++) {
+          var sd = kk % 2 === 0 ? 1 : -1, cc = 90 * sd + rng.uniform(-25, 25), sp = rng.uniform(55, 95);
+          var col = q3 && kk % 2 === 1 ? q3 : (sd > 0 ? q2 : p);
+          F.arc(cx, cy, A * fs[kk], B * fs[kk], rot + rng.uniform(-0.05, 0.05), kk < 2 ? col : hot(col), 3.5, 40, 0.75,
+            [(cc - sp) * Math.PI / 180, (cc + sp) * Math.PI / 180], 160, 0.45);
+        }
+      }
       [-1, 1].forEach(function (side) {
         for (var j = 0; j < 3; j++) {
-          var s0 = side * rng.uniform(Math.min(0.15 + F.shift, 0.9), 0.98), t0 = rng.uniform(-0.5, 0.5);
+          var s0 = side * rng.uniform(F.sLo(0.15, 0.9), 0.98), t0 = rng.uniform(-0.5, 0.5);
           F.line(s0, mix(p, WHITE, 0.5), 1.6, 0.3, 5, [t0, t0 + side * 0.35]);
         }
       });
@@ -6093,12 +6151,13 @@ var PIBG = (function () {
           [0.362, DARK], [0.41, DARK], [0.422, adj(c, { v: 0.6 })], [0.55, c], [0.62, light], [0.70, c], [0.8, adj(c, { v: 0.45 })], [1, c]];
       };
       [-1, 1].forEach(function (side, j) {
-        F.waves(side, rng.uniform(0.50, 0.60) + F.shift, waveStops(side > 0 ? pB : p), 0.5, rng.uniform(0.04, 0.07), rng.uniform(1.0, 1.6)); prog(0.35 + 0.25 * j);
+        var se = rng.uniform(0.50, 0.60);
+        F.waves(side, full ? se - 0.57 : se + F.shift, waveStops(side > 0 ? pB : p), 0.5, rng.uniform(0.04, 0.07), rng.uniform(1.0, 1.6)); prog(0.35 + 0.25 * j);
       });
       [-1, 1].forEach(function (side) {
         var nl = rng.int(2, 4);
         for (var j = 0; j < nl; j++) {
-          var s0 = side * rng.uniform(Math.min(0.35 + F.shift, 0.9), 0.98), t0 = rng.uniform(-0.4, 0.4);
+          var s0 = side * rng.uniform(F.sLo(0.35, 0.9), 0.98), t0 = rng.uniform(-0.4, 0.4);
           F.line(s0, side > 0 ? pB : p, 2.5, 0.75, 10, [t0, t0 + rng.sign() * 0.3]);
         }
       });
@@ -6112,6 +6171,95 @@ var PIBG = (function () {
     F.finish(0.022, 0.32);
   }
 
+  function hueShift(c, dh, sMul) { var h = rgb2hsv(c); return hsv2rgb(h[0] + dh, Math.min(1, h[1] * (sMul || 1)), h[2]); }
+
+  // FLAME: fire licking in from the corners (or across the page), colored from the ball
+  function recipeFlame(F, pal, o, prog) {
+    var rng = F.rng, p = pal.primary, n = F.N_, i, full = F.layout === 'full';
+    var tip = pal.second ? hot(pal.second) : hueShift(hot(p), 0.07, 0.75);     // tips: 2nd color, else a warmer/lighter shift
+    var core = pal.third ? mix(hot(pal.third), WHITE, 0.3) : mix(tip, WHITE, 0.55);
+    F.base(o.base, 0.7); prog(0.12);
+    F.grit = F.N.fbm(14 * F.k, 4, 0.62);
+    var T1 = F.aniso(26, 300, 4, true), T2 = F.aniso(80, 700, 3, true), fl = F.flowField(0.45, 6, 0.55);
+    var lf = F.N.fbm(F.W / 2.5, 3, 0.5, 4); prog(0.4);
+    var stops = [[0, adj(p, { v: 0.18 })], [0.18, adj(p, { v: 0.45 })], [0.38, p], [0.58, mix(p, tip, 0.6)], [0.74, tip], [0.88, core], [1, mix(core, WHITE, 0.5)]];
+    var L = makeLUT(stops), C = { R: new Float32Array(n), G: new Float32Array(n), B: new Float32Array(n) }, A = new Float32Array(n), G = new Float32Array(n), E = new Float32Array(n);
+    var front = full ? -0.02 : F.edge - 0.02, depth = 1 - front;
+    for (i = 0; i < n; i++) {
+      var side = F.s[i] >= 0 ? 1 : -1, d = (side * F.s[i] - front) / depth + 0.18 * (lf[i] - 0.5);
+      var tw = 0.6 * sampleBilinear(T1, F.W, F.H, fl.X[i], fl.Y[i], 'reflect') + 0.4 * T2[i];
+      var h = d * 1.45 + (tw - 0.5) * 1.25 - 0.12;
+      var a = smoothstep(0.0, 0.10, h);
+      var q = Math.round(clamp01(h) * 1023) * 3;
+      C.R[i] = L[q]; C.G[i] = L[q + 1]; C.B[i] = L[q + 2]; A[i] = a;
+      G[i] = smoothstep(-0.35, 0.15, h) * (1 - a * 0.6) * 0.38;               // heat glow just ahead of the flames
+      E[i] = Math.max(0, 1 - Math.abs(h + 0.12) / 0.25);                        // ember zone just past the tips
+    }
+    F.screen(adj(p, { v: 1, s: 0.9 }), G); F.over(C, A); prog(0.7);
+    F.screen(tip, (function () { var Z = new Float32Array(n); for (i = 0; i < n; i++) Z[i] = A[i] * smoothstep(0.55, 0.95, T1[i]) * 0.25; return Z; })());
+    F.splatter(E, [tip, core, hot(p)], { clusters: 26, per: [6, 22], spread: [40, 160], rmax: 4, spray: 3500, alpha: 0.95 });
+    prog(0.9);
+    F.finish(0.02, 0.3);
+  }
+
+  // GEOMETRIC: low-poly triangles or hex tiles, thinning out toward the open center
+  function recipeGeo(F, pal, o, prog) {
+    var rng = F.rng, p = pal.primary, p2 = pal.second, p3 = pal.third, n = F.N_, W = F.W, i, full = F.layout === 'full';
+    F.base(o.base, 0.45); prog(0.12);
+    F.grit = F.N.fbm(14 * F.k, 4, 0.62);
+    var reg = F.region(0.30, 0.62, 0.22, 0.22), seed = rng.int(1, 2147483647), hex = o.pattern === 'hex';
+    var S = (hex ? 64 : 150) * F.k, s3 = Math.sqrt(3), th = S * s3 / 2, lw = Math.max(1, 2.2 * F.k), ox = rng.random() * 1000, oy = rng.random() * 1000;
+    var light = mix(p, WHITE, 0.45), cols = [p, p2 || adj(p, { v: 0.62 }), p3 || mix(p, WHITE, 0.25), adj(p, { v: 0.32 }), adj(p2 || p, { v: 0.45 })];
+    var C = { R: new Float32Array(n), G: new Float32Array(n), B: new Float32Array(n) }, A = new Float32Array(n), Ln = new Float32Array(n);
+    for (i = 0; i < n; i++) {
+      var x = i % W, y = (i - x) / W;
+      // rotate 45 deg so rows run along the BL->TR diagonal like the other styles
+      var xr = (x - y) / Math.SQRT2 + ox * S, yr = (x + y) / Math.SQRT2 + oy * S, idA, idB, cxr, cyr, ed, loc;
+      if (hex) {
+        var hx = xr / S, hy = yr / S;
+        var a1x = hx - Math.round(hx / s3) * s3, a1y = hy - Math.round(hy), a2x = hx - (Math.floor(hx / s3) + 0.5) * s3, a2y = hy - (Math.floor(hy) + 0.5);
+        var u1 = (a1x * a1x + a1y * a1y) < (a2x * a2x + a2y * a2y), gx = u1 ? a1x : a2x, gy = u1 ? a1y : a2y;
+        cxr = (hx - gx) * S; cyr = (hy - gy) * S; idA = Math.round(cxr / S * 2); idB = Math.round(cyr / S * 2);
+        var hd = Math.max(Math.abs(gy), Math.abs(gx) * s3 / 2 + Math.abs(gy) * 0.5);
+        ed = (0.5 - hd) * S; loc = gy + 0.5;
+      } else {
+        var r = Math.floor(yr / th), fy = yr / th - r, odd = ((r % 2) + 2) % 2, u = xr / S + odd * 0.5, col = Math.floor(u), fu = u - col;
+        if (Math.abs(fu - 0.5) <= fy / 2) {          // upward triangle
+          idA = 2 * col + 1; ed = Math.min((1 - fy) * th, (fy / 2 - Math.abs(fu - 0.5)) * S * 0.866);
+          cxr = (col + 0.5 - odd * 0.5) * S; cyr = (r + 2 / 3) * th;
+        } else {                                       // downward triangle
+          var cc = fu < 0.5 ? col : col + 1; idA = 2 * cc;
+          ed = Math.min(fy * th, ((1 - fy) / 2 - Math.abs(u - cc)) * S * 0.866);
+          cxr = (cc - odd * 0.5) * S; cyr = (r + 1 / 3) * th;
+        }
+        idB = r; loc = fy;
+      }
+      // cell center back to image coords -> region value there (whole cell in or out: crisp edges)
+      var bx = cxr - ox * S, by = cyr - oy * S, ix = Math.round((bx + by) / Math.SQRT2), iy = Math.round((by - bx) / Math.SQRT2);
+      ix = ix < 0 ? 0 : (ix >= W ? W - 1 : ix); iy = iy < 0 ? 0 : (iy >= F.H ? F.H - 1 : iy);
+      var rv = reg[iy * W + ix], h1 = hash3(seed, idA, idB), h2 = hash3(seed + 7, idA, idB), h3 = hash3(seed + 13, idA, idB);
+      var filled = rv > 0.12 + 0.75 * h1, ghost = !filled && rv > 0.05 + 0.6 * h1;
+      if (filled) {
+        var pick = h2 < 0.42 ? 0 : (h2 < 0.64 ? 1 : (h2 < 0.74 ? 2 : (h2 < 0.9 ? 3 : 4))), c = cols[pick];
+        var sh = (0.62 + 0.55 * h3) * (0.88 + 0.24 * loc);                     // per-facet brightness + a subtle gradient
+        C.R[i] = Math.min(1, c[0] * sh); C.G[i] = Math.min(1, c[1] * sh); C.B[i] = Math.min(1, c[2] * sh);
+        A[i] = 0.78 + 0.22 * h3;
+      }
+      if (filled || ghost) Ln[i] = (1 - smoothstep(lw * 0.5, lw * 1.2, ed)) * (filled ? 0.55 : 0.45);
+    }
+    F.over(C, A); prog(0.6);
+    F.screen(light, Ln);
+    [-1, 1].forEach(function (side) {
+      var nl = rng.int(2, 4);
+      for (var l = 0; l < nl; l++) {
+        var s1 = side * rng.uniform(F.sLo(0.30, 0.9), 0.98), t1 = rng.uniform(-0.4, 0.4);
+        F.line(s1, mix(p, WHITE, 0.3), rng.uniform(1.5, 3), 0.7, 12, [t1, t1 + rng.sign() * rng.uniform(0.15, 0.4)]);
+      }
+    });
+    prog(0.85);
+    F.finish(0.016, 0.3);
+  }
+
   // opts: {palette (hex form), accents?: [hex,...], style, fill, motif, base, hex, pop, seed, open, width, height}
   function render(opts, onProgress) {
     var prog = onProgress || function () {};
@@ -6120,8 +6268,12 @@ var PIBG = (function () {
     pal.primary = pal.accents[0]; pal.second = pal.accents[1] || null; pal.third = pal.accents[2] || null;
     var F = new Flyer(pal, opts.width || 2550, opts.height || 3300, opts.seed || 1);
     F.setOpen(opts.open == null ? 1 : opts.open);
+    if (opts.base === 'custom' && opts.baseColor) F.baseColor = hex2rgb(opts.baseColor);
+    F.layout = opts.layout === 'full' ? 'full' : 'corners';
     prog(0.05);
     if (opts.style === 'minimal') recipeMinimal(F, pal, { base: opts.base || 'dark', motif: opts.motif || 'arcs', pop: !!opts.pop, multi: (opts.balls || 1) > 1 }, prog);
+    else if (opts.style === 'flame') recipeFlame(F, pal, { base: opts.base || 'dark' }, prog);
+    else if (opts.style === 'geo') recipeGeo(F, pal, { base: opts.base || 'dark', pattern: opts.pattern || 'triangles' }, prog);
     else recipeGrunge(F, pal, { base: opts.base || 'dark', fill: opts.fill || 'mix', hex: !!opts.hex, pop: !!opts.pop }, prog);
     var out = F.toRGBA(); prog(1);
     return out;
@@ -6163,7 +6315,7 @@ if (typeof module !== 'undefined') module.exports = PIBG;
   var PREV_W = 510, PREV_H = 660;
   var st = {
     balls: [], palette: null, ballName: 'ball', seed: 1, style: 'grunge', fill: 'marble', motif: 'arcs',
-    base: 'dark', hex: false, pop: false, open: 1, colors: null, use: [true, true, false],
+    layout: 'corners', pattern: 'triangles', base: 'dark', baseColor: '#1c1c22', hex: false, pop: false, open: 1, colors: null, use: [true, true, false],
     jobId: 0, busy: false, lastFull: null
   };
   var worker = null, workerFailed = false, coreFn = null, pending = {};
@@ -6214,7 +6366,7 @@ if (typeof module !== 'undefined') module.exports = PIBG;
   function currentOpts(w, h) {
     var accents = null;
     if (st.colors) accents = st.colors.filter(function (c, i) { return c && (i === 0 || st.use[i]); });
-    return { palette: st.palette, accents: accents, balls: st.balls.length, style: st.style, fill: st.fill, motif: st.motif, base: st.base,
+    return { palette: st.palette, accents: accents, balls: st.balls.length, style: st.style, layout: st.layout, pattern: st.pattern, fill: st.fill, motif: st.motif, base: st.base, baseColor: st.baseColor,
              hex: st.hex, pop: st.pop, seed: st.seed, open: st.open, width: w, height: h };
   }
   function putRGBA(canvas, rgba, w, h) {
@@ -6347,12 +6499,16 @@ if (typeof module !== 'undefined') module.exports = PIBG;
     if (pop) $('pibgPopSwatch').innerHTML = '<span style="display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;background:' + pop + ';border:1px solid #ccc;"></span>';
   }
   function syncVisibility() {
-    var g = st.style === 'grunge';
+    var g = st.style === 'grunge', full = st.layout === 'full';
     $('pibgFillWrap').style.display = g ? '' : 'none';
-    $('pibgMotifWrap').style.display = g ? 'none' : '';
+    $('pibgMotifWrap').style.display = st.style === 'minimal' ? '' : 'none';
+    $('pibgPatternWrap').style.display = st.style === 'geo' ? '' : 'none';
     $('pibgGrungeExtras').style.display = g ? '' : 'none';
+    $('pibgFillWrap').querySelector('.pibg-label').textContent = full ? 'Texture' : 'Corner Style';
     Array.prototype.forEach.call($('pibgStyleSeg').children, function (b) { b.classList.toggle('active', b.dataset.v === st.style); });
-    var o = st.open, lbl = o === 1 ? 'Default' : (o > 1 ? 'Roomier' : 'Tighter');
+    Array.prototype.forEach.call($('pibgLayoutSeg').children, function (b) { b.classList.toggle('active', b.dataset.v === st.layout); });
+    $('pibgOpenLbl').textContent = full ? 'Center Fade' : 'Open Center';
+    var o = st.open, lbl = o === 1 ? 'Default' : (full ? (o > 1 ? 'Stronger' : 'Lighter') : (o > 1 ? 'Roomier' : 'Tighter'));
     $('pibgOpenVal').textContent = lbl;
   }
 
@@ -6399,9 +6555,19 @@ if (typeof module !== 'undefined') module.exports = PIBG;
       var v = e.target && e.target.dataset && e.target.dataset.v; if (!v || v === st.style) return;
       st.style = v; syncVisibility(); schedulePreview();
     });
+    $('pibgLayoutSeg').addEventListener('click', function (e) {
+      var v = e.target && e.target.dataset && e.target.dataset.v; if (!v || v === st.layout) return;
+      st.layout = v; syncVisibility(); schedulePreview();
+    });
+    $('pibgPattern').addEventListener('change', function (e) { st.pattern = e.target.value; schedulePreview(); });
     $('pibgFill').addEventListener('change', function (e) { st.fill = e.target.value; schedulePreview(); });
     $('pibgMotif').addEventListener('change', function (e) { st.motif = e.target.value; schedulePreview(); });
-    $('pibgBase').addEventListener('change', function (e) { st.base = e.target.value; schedulePreview(); });
+    $('pibgBase').addEventListener('change', function (e) {
+      st.base = e.target.value;
+      $('pibgBaseColorWrap').style.display = st.base === 'custom' ? 'flex' : 'none';
+      schedulePreview();
+    });
+    $('pibgBaseColor').addEventListener('input', function (e) { st.baseColor = e.target.value; if (st.base === 'custom') schedulePreview(); });
     $('pibgHex').addEventListener('change', function (e) { st.hex = e.target.checked; schedulePreview(); });
     $('pibgPop').addEventListener('change', function (e) { st.pop = e.target.checked; schedulePreview(); });
     $('pibgOpen').addEventListener('input', function (e) { st.open = parseFloat(e.target.value); syncVisibility(); schedulePreview(); });
