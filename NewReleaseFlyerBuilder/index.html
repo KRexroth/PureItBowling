@@ -312,7 +312,6 @@
   .pibg-busy span{display:block;height:100%;width:0;background:#EF4123;transition:width .2s;}
   .pibg-label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#888;margin:12px 0 5px;}
   .pibg-ball-row{display:flex;align-items:center;gap:10px;}
-  .pibg-ball-row img{width:52px;height:52px;object-fit:contain;border-radius:6px;border:1px solid #eee;background:#fafafa;display:none;}
   .pibg-seg{display:flex;gap:6px;}
   .pibg-seg button{flex:1;border:1px solid #ddd;border-radius:6px;padding:7px 4px;background:#fafafa;color:#888;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;cursor:pointer;font-family:'Barlow',sans-serif;}
   .pibg-seg button.active{background:#EF4123;border-color:#EF4123;color:#fff;}
@@ -331,6 +330,17 @@
   .pibg-secondary{border:1px solid #ddd;border-radius:8px;padding:10px;background:#fafafa;color:#666;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;font-family:'Barlow',sans-serif;}
   .pibg-variation{width:100%;margin-top:8px;}
   .pibg-status{font-size:11px;color:#888;margin-top:8px;min-height:15px;}
+  .pibg-ball-row{flex-wrap:wrap;}
+  .pibg-ball{position:relative;width:56px;height:56px;border-radius:7px;border:1px solid #e6e6e6;background:#fafafa;}
+  .pibg-ball img{width:100%;height:100%;object-fit:contain;display:block;border-radius:7px;}
+  .pibg-ball.main{border:2px solid #EF4123;}
+  .pibg-ball-x{position:absolute;top:-7px;right:-7px;width:18px;height:18px;border-radius:50%;border:1px solid #ddd;background:#fff;color:#999;font-size:12px;line-height:15px;text-align:center;cursor:pointer;padding:0;}
+  .pibg-ball-x:hover{color:#EF4123;border-color:#EF4123;}
+  .pibg-ball-main{position:absolute;left:0;right:0;bottom:0;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;text-align:center;color:#fff;background:rgba(239,65,35,.9);border-radius:0 0 5px 5px;}
+  .pibg-ball-promote{position:absolute;left:0;right:0;bottom:0;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;text-align:center;color:#fff;background:rgba(0,0,0,.55);border:none;border-radius:0 0 6px 6px;cursor:pointer;padding:1px 0;display:none;}
+  .pibg-ball:hover .pibg-ball-promote{display:block;}
+  .pibg-swatch{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:#888;}
+  .pibg-swatch label{display:flex;align-items:center;gap:3px;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -430,7 +440,7 @@
       <label for="darkModeToggle">Dark mode (swaps the default black/white text colors)</label>
     </div>
 
-    <div class="ctrl-hint" style="margin-bottom:10px;">Choose a pre-made background from the library, upload your own, or generate one from a ball image. It's cropped to fill the Feed version and stretched to fill the taller Story version — generic backgrounds hold up well stretched.</div>
+    <div class="ctrl-hint" style="margin-bottom:10px;">Choose a pre-made background from the library, upload your own, or generate one from ball images. It's cropped to fill the Feed version and stretched to fill the taller Story version — generic backgrounds hold up well stretched.</div>
 
     <div class="bg-btn-row">
       <button type="button" class="bg-upload-btn" id="openBgLibraryBtn">Backgrounds Library</button>
@@ -454,22 +464,20 @@
       <h3>Background Generator</h3>
       <button type="button" class="modal-close" id="pibgModalClose">&times;</button>
     </div>
-    <div class="ctrl-hint" style="margin-bottom:4px;">Upload a ball image and the generator builds a background from its colors, with a dark open center for your text and images. Everything runs right here in your browser.</div>
+    <div class="ctrl-hint" style="margin-bottom:4px;">Upload one or more ball images and the generator builds a background from their colors, with a dark open center for your text and images. Everything runs right here in your browser.</div>
     <div class="pibg-layout">
       <div class="pibg-controls">
-        <span class="pibg-label">Ball Image</span>
-        <div class="pibg-ball-row">
-          <img id="pibgBallThumb" alt=""/>
-          <button type="button" class="bg-upload-btn" id="pibgBallBtn" style="flex:1;">Upload Ball Image</button>
-        </div>
-        <input type="file" id="pibgBallInput" accept="image/*" style="display:none;"/>
+        <span class="pibg-label">Ball Images <span style="text-transform:none;color:#aaa;font-weight:600;">(up to 4 — the first is the main color)</span></span>
+        <div class="pibg-ball-row" id="pibgBallList"></div>
+        <button type="button" class="bg-upload-btn" id="pibgBallBtn" style="width:100%;margin-top:6px;">Upload Ball Image</button>
+        <input type="file" id="pibgBallInput" accept="image/*" multiple style="display:none;"/>
 
         <div id="pibgOptions" style="display:none;">
           <span class="pibg-label">Ball Colors</span>
           <div class="pibg-swatches">
-            <input type="color" id="pibgColor1" title="Main Color"/>
-            <input type="color" id="pibgColor2" title="Second Color"/>
-            <label class="pibg-check" style="margin:0;"><input type="checkbox" id="pibgUseColor2"/> Use Second Color</label>
+            <div class="pibg-swatch"><input type="color" id="pibgColor1" title="Main Color"/><span>Main</span></div>
+            <div class="pibg-swatch"><input type="color" id="pibgColor2" title="Second Color"/><label><input type="checkbox" id="pibgUseColor2"/> Second</label></div>
+            <div class="pibg-swatch"><input type="color" id="pibgColor3" title="Third Color"/><label><input type="checkbox" id="pibgUseColor3"/> Third</label></div>
             <a href="#" class="pibg-mini" id="pibgResetColors">Reset</a>
           </div>
 
@@ -5836,15 +5844,15 @@ var PIBG = (function () {
     }
     this.over(DARK, SH); this.over(C, A);
   };
-  Flyer.prototype.brush = function (mask, color, color2, split, alpha, density) {
+  Flyer.prototype.brush = function (mask, color, color2, split, alpha, density, color3) {
     var st = this.aniso(4, 70, 4), lf = this.N.fbm(this.W / 3, 4, 0.5, 4), A = new Float32Array(this.N_);
     var C = { R: new Float32Array(this.N_), G: new Float32Array(this.N_), B: new Float32Array(this.N_) };
     for (var i = 0; i < this.N_; i++) {
       var a = smoothstep(1 - density, 1.2 - density, 0.55 * st[i] + 0.55 * lf[i] + 0.4 * mask[i] - 0.2);
       a *= mask[i] * smoothstep(0.25, 0.55, this.grit[i] + 0.3 * mask[i]);
       A[i] = a * alpha;
-      var sp = color2 ? split[i] : 0, sh = 0.75 + 0.45 * st[i];
-      var c2 = color2 || color;
+      var sp = (color2 || color3) ? split[i] : 0, sh = 0.75 + 0.45 * st[i];
+      var c2 = (color3 && this.s[i] > 0) ? color3 : (color2 || color);   // color3: bottom-right corner gets its own partner color
       C.R[i] = (color[0] * (1 - sp) + c2[0] * sp) * sh; C.G[i] = (color[1] * (1 - sp) + c2[1] * sp) * sh; C.B[i] = (color[2] * (1 - sp) + c2[2] * sp) * sh;
     }
     this.over(C, A);
@@ -5980,16 +5988,20 @@ var PIBG = (function () {
   };
 
   // ------------------------------------------------------------ recipes
-  function fluidStops(p, silver, p2) {
+  function fluidStops(p, silver, p2, p3) {
     var st = [[0, DARK], [0.10, DARK], [0.13, adj(p, { v: 0.35 })], [0.24, p], [0.30, mix(p, WHITE, 0.30)], [0.33, adj(p, { v: 0.8 })], [0.42, adj(p, { v: 0.45 })], [0.46, DARK]], nxt = 0.52;
     if (silver) { st.push([nxt, adj(silver, { v: 0.35 })], [nxt + 0.06, silver], [nxt + 0.09, mix(silver, WHITE, 0.5)], [nxt + 0.14, adj(silver, { v: 0.55 })], [nxt + 0.18, DARK]); nxt += 0.24; }
     if (p2) { st.push([nxt, adj(p2, { v: 0.4 })], [nxt + 0.06, p2], [nxt + 0.09, mix(p2, WHITE, 0.25)], [nxt + 0.14, adj(p2, { v: 0.4 })], [nxt + 0.17, DARK]); nxt += 0.2; }
+    if (p3) {   // third color (multi-ball): squeeze the ramp so every pool still fits
+      st = st.map(function (q) { return [q[0] * 0.8, q[1]]; }); nxt *= 0.8;
+      st.push([nxt + 0.02, adj(p3, { v: 0.4 })], [nxt + 0.06, p3], [nxt + 0.09, mix(p3, WHITE, 0.25)], [nxt + 0.13, adj(p3, { v: 0.4 })], [nxt + 0.16, DARK]); nxt += 0.18;
+    }
     st.push([Math.max(nxt, 0.8), adj(p, { v: 0.25 })], [1, DARK]);
     return st;
   }
   function recipeGrunge(F, pal, o, prog) {
-    var rng = F.rng, p = pal.primary, p2 = pal.second, silver = pal.silver, i, n = F.N_;
-    if (o.pop && pal.pop) p2 = pal.pop;
+    var rng = F.rng, p = pal.primary, p2 = pal.second, p3 = pal.third, silver = pal.silver, i, n = F.N_;
+    if (o.pop && pal.pop) { if (p2 && !p3) p3 = p2; p2 = pal.pop; }
     var useSilver = pal.hasSilver || pal.mono;
     F.base(o.base, 1.0); prog(0.12);
     F.grit = F.N.fbm(14 * F.k, 4, 0.62);
@@ -5999,12 +6011,12 @@ var PIBG = (function () {
     if (o.fill === 'marble' || o.fill === 'mix') {
       var mk = new Float32Array(n);
       for (i = 0; i < n; i++) { var rough = reg[i] + 0.22 * (F.grit[i] - 0.5); mk[i] = (o.fill === 'marble' ? smoothstep(0.30, 0.46, rough) : smoothstep(0.5, 0.7, rough)) * 0.97; }
-      F.marble(mk, fluidStops(p, useSilver ? silver : null, p2), 1.1 + 0.3 * rng.random());
+      F.marble(mk, fluidStops(p, useSilver ? silver : null, p2, p3), 1.1 + 0.3 * rng.random());
     }
     prog(0.5);
     if (o.fill === 'brush' || o.fill === 'mix') {
       var c2 = p2 || (useSilver ? silver : null);
-      F.brush(reg, p, c2, split, 0.9, o.fill === 'brush' ? 0.62 : 0.45);
+      F.brush(reg, p, c2, split, 0.9, o.fill === 'brush' ? 0.62 : 0.45, p3 || null);
     }
     prog(0.6);
     if (o.hex) {
@@ -6017,6 +6029,7 @@ var PIBG = (function () {
       for (var b = 0; b < nb; b++) {
         var s0 = side * rng.uniform(Math.min(0.34 + F.shift, 0.92), 1.0), w = rng.uniform(0.008, 0.07) * (rng.random() < 0.6 ? 1 : 0.35), r = rng.random();
         var col = r < 0.35 ? DARK : (r < 0.7 ? p : (useSilver ? silver : (p2 || adj(p, { v: 0.6 })))), tf = null;
+        if (p3 && side > 0 && col === p2) col = p3;
         if (rng.random() < 0.5) { var t0 = rng.uniform(-0.5, 0.5); tf = [t0, t0 + rng.sign() * rng.uniform(0.1, 0.4)]; }
         F.band(s0, w, col, rng.uniform(0.35, 0.8), rng.uniform(0, 0.35), tf, col === DARK ? 0 : 0.5);
       }
@@ -6037,12 +6050,14 @@ var PIBG = (function () {
     for (i = 0; i < n; i++) sw[i] /= mx;
     var cols = pal.mono ? [silver, DARK, [0.9, 0.9, 0.9]] : [p, DARK, mix(p, WHITE, 0.2)];
     if (p2) cols.push(p2);
+    if (p3) cols.push(p3);
     F.splatter(sw, cols, { clusters: 30, spray: 11000, alpha: 0.92 });
     prog(0.9);
     F.finish(0.028, 0.28);
   }
   function recipeMinimal(F, pal, o, prog) {
     var rng = F.rng, W = F.W, H = F.H, p = pal.primary, n = F.N_, i;
+    var pB = (o.multi && pal.second) ? pal.second : p;   // bottom-right corner color (multi-ball only; single balls keep the approved look)
     F.base(o.base, 0.5); prog(0.12);
     F.grit = F.N.fbm(14 * F.k, 4, 0.62);
     if (o.motif === 'arcs') {
@@ -6050,17 +6065,18 @@ var PIBG = (function () {
       var rot = (-45 + rng.uniform(-8, 8)) * Math.PI / 180;
       var A = half * (rng.uniform(0.86, 0.95) + 0.5 * F.shift), B = half * (rng.uniform(0.56, 0.64) + F.shift);
       var cr = Math.cos(rot), sr = Math.sin(rot), sheen = F.aniso(10, 160, 3), spn = F.N.fbm(F.W / 5, 3, 0.5, 4);
-      var fill = adj(p, { v: 0.30 }), C = { R: new Float32Array(n), G: new Float32Array(n), B: new Float32Array(n) }, Ao = new Float32Array(n), As = new Float32Array(n);
+      var fill = adj(p, { v: 0.30 }), fillB = adj(pB, { v: 0.30 }), C = { R: new Float32Array(n), G: new Float32Array(n), B: new Float32Array(n) }, Ao = new Float32Array(n), As = new Float32Array(n);
       for (i = 0; i < n; i++) {
         var x = (i % W) - cx, y = Math.floor(i / W) - cy, e = Math.sqrt(Math.pow((x * cr + y * sr) / A, 2) + Math.pow((-x * sr + y * cr) / B, 2));
-        var out = smoothstep(0.98, 1.25, e), m = 0.7 + 0.7 * sheen[i];
-        C.R[i] = fill[0] * m; C.G[i] = fill[1] * m; C.B[i] = fill[2] * m; Ao[i] = out * 0.95;
+        var out = smoothstep(0.98, 1.25, e), m = 0.7 + 0.7 * sheen[i], bw = smoothstep(-0.15, 0.15, F.s[i]);
+        C.R[i] = (fill[0] + (fillB[0] - fill[0]) * bw) * m; C.G[i] = (fill[1] + (fillB[1] - fill[1]) * bw) * m; C.B[i] = (fill[2] + (fillB[2] - fill[2]) * bw) * m; Ao[i] = out * 0.95;
         As[i] = out * smoothstep(0.62, 0.78, F.grit[i]) * smoothstep(0.3, 0.7, spn[i]) * 0.55;
       }
       F.over(C, Ao); F.over(p, As); prog(0.35);
+      var arcCol = function (k, side) { var c = side > 0 ? pB : p; return k < 2 ? hot(c) : c; };
       for (var k = 0; k < 5; k++) {
         var f = 1.0 + 0.045 * k + 0.015 * rng.random(), side = k % 2 === 0 ? 1 : -1, c = 90 * side + rng.uniform(-15, 15), span = rng.uniform(50, 80);
-        F.arc(cx, cy, A * f, B * f, rot + rng.uniform(-0.03, 0.03), k < 2 ? hot(p) : p, 6 - k * 0.8, 60 - 8 * k, 1.0 - 0.13 * k,
+        F.arc(cx, cy, A * f, B * f, rot + rng.uniform(-0.03, 0.03), arcCol(k, side), 6 - k * 0.8, 60 - 8 * k, 1.0 - 0.13 * k,
           [(c - span) * Math.PI / 180, (c + span) * Math.PI / 180], 380 - 50 * k, 0.85 - 0.12 * k);
         prog(0.35 + 0.08 * k);
       }
@@ -6071,17 +6087,19 @@ var PIBG = (function () {
         }
       });
     } else {
-      var light = mix(hot(p, 0.85), WHITE, 0.12);
-      var stops = [[0, hot(p)], [0.02, light], [0.05, hot(p)], [0.10, p], [0.112, DARK], [0.17, DARK], [0.182, p], [0.25, hot(p)], [0.29, light], [0.35, p],
-        [0.362, DARK], [0.41, DARK], [0.422, adj(p, { v: 0.6 })], [0.55, p], [0.62, light], [0.70, p], [0.8, adj(p, { v: 0.45 })], [1, p]];
+      var waveStops = function (c) {
+        var light = mix(hot(c, 0.85), WHITE, 0.12);
+        return [[0, hot(c)], [0.02, light], [0.05, hot(c)], [0.10, c], [0.112, DARK], [0.17, DARK], [0.182, c], [0.25, hot(c)], [0.29, light], [0.35, c],
+          [0.362, DARK], [0.41, DARK], [0.422, adj(c, { v: 0.6 })], [0.55, c], [0.62, light], [0.70, c], [0.8, adj(c, { v: 0.45 })], [1, c]];
+      };
       [-1, 1].forEach(function (side, j) {
-        F.waves(side, rng.uniform(0.50, 0.60) + F.shift, stops, 0.5, rng.uniform(0.04, 0.07), rng.uniform(1.0, 1.6)); prog(0.35 + 0.25 * j);
+        F.waves(side, rng.uniform(0.50, 0.60) + F.shift, waveStops(side > 0 ? pB : p), 0.5, rng.uniform(0.04, 0.07), rng.uniform(1.0, 1.6)); prog(0.35 + 0.25 * j);
       });
       [-1, 1].forEach(function (side) {
         var nl = rng.int(2, 4);
         for (var j = 0; j < nl; j++) {
           var s0 = side * rng.uniform(Math.min(0.35 + F.shift, 0.9), 0.98), t0 = rng.uniform(-0.4, 0.4);
-          F.line(s0, p, 2.5, 0.75, 10, [t0, t0 + rng.sign() * 0.3]);
+          F.line(s0, side > 0 ? pB : p, 2.5, 0.75, 10, [t0, t0 + rng.sign() * 0.3]);
         }
       });
     }
@@ -6089,7 +6107,7 @@ var PIBG = (function () {
     var sw = F.region(0.30, 0.75, 0.3, 0.3), mx = 0;
     for (i = 0; i < n; i++) { sw[i] = Math.pow(clamp01(sw[i] * (1.2 - sw[i]) * 2.4), 1.5) + 0.01; if (sw[i] > mx) mx = sw[i]; }
     for (i = 0; i < n; i++) sw[i] /= mx;
-    F.splatter(sw, [p, DARK, hot(p)], { clusters: o.motif === 'waves' ? 18 : 12, per: [8, 30], rmax: 9, spray: 4500, alpha: 0.85 });
+    F.splatter(sw, pB !== p ? [p, DARK, hot(p), pB] : [p, DARK, hot(p)], { clusters: o.motif === 'waves' ? 18 : 12, per: [8, 30], rmax: 9, spray: 4500, alpha: 0.85 });
     prog(0.92);
     F.finish(0.022, 0.32);
   }
@@ -6099,17 +6117,36 @@ var PIBG = (function () {
     var prog = onProgress || function () {};
     var pal = paletteFromHex(opts.palette);
     if (opts.accents && opts.accents.length) { pal.accents = opts.accents.map(hex2rgb); pal.mono = false; }
-    pal.primary = pal.accents[0]; pal.second = pal.accents[1] || null;
+    pal.primary = pal.accents[0]; pal.second = pal.accents[1] || null; pal.third = pal.accents[2] || null;
     var F = new Flyer(pal, opts.width || 2550, opts.height || 3300, opts.seed || 1);
     F.setOpen(opts.open == null ? 1 : opts.open);
     prog(0.05);
-    if (opts.style === 'minimal') recipeMinimal(F, pal, { base: opts.base || 'dark', motif: opts.motif || 'arcs', pop: !!opts.pop }, prog);
+    if (opts.style === 'minimal') recipeMinimal(F, pal, { base: opts.base || 'dark', motif: opts.motif || 'arcs', pop: !!opts.pop, multi: (opts.balls || 1) > 1 }, prog);
     else recipeGrunge(F, pal, { base: opts.base || 'dark', fill: opts.fill || 'mix', hex: !!opts.hex, pop: !!opts.pop }, prog);
     var out = F.toRGBA(); prog(1);
     return out;
   }
 
-  return { extractPalette: function (rgba, w, h) { return paletteToHex(extractPalette(rgba, w, h)); }, render: render, version: '1.0' };
+  // Combine palettes from several balls: each ball's main color first (in upload order),
+  // then their second colors, skipping near-duplicate hues; up to 3 colors.
+  function mergePalettes(list) {
+    if (list.length === 1) return list[0];
+    function close(a, b) {
+      var A = rgb2hsv(hex2rgb(a)), B = rgb2hsv(hex2rgb(b)), dh = Math.abs(A[0] - B[0]); dh = Math.min(dh, 1 - dh);
+      var greyA = A[1] < 0.2, greyB = B[1] < 0.2;
+      if (greyA || greyB) return greyA && greyB && Math.abs(A[2] - B[2]) < 0.2;
+      return dh < 0.05 && Math.abs(A[2] - B[2]) < 0.3;
+    }
+    var colored = list.filter(function (p) { return !p.mono; }), src = colored.length ? colored : list, acc = [];
+    for (var rank = 0; rank < 3 && acc.length < 3; rank++) src.forEach(function (p) {
+      var c = p.accents[rank]; if (!c || acc.length >= 3) return;
+      if (!acc.some(function (a) { return close(a, c); })) acc.push(c);
+    });
+    var withSilver = list.filter(function (p) { return p.hasSilver; });
+    return { accents: acc, pop: (list.filter(function (p) { return p.pop; })[0] || {}).pop || null,
+             silver: (withSilver[0] || list[0]).silver, hasSilver: withSilver.length > 0, mono: colored.length === 0 };
+  }
+  return { extractPalette: function (rgba, w, h) { return paletteToHex(extractPalette(rgba, w, h)); }, mergePalettes: mergePalettes, render: render, version: '1.1' };
 })();
 if (typeof module !== 'undefined') module.exports = PIBG;
 
@@ -6125,8 +6162,8 @@ if (typeof module !== 'undefined') module.exports = PIBG;
   var FULL_W = 2550, FULL_H = 3300;            // 8.5 x 11 in at 300 dpi
   var PREV_W = 510, PREV_H = 660;
   var st = {
-    palette: null, ballName: 'ball', seed: 1, style: 'grunge', fill: 'marble', motif: 'arcs',
-    base: 'dark', hex: false, pop: false, open: 1, colors: null, useColor2: true,
+    balls: [], palette: null, ballName: 'ball', seed: 1, style: 'grunge', fill: 'marble', motif: 'arcs',
+    base: 'dark', hex: false, pop: false, open: 1, colors: null, use: [true, true, false],
     jobId: 0, busy: false, lastFull: null
   };
   var worker = null, workerFailed = false, coreFn = null, pending = {};
@@ -6176,8 +6213,8 @@ if (typeof module !== 'undefined') module.exports = PIBG;
   }
   function currentOpts(w, h) {
     var accents = null;
-    if (st.colors) { accents = [st.colors[0]]; if (st.useColor2 && st.colors[1]) accents.push(st.colors[1]); }
-    return { palette: st.palette, accents: accents, style: st.style, fill: st.fill, motif: st.motif, base: st.base,
+    if (st.colors) accents = st.colors.filter(function (c, i) { return c && (i === 0 || st.use[i]); });
+    return { palette: st.palette, accents: accents, balls: st.balls.length, style: st.style, fill: st.fill, motif: st.motif, base: st.base,
              hex: st.hex, pop: st.pop, seed: st.seed, open: st.open, width: w, height: h };
   }
   function putRGBA(canvas, rgba, w, h) {
@@ -6223,41 +6260,88 @@ if (typeof module !== 'undefined') module.exports = PIBG;
       .catch(function (err) { setBusy(false); $('pibgUseBtn').disabled = false; $('pibgDownloadBtn').disabled = false; setStatus(err.message); throw err; });
   }
 
-  function loadBall(file) {
-    if (!file) return;
-    st.ballName = (file.name || 'ball').replace(/\.[^.]+$/, '').replace(/[^\w\-]+/g, '_');
-    var url = URL.createObjectURL(file), img = new Image();
-    img.onload = function () {
-      $('pibgBallThumb').src = url; $('pibgBallThumb').style.display = 'block';
-      $('pibgBallBtn').textContent = 'Change Ball Image';
-      var s = Math.min(1, 420 / Math.max(img.naturalWidth, img.naturalHeight));
-      var w = Math.max(1, Math.round(img.naturalWidth * s)), h = Math.max(1, Math.round(img.naturalHeight * s));
-      var c = document.createElement('canvas'); c.width = w; c.height = h;
-      var ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
-      var data = ctx.getImageData(0, 0, w, h).data;
-      setStatus('Reading ball colors…');
-      call({ type: 'palette', rgba: data, w: w, h: h }).then(function (r) {
-        st.palette = r.palette; st.seed = 1;
-        st.colors = r.palette.accents.slice(0, 2);
-        st.useColor2 = st.colors.length > 1;
-        // sensible starting point: swirled multi-color balls -> marble, solid balls -> brush
-        st.fill = (r.palette.accents.length > 1 || r.palette.hasSilver) ? 'marble' : 'brush';
-        $('pibgFill').value = st.fill;
-        st.pop = false; $('pibgPop').checked = false;
-        syncColorInputs(); syncVisibility();
-        $('pibgOptions').style.display = 'block';
-        schedulePreview();
-      }).catch(function (err) { setStatus('Couldn\'t read that image: ' + err.message); });
-    };
-    img.onerror = function () { setStatus('Couldn\'t open that image.'); };
-    img.src = url;
+  var MAX_BALLS = 4;
+  function readBall(file) {
+    return new Promise(function (resolve, reject) {
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function () {
+        var sc = Math.min(1, 420 / Math.max(img.naturalWidth, img.naturalHeight));
+        var w = Math.max(1, Math.round(img.naturalWidth * sc)), h = Math.max(1, Math.round(img.naturalHeight * sc));
+        var c = document.createElement('canvas'); c.width = w; c.height = h;
+        var ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
+        call({ type: 'palette', rgba: ctx.getImageData(0, 0, w, h).data, w: w, h: h }).then(function (r) {
+          resolve({ name: (file.name || 'ball').replace(/\.[^.]+$/, '').replace(/[^\w\-]+/g, '_'), url: url, palette: r.palette });
+        }).catch(reject);
+      };
+      img.onerror = function () { reject(new Error('Couldn\'t open ' + (file.name || 'that image'))); };
+      img.src = url;
+    });
+  }
+  function addBalls(files) {
+    files = Array.prototype.slice.call(files || []).filter(function (f) { return /^image\//.test(f.type) || /\.(png|jpe?g|webp|gif)$/i.test(f.name); });
+    var room = MAX_BALLS - st.balls.length;
+    if (!files.length) return;
+    if (room <= 0) { setStatus('Up to ' + MAX_BALLS + ' ball images — remove one to add another.'); return; }
+    if (files.length > room) setStatus('Only the first ' + room + ' added (limit ' + MAX_BALLS + ').');
+    setStatus('Reading ball colors…');
+    Promise.all(files.slice(0, room).map(readBall)).then(function (list) {
+      st.balls = st.balls.concat(list);
+      ballsChanged();
+    }).catch(function (err) { setStatus(err.message); });
+  }
+  function removeBall(i) { st.balls.splice(i, 1); ballsChanged(); }
+  function promoteBall(i) { var b = st.balls.splice(i, 1)[0]; st.balls.unshift(b); ballsChanged(); }
+  function renderBallList() {
+    var box = $('pibgBallList'); box.innerHTML = '';
+    st.balls.forEach(function (b, i) {
+      var d = document.createElement('div'); d.className = 'pibg-ball' + (i === 0 && st.balls.length > 1 ? ' main' : '');
+      d.innerHTML = '<img alt=""/><button type="button" class="pibg-ball-x" title="Remove">&times;</button>' +
+        (st.balls.length > 1 ? (i === 0 ? '<div class="pibg-ball-main">Main</div>' : '<button type="button" class="pibg-ball-promote">Make Main</button>') : '');
+      d.querySelector('img').src = b.url;
+      d.querySelector('.pibg-ball-x').addEventListener('click', function () { removeBall(i); });
+      var pr = d.querySelector('.pibg-ball-promote'); if (pr) pr.addEventListener('click', function () { promoteBall(i); });
+      box.appendChild(d);
+    });
+    box.style.display = st.balls.length ? 'flex' : 'none';
+    $('pibgBallBtn').textContent = st.balls.length ? (st.balls.length >= MAX_BALLS ? 'Ball Limit Reached' : 'Add Another Ball') : 'Upload Ball Image';
+    $('pibgBallBtn').disabled = st.balls.length >= MAX_BALLS;
+  }
+  function ballsChanged() {
+    renderBallList();
+    if (!st.balls.length) {
+      st.palette = null; st.colors = null; st.jobId++;
+      $('pibgOptions').style.display = 'none';
+      $('pibgPreviewEmpty').style.display = 'flex';
+      $('pibgPreviewCanvas').getContext('2d').clearRect(0, 0, PREV_W, PREV_H);
+      $('pibgUseBtn').disabled = true; $('pibgDownloadBtn').disabled = true; setStatus('');
+      return;
+    }
+    var P = mainThreadCore();
+    st.palette = P.mergePalettes(st.balls.map(function (b) { return b.palette; }));
+    st.ballName = st.balls.map(function (b) { return b.name; }).join('+').slice(0, 80);
+    resetColors();
+    if (st.balls.length === 1) {
+      // single ball: swirled multi-color -> marble, solid -> brush
+      st.fill = (st.palette.accents.length > 1 || st.palette.hasSilver) ? 'marble' : 'brush';
+      $('pibgFill').value = st.fill;
+    }
+    if (!st.palette.pop) { st.pop = false; $('pibgPop').checked = false; }
+    syncColorInputs(); syncVisibility();
+    $('pibgOptions').style.display = 'block';
+    schedulePreview();
+  }
+  function resetColors() {
+    st.colors = st.palette.accents.slice(0, 3);
+    // one ball keeps its approved two-color look; several balls use all three colors
+    st.use = [true, st.colors.length > 1, st.balls.length > 1 && st.colors.length > 2];
   }
   function syncColorInputs() {
     var c = st.colors || [];
-    $('pibgColor1').value = c[0] || '#cc2233';
-    $('pibgColor2').value = c[1] || c[0] || '#cc2233';
-    $('pibgUseColor2').checked = !!(st.useColor2 && c[1]);
-    $('pibgColor2').style.opacity = $('pibgUseColor2').checked ? 1 : 0.35;
+    [1, 2, 3].forEach(function (n) {
+      var i = n - 1, inp = $('pibgColor' + n);
+      inp.value = c[i] || c[0] || '#cc2233';
+      if (n > 1) { $('pibgUseColor' + n).checked = !!(st.use[i] && c[i]); inp.style.opacity = $('pibgUseColor' + n).checked ? 1 : 0.35; }
+    });
     var pop = st.palette && st.palette.pop;
     $('pibgPopWrap').style.display = pop ? 'flex' : 'none';
     if (pop) $('pibgPopSwatch').innerHTML = '<span style="display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;background:' + pop + ';border:1px solid #ccc;"></span>';
@@ -6307,7 +6391,10 @@ if (typeof module !== 'undefined') module.exports = PIBG;
     $('pibgModalOverlay').addEventListener('click', function (e) { if (e.target === this) closeModal(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
     $('pibgBallBtn').addEventListener('click', function () { $('pibgBallInput').click(); });
-    $('pibgBallInput').addEventListener('change', function (e) { loadBall(e.target.files[0]); });
+    $('pibgBallInput').addEventListener('change', function (e) { addBalls(e.target.files); e.target.value = ''; });
+    // drag & drop ball images anywhere on the panel
+    $('pibgModalOverlay').addEventListener('dragover', function (e) { e.preventDefault(); });
+    $('pibgModalOverlay').addEventListener('drop', function (e) { e.preventDefault(); if (e.dataTransfer) addBalls(e.dataTransfer.files); });
     $('pibgStyleSeg').addEventListener('click', function (e) {
       var v = e.target && e.target.dataset && e.target.dataset.v; if (!v || v === st.style) return;
       st.style = v; syncVisibility(); schedulePreview();
@@ -6318,17 +6405,18 @@ if (typeof module !== 'undefined') module.exports = PIBG;
     $('pibgHex').addEventListener('change', function (e) { st.hex = e.target.checked; schedulePreview(); });
     $('pibgPop').addEventListener('change', function (e) { st.pop = e.target.checked; schedulePreview(); });
     $('pibgOpen').addEventListener('input', function (e) { st.open = parseFloat(e.target.value); syncVisibility(); schedulePreview(); });
-    $('pibgColor1').addEventListener('input', function (e) { if (!st.colors) return; st.colors[0] = e.target.value; schedulePreview(); });
-    $('pibgColor2').addEventListener('input', function (e) {
-      if (!st.colors) return; st.colors[1] = e.target.value; st.useColor2 = true; syncColorInputs(); schedulePreview();
-    });
-    $('pibgUseColor2').addEventListener('change', function (e) {
-      if (!st.colors) return; st.useColor2 = e.target.checked; if (st.useColor2 && !st.colors[1]) st.colors[1] = $('pibgColor2').value;
-      syncColorInputs(); schedulePreview();
+    [1, 2, 3].forEach(function (n) {
+      var i = n - 1;
+      $('pibgColor' + n).addEventListener('input', function (e) {
+        if (!st.colors) return; st.colors[i] = e.target.value; if (i > 0) st.use[i] = true; syncColorInputs(); schedulePreview();
+      });
+      if (n > 1) $('pibgUseColor' + n).addEventListener('change', function (e) {
+        if (!st.colors) return; st.use[i] = e.target.checked; if (st.use[i] && !st.colors[i]) st.colors[i] = $('pibgColor' + n).value;
+        syncColorInputs(); schedulePreview();
+      });
     });
     $('pibgResetColors').addEventListener('click', function (e) {
-      e.preventDefault(); if (!st.palette) return;
-      st.colors = st.palette.accents.slice(0, 2); st.useColor2 = st.colors.length > 1; syncColorInputs(); schedulePreview();
+      e.preventDefault(); if (!st.palette) return; resetColors(); syncColorInputs(); schedulePreview();
     });
     $('pibgVariationBtn').addEventListener('click', function () { st.seed += 1; schedulePreview(); });
     $('pibgUseBtn').addEventListener('click', applyToFlyer);
