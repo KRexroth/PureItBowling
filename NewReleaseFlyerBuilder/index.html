@@ -296,6 +296,41 @@
   @media (max-width: 420px) {
     .row.cols-2{grid-template-columns:1fr;}
   }
+
+  /* ---- Background Generator (ball image -> flyer background, runs in-browser) ---- */
+  .pibg-open-btn{width:100%;margin-top:8px;border:1px solid #EF4123;border-radius:8px;padding:9px;background:#fff5f2;color:#EF4123;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;font-family:'Barlow',sans-serif;}
+  .pibg-open-btn:hover{background:#ffe9e2;}
+  .pibg-box{max-width:620px;}
+  .pibg-layout{display:flex;gap:14px;align-items:flex-start;}
+  .pibg-controls{flex:1;min-width:0;}
+  .pibg-preview-col{width:190px;flex-shrink:0;}
+  @media (max-width:560px){.pibg-layout{flex-direction:column-reverse;}.pibg-preview-col{width:100%;}}
+  .pibg-preview{position:relative;width:100%;aspect-ratio:8.5/11;border-radius:8px;overflow:hidden;background:#1a1a1a;border:1px solid #ddd;}
+  .pibg-preview canvas{width:100%;height:100%;border-radius:0;display:block;background:#1a1a1a;}
+  .pibg-preview-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:#777;font-size:11px;padding:14px;line-height:1.4;}
+  .pibg-busy{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(255,255,255,0.12);display:none;}
+  .pibg-busy span{display:block;height:100%;width:0;background:#EF4123;transition:width .2s;}
+  .pibg-label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#888;margin:12px 0 5px;}
+  .pibg-ball-row{display:flex;align-items:center;gap:10px;}
+  .pibg-ball-row img{width:52px;height:52px;object-fit:contain;border-radius:6px;border:1px solid #eee;background:#fafafa;display:none;}
+  .pibg-seg{display:flex;gap:6px;}
+  .pibg-seg button{flex:1;border:1px solid #ddd;border-radius:6px;padding:7px 4px;background:#fafafa;color:#888;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;cursor:pointer;font-family:'Barlow',sans-serif;}
+  .pibg-seg button.active{background:#EF4123;border-color:#EF4123;color:#fff;}
+  .pibg-swatches{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .pibg-swatches input[type="color"]{width:38px;height:30px;padding:0;border:1px solid #ddd;border-radius:5px;cursor:pointer;background:none;}
+  .pibg-swatches .pibg-mini{font-size:10px;color:#999;}
+  .pibg-check{display:flex;align-items:center;gap:6px;font-size:12px;color:#555;margin-top:7px;}
+  .pibg-row2{display:flex;gap:8px;}
+  .pibg-row2 > div{flex:1;min-width:0;}
+  .pibg-controls select{width:100%;border:1px solid #ddd;border-radius:5px;padding:6px 6px;font-size:13px;font-family:'Barlow',sans-serif;background:#fff;color:#111;}
+  .pibg-controls input[type="range"]{width:100%;accent-color:#EF4123;}
+  .pibg-actions{display:flex;gap:8px;margin-top:14px;}
+  .pibg-actions button{flex:1;}
+  .pibg-primary{border:none;border-radius:8px;padding:11px;background:#EF4123;color:#fff;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;font-family:'Barlow',sans-serif;}
+  .pibg-primary:disabled,.pibg-secondary:disabled{opacity:.45;cursor:default;}
+  .pibg-secondary{border:1px solid #ddd;border-radius:8px;padding:10px;background:#fafafa;color:#666;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;font-family:'Barlow',sans-serif;}
+  .pibg-variation{width:100%;margin-top:8px;}
+  .pibg-status{font-size:11px;color:#888;margin-top:8px;min-height:15px;}
 </style>
 </head>
 <body>
@@ -395,12 +430,13 @@
       <label for="darkModeToggle">Dark mode (swaps the default black/white text colors)</label>
     </div>
 
-    <div class="ctrl-hint" style="margin-bottom:10px;">Choose a pre-made background from the library, or upload your own. It's cropped to fill the Feed version and stretched to fill the taller Story version — generic backgrounds hold up well stretched.</div>
+    <div class="ctrl-hint" style="margin-bottom:10px;">Choose a pre-made background from the library, upload your own, or generate one from a ball image. It's cropped to fill the Feed version and stretched to fill the taller Story version — generic backgrounds hold up well stretched.</div>
 
     <div class="bg-btn-row">
       <button type="button" class="bg-upload-btn" id="openBgLibraryBtn">Backgrounds Library</button>
       <button type="button" class="bg-upload-btn" id="bgUploadBtn">Upload My Own Image</button>
     </div>
+    <button type="button" class="pibg-open-btn" id="pibgOpenBtn">Generate From Ball Image</button>
     <input type="file" id="backgroundInput" accept="image/*" style="display:none;"/>
 
     <div class="bg-selected-preview" id="bgSelectedPreview" style="display:none;">
@@ -409,6 +445,89 @@
     </div>
 
     <div class="ctrl-hint" id="removeBackgroundWrap" style="margin-top:8px; display:none;"><a href="#" id="removeBackgroundLink">Remove background image</a></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="pibgModalOverlay">
+  <div class="modal-box pibg-box">
+    <div class="modal-header">
+      <h3>Background Generator</h3>
+      <button type="button" class="modal-close" id="pibgModalClose">&times;</button>
+    </div>
+    <div class="ctrl-hint" style="margin-bottom:4px;">Upload a ball image and the generator builds a background from its colors, with a dark open center for your text and images. Everything runs right here in your browser.</div>
+    <div class="pibg-layout">
+      <div class="pibg-controls">
+        <span class="pibg-label">Ball Image</span>
+        <div class="pibg-ball-row">
+          <img id="pibgBallThumb" alt=""/>
+          <button type="button" class="bg-upload-btn" id="pibgBallBtn" style="flex:1;">Upload Ball Image</button>
+        </div>
+        <input type="file" id="pibgBallInput" accept="image/*" style="display:none;"/>
+
+        <div id="pibgOptions" style="display:none;">
+          <span class="pibg-label">Ball Colors</span>
+          <div class="pibg-swatches">
+            <input type="color" id="pibgColor1" title="Main Color"/>
+            <input type="color" id="pibgColor2" title="Second Color"/>
+            <label class="pibg-check" style="margin:0;"><input type="checkbox" id="pibgUseColor2"/> Use Second Color</label>
+            <a href="#" class="pibg-mini" id="pibgResetColors">Reset</a>
+          </div>
+
+          <span class="pibg-label">Style</span>
+          <div class="pibg-seg" id="pibgStyleSeg">
+            <button type="button" data-v="grunge" class="active">Modern + Grunge</button>
+            <button type="button" data-v="minimal">Minimal</button>
+          </div>
+
+          <div class="pibg-row2" style="margin-top:2px;">
+            <div id="pibgFillWrap">
+              <span class="pibg-label">Corner Style</span>
+              <select id="pibgFill">
+                <option value="marble">Fluid Marble</option>
+                <option value="mix">Marble + Brush</option>
+                <option value="brush">Brush Strokes</option>
+              </select>
+            </div>
+            <div id="pibgMotifWrap" style="display:none;">
+              <span class="pibg-label">Motif</span>
+              <select id="pibgMotif">
+                <option value="arcs">Portal Arcs</option>
+                <option value="waves">Flowing Waves</option>
+              </select>
+            </div>
+            <div>
+              <span class="pibg-label">Base Color</span>
+              <select id="pibgBase">
+                <option value="dark">Charcoal</option>
+                <option value="tint">Ball Color</option>
+              </select>
+            </div>
+          </div>
+          <div id="pibgGrungeExtras">
+            <label class="pibg-check"><input type="checkbox" id="pibgHex"/> Hex Pattern</label>
+            <label class="pibg-check" id="pibgPopWrap"><input type="checkbox" id="pibgPop"/> Use Logo Color As Accent <span class="pibg-mini" id="pibgPopSwatch"></span></label>
+          </div>
+
+          <span class="pibg-label">Open Center <span id="pibgOpenVal" style="text-transform:none;color:#aaa;font-weight:600;">Default</span></span>
+          <input type="range" id="pibgOpen" min="0.85" max="1.15" step="0.05" value="1"/>
+
+          <button type="button" class="pibg-secondary pibg-variation" id="pibgVariationBtn">New Variation</button>
+        </div>
+      </div>
+      <div class="pibg-preview-col">
+        <div class="pibg-preview">
+          <canvas id="pibgPreviewCanvas" width="510" height="660"></canvas>
+          <div class="pibg-preview-empty" id="pibgPreviewEmpty">Upload a ball image to see a preview</div>
+          <div class="pibg-busy" id="pibgBusy"><span></span></div>
+        </div>
+        <div class="pibg-status" id="pibgStatus"></div>
+      </div>
+    </div>
+    <div class="pibg-actions">
+      <button type="button" class="pibg-secondary" id="pibgDownloadBtn" disabled>Download PNG</button>
+      <button type="button" class="pibg-primary" id="pibgUseBtn" disabled>Use This Background</button>
+    </div>
+    <div class="ctrl-hint" style="margin-top:8px;">Tip: after applying it, click Optimize With AI to match the text colors to the new background.</div>
   </div>
 </div>
 
@@ -3163,7 +3282,7 @@ function renderBackgroundPreview() {
     preview.src = backgroundImage.src;
     previewWrap.style.display = 'flex';
     previewLabel.textContent = isCustomUpload
-      ? 'Your uploaded image'
+      ? (backgroundImage.dataset && backgroundImage.dataset.pibg ? 'Generated from ball image' : 'Your uploaded image')
       // selectedLibraryBg may include a subfolder path now (e.g. "Dark/foo.png")
       // — only the filename itself is shown here, same as in the library grid.
       : 'Selected: ' + selectedLibraryBg.split('/').pop().replace(/\.[^.]+$/, '');
@@ -5309,6 +5428,914 @@ window.addEventListener('DOMContentLoaded', function() {
     gridBorderStyle = e.target.value;
   });
 });
+</script>
+<script type="text/plain" id="pibgCoreSrc">
+/* Pure It Background Generator — core (no DOM). Port of flyerbg.py.
+   Runs in a Web Worker or Node. Entry: PIBG.extractPalette(rgba, w, h) and
+   PIBG.render(opts, onProgress) -> Uint8ClampedArray RGBA. */
+var PIBG = (function () {
+  'use strict';
+
+  // ------------------------------------------------------------ helpers
+  function smoothstep(e0, e1, x) {
+    var t = (x - e0) / (e1 - e0);
+    t = t < 0 ? 0 : (t > 1 ? 1 : t);
+    return t * t * (3 - 2 * t);
+  }
+  function clamp01(x) { return x < 0 ? 0 : (x > 1 ? 1 : x); }
+  function rgb2hsv(c) {
+    var r = c[0], g = c[1], b = c[2], mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn, h = 0;
+    if (d > 0) {
+      if (mx === r) h = ((g - b) / d) % 6; else if (mx === g) h = (b - r) / d + 2; else h = (r - g) / d + 4;
+      h /= 6; if (h < 0) h += 1;
+    }
+    return [h, mx === 0 ? 0 : d / mx, mx];
+  }
+  function hsv2rgb(h, s, v) {
+    h = ((h % 1) + 1) % 1;
+    var i = Math.floor(h * 6), f = h * 6 - i, p = v * (1 - s), q = v * (1 - f * s), t = v * (1 - (1 - f) * s);
+    switch (i % 6) {
+      case 0: return [v, t, p]; case 1: return [q, v, p]; case 2: return [p, v, t];
+      case 3: return [p, q, v]; case 4: return [t, p, v]; default: return [v, p, q];
+    }
+  }
+  function adj(c, o) {
+    o = o || {};
+    var hsv = rgb2hsv(c), s = o.s_abs != null ? o.s_abs : Math.min(1, hsv[1] * (o.s != null ? o.s : 1));
+    var v = o.v_abs != null ? o.v_abs : Math.min(1, hsv[2] * (o.v != null ? o.v : 1));
+    return hsv2rgb(hsv[0], s, v);
+  }
+  function warmRed(c) {
+    var hsv = rgb2hsv(c), h = hsv[0];
+    if (h >= 0.917 && h < 0.99 && hsv[1] > 0.6 && hsv[2] < 0.8) h = h + (1 - h) * 0.5;
+    return hsv2rgb(h, hsv[1], hsv[2]);
+  }
+  function hot(c, s) { return adj(c, { s: s == null ? 0.95 : s, v_abs: 1 }); }
+  function mix(a, b, t) { return [a[0] * (1 - t) + b[0] * t, a[1] * (1 - t) + b[1] * t, a[2] * (1 - t) + b[2] * t]; }
+  function hex2rgb(h) { h = h.replace('#', ''); return [parseInt(h.substr(0, 2), 16) / 255, parseInt(h.substr(2, 2), 16) / 255, parseInt(h.substr(4, 2), 16) / 255]; }
+  function rgb2hex(c) { return '#' + c.map(function (x) { var v = Math.round(clamp01(x) * 255).toString(16); return v.length < 2 ? '0' + v : v; }).join(''); }
+  var DARK = [0.018, 0.018, 0.022], WHITE = [1, 1, 1];
+
+  // ------------------------------------------------------------ seeded RNG
+  function RNG(seed) {
+    var a = (seed * 2654435761) >>> 0 || 1;
+    this.random = function () {
+      a = (a + 0x6D2B79F5) >>> 0; var t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  RNG.prototype.uniform = function (a, b) { return a + (b - a) * this.random(); };
+  RNG.prototype.int = function (a, b) { return a + Math.floor(this.random() * (b - a)); }; // [a, b)
+  RNG.prototype.normal = function () {
+    var u = 1 - this.random(), v = this.random();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  };
+  RNG.prototype.pareto = function (a) { return Math.pow(1 - this.random(), -1 / a) - 1; };
+  RNG.prototype.choice = function (p) {
+    var r = this.random(), acc = 0;
+    for (var i = 0; i < p.length; i++) { acc += p[i]; if (r < acc) return i; }
+    return p.length - 1;
+  };
+  RNG.prototype.sign = function () { return this.random() < 0.5 ? -1 : 1; };
+
+  // ------------------------------------------------------------ palette
+  function kmeans(px, n, k, rng) {
+    var best = null, bestErr = Infinity;
+    for (var run = 0; run < 4; run++) {
+      // k-means++ init
+      var C = new Float32Array(k * 3), D = new Float32Array(n), i, j, c;
+      var f = rng.int(0, n); C[0] = px[f * 3]; C[1] = px[f * 3 + 1]; C[2] = px[f * 3 + 2];
+      for (c = 1; c < k; c++) {
+        var tot = 0;
+        for (i = 0; i < n; i++) {
+          var md = Infinity;
+          for (j = 0; j < c; j++) {
+            var dr = px[i * 3] - C[j * 3], dg = px[i * 3 + 1] - C[j * 3 + 1], db = px[i * 3 + 2] - C[j * 3 + 2];
+            var d = dr * dr + dg * dg + db * db; if (d < md) md = d;
+          }
+          D[i] = md; tot += md;
+        }
+        var r = rng.random() * tot, pick = n - 1;
+        for (i = 0; i < n; i++) { r -= D[i]; if (r <= 0) { pick = i; break; } }
+        C[c * 3] = px[pick * 3]; C[c * 3 + 1] = px[pick * 3 + 1]; C[c * 3 + 2] = px[pick * 3 + 2];
+      }
+      var L = new Int32Array(n), err = 0;
+      for (var it = 0; it < 40; it++) {
+        var S = new Float64Array(k * 3), N = new Float64Array(k), changed = 0; err = 0;
+        for (i = 0; i < n; i++) {
+          var bd = Infinity, bj = 0;
+          for (j = 0; j < k; j++) {
+            var dr2 = px[i * 3] - C[j * 3], dg2 = px[i * 3 + 1] - C[j * 3 + 1], db2 = px[i * 3 + 2] - C[j * 3 + 2];
+            var d2 = dr2 * dr2 + dg2 * dg2 + db2 * db2; if (d2 < bd) { bd = d2; bj = j; }
+          }
+          if (L[i] !== bj) changed++;
+          L[i] = bj; err += bd; S[bj * 3] += px[i * 3]; S[bj * 3 + 1] += px[i * 3 + 1]; S[bj * 3 + 2] += px[i * 3 + 2]; N[bj]++;
+        }
+        for (j = 0; j < k; j++) if (N[j] > 0) { C[j * 3] = S[j * 3] / N[j]; C[j * 3 + 1] = S[j * 3 + 1] / N[j]; C[j * 3 + 2] = S[j * 3 + 2] / N[j]; }
+        if (changed === 0 && it > 0) break;
+      }
+      if (err < bestErr) { bestErr = err; best = { C: C, L: L }; }
+    }
+    var cnt = new Float64Array(k);
+    for (i = 0; i < n; i++) cnt[best.L[i]]++;
+    var out = [];
+    for (j = 0; j < k; j++) out.push({ rgb: [best.C[j * 3], best.C[j * 3 + 1], best.C[j * 3 + 2]], w: cnt[j] / n });
+    return out;
+  }
+
+  // rgba: Uint8ClampedArray of a <=420px thumbnail of the ball image
+  function extractPalette(rgba, w, h) {
+    var cx = w / 2, cy = h / 2, r = Math.min(w, h) / 2 * 0.9, list = [];
+    for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) {
+      var i = (y * w + x) * 4;
+      if ((x - cx) * (x - cx) + (y - cy) * (y - cy) >= r * r || rgba[i + 3] < 128) continue;
+      var R = rgba[i] / 255, G = rgba[i + 1] / 255, B = rgba[i + 2] / 255;
+      if (Math.min(R, G, B) > 0.94) continue;                 // specular highlights / white bg
+      list.push(R, G, B);
+    }
+    var n = list.length / 3, step = Math.max(1, Math.floor(n / 25000)), px = [];
+    for (var p = 0; p < n; p += step) px.push(list[p * 3], list[p * 3 + 1], list[p * 3 + 2]);
+    px = new Float32Array(px);
+    var cols = kmeans(px, px.length / 3, 8, new RNG(7)).map(function (c) {
+      var hsv = rgb2hsv(c.rgb); return { rgb: c.rgb, w: c.w, h: hsv[0], s: hsv[1], v: hsv[2] };
+    });
+    function hdist(a, b) { var d = Math.abs(a - b); return Math.min(d, 1 - d); }
+    var chroma = cols.filter(function (c) { return c.s > 0.30 && c.v > 0.22; }).sort(function (a, b) { return b.w - a.w; });
+    var fams = [];
+    chroma.forEach(function (c) {
+      for (var i = 0; i < fams.length; i++) if (hdist(fams[i].h, c.h) < 0.06) { fams[i].w += c.w; fams[i].members.push(c); return; }
+      fams.push({ h: c.h, w: c.w, members: [c] });
+    });
+    function rep(f) {  // dominant member's hue (a red family doesn't drift to rust)
+      var m = f.members.reduce(function (a, b) { return b.w * b.s > a.w * a.s ? b : a; });
+      var v = Math.min(1, Math.max(0.70, m.v * 1.15));
+      if (m.h >= 25 / 360 && m.h <= 65 / 360 && m.s > 0.5) v = Math.max(v, 0.88);   // golds read brown otherwise
+      return adj(m.rgb, { s: 1.12, v_abs: v });
+    }
+    var body = fams.filter(function (f) { return f.w >= 0.05; }).sort(function (a, b) { return b.w - a.w; });
+    var pops = fams.filter(function (f) { return f.w >= 0.004 && f.w < 0.05 && Math.max.apply(null, f.members.map(function (m) { return m.s; })) > 0.6; });
+    var pal = { accents: body.slice(0, 3).map(rep), pop: pops.length ? rep(pops[0]) : null };
+    var greys = cols.filter(function (c) { return c.s <= 0.30 && c.v > 0.40 && c.v < 0.97; });
+    pal.silver = greys.length ? adj(greys.reduce(function (a, b) { return b.w * b.v * b.v > a.w * a.v * a.v ? b : a; }).rgb, { s: 0.5, v: 1.1 }) : [0.74, 0.74, 0.77];
+    pal.hasSilver = greys.reduce(function (s, c) { return s + c.w; }, 0) > 0.22;   // white logos + glare stay under this
+    pal.mono = pal.accents.length === 0;
+    if (pal.mono) pal.accents = [adj(pal.silver, { v_abs: 0.85, s_abs: 0.03 }), adj(pal.silver, { v_abs: 0.55, s_abs: 0.03 })];
+    pal.accents = pal.accents.map(warmRed);
+    return pal;
+  }
+  function paletteToHex(pal) {
+    return { accents: pal.accents.map(rgb2hex), pop: pal.pop ? rgb2hex(pal.pop) : null, silver: rgb2hex(pal.silver), hasSilver: pal.hasSilver, mono: pal.mono };
+  }
+  function paletteFromHex(ph) {
+    return { accents: ph.accents.map(hex2rgb), pop: ph.pop ? hex2rgb(ph.pop) : null, silver: hex2rgb(ph.silver), hasSilver: ph.hasSilver, mono: ph.mono };
+  }
+
+  // ------------------------------------------------------------ image ops
+  function cubicW(t) { // Catmull-Rom-ish, a = -0.75 (OpenCV)
+    var a = -0.75, at = Math.abs(t);
+    if (at <= 1) return ((a + 2) * at - (a + 3)) * at * at + 1;
+    if (at < 2) return ((at - 5) * at + 8) * at * a - 4 * a;
+    return 0;
+  }
+  // separable resample of src (sw x sh) to dw x dh; coordinates map u = (x + off + 0.5) * sx - 0.5
+  function resample(src, sw, sh, dw, dh, sx, sy, ox, oy, cubic) {
+    function taps(n, s, off, size) {
+      var idx = new Int32Array(n * 4), wt = new Float32Array(n * 4);
+      for (var i = 0; i < n; i++) {
+        var u = (i + off + 0.5) * s - 0.5, f = Math.floor(u);
+        for (var k = 0; k < 4; k++) {
+          var j = f - 1 + k, w;
+          if (cubic) w = cubicW(u - j); else { w = (k === 1) ? 1 - (u - f) : (k === 2 ? u - f : 0); }
+          idx[i * 4 + k] = j < 0 ? 0 : (j >= size ? size - 1 : j); wt[i * 4 + k] = w;
+        }
+      }
+      return { idx: idx, wt: wt };
+    }
+    var tx = taps(dw, sx, ox, sw), ty = taps(dh, sy, oy, sh);
+    // which src rows are needed
+    var tmp = new Float32Array(sh * dw), out = new Float32Array(dw * dh), x, y, k;
+    var need = new Uint8Array(sh);
+    for (k = 0; k < ty.idx.length; k++) need[ty.idx[k]] = 1;
+    for (y = 0; y < sh; y++) {
+      if (!need[y]) continue;
+      var ro = y * sw, to = y * dw;
+      for (x = 0; x < dw; x++) {
+        var b = x * 4;
+        tmp[to + x] = src[ro + tx.idx[b]] * tx.wt[b] + src[ro + tx.idx[b + 1]] * tx.wt[b + 1] + src[ro + tx.idx[b + 2]] * tx.wt[b + 2] + src[ro + tx.idx[b + 3]] * tx.wt[b + 3];
+      }
+    }
+    for (y = 0; y < dh; y++) {
+      var c = y * 4, r0 = ty.idx[c] * dw, r1 = ty.idx[c + 1] * dw, r2 = ty.idx[c + 2] * dw, r3 = ty.idx[c + 3] * dw;
+      var w0 = ty.wt[c], w1 = ty.wt[c + 1], w2 = ty.wt[c + 2], w3 = ty.wt[c + 3], o = y * dw;
+      for (x = 0; x < dw; x++) out[o + x] = tmp[r0 + x] * w0 + tmp[r1 + x] * w1 + tmp[r2 + x] * w2 + tmp[r3 + x] * w3;
+    }
+    return out;
+  }
+  function resize(src, sw, sh, dw, dh, cubic) { return resample(src, sw, sh, dw, dh, sw / dw, sh / dh, 0, 0, cubic); }
+  function gaussBlur(src, w, h, sigma) {
+    var rad = Math.ceil(sigma * 3), ker = [], s = 0, i, x, y, k;
+    for (i = -rad; i <= rad; i++) { var v = Math.exp(-i * i / (2 * sigma * sigma)); ker.push(v); s += v; }
+    ker = ker.map(function (v) { return v / s; });
+    var tmp = new Float32Array(w * h), out = new Float32Array(w * h);
+    for (y = 0; y < h; y++) for (x = 0; x < w; x++) {
+      var acc = 0; for (k = -rad; k <= rad; k++) { var xx = x + k; xx = xx < 0 ? -xx : (xx >= w ? 2 * w - xx - 2 : xx); acc += src[y * w + xx] * ker[k + rad]; }
+      tmp[y * w + x] = acc;
+    }
+    for (y = 0; y < h; y++) for (x = 0; x < w; x++) {
+      var acc2 = 0; for (k = -rad; k <= rad; k++) { var yy = y + k; yy = yy < 0 ? -yy : (yy >= h ? 2 * h - yy - 2 : yy); acc2 += tmp[yy * w + x] * ker[k + rad]; }
+      out[y * w + x] = acc2;
+    }
+    return out;
+  }
+  function reflect(i, n) { if (n === 1) return 0; var p = 2 * (n - 1); i = Math.abs(i) % p; return i >= n ? p - i : i; }
+  function wrap(i, n) { i = i % n; return i < 0 ? i + n : i; }
+  function sampleBilinear(f, w, h, x, y, mode) {
+    var x0 = Math.floor(x), y0 = Math.floor(y), fx = x - x0, fy = y - y0, fn = mode === 'wrap' ? wrap : reflect;
+    var xa = fn(x0, w), xb = fn(x0 + 1, w), ya = fn(y0, h), yb = fn(y0 + 1, h);
+    var a = f[ya * w + xa], b = f[ya * w + xb], c = f[yb * w + xa], d = f[yb * w + xb];
+    return (a * (1 - fx) + b * fx) * (1 - fy) + (c * (1 - fx) + d * fx) * fy;
+  }
+
+  // ------------------------------------------------------------ noise
+  function Noise(H, W, rng) { this.H = H; this.W = W; this.rng = rng; }
+  // Grid values come from a hash of (call seed, grid x, grid y) rather than a running
+  // random stream, so the same settings give the same picture at any resolution —
+  // the small live preview matches the full-size render.
+  function hash3(seed, x, y) {
+    var hh = (seed ^ Math.imul(x, 0x27d4eb2d) ^ Math.imul(y, 0x165667b1)) >>> 0;
+    hh = Math.imul(hh ^ (hh >>> 15), 0x85ebca6b); hh = Math.imul(hh ^ (hh >>> 13), 0xc2b2ae35); hh ^= hh >>> 16;
+    return (hh >>> 0) / 4294967296;
+  }
+  Noise.prototype.value = function (cell, h, w, prm) {
+    cell = Math.max(1.5, cell);
+    prm = prm || this.params();
+    var seed = prm[0], oyg = prm[1], oxg = prm[2];
+    var gh = Math.floor(h / cell) + 4, gw = Math.floor(w / cell) + 4, g = new Float32Array(gh * gw);
+    for (var y = 0; y < gh; y++) for (var x = 0; x < gw; x++) g[y * gw + x] = hash3(seed, x, y);
+    return resample(g, gw, gh, w, h, 1 / cell, 1 / cell, oxg * cell, oyg * cell, true);
+  };
+  Noise.prototype.params = function () { return [Math.floor(this.rng.random() * 4294967295) >>> 0, this.rng.random(), this.rng.random()]; };
+  Noise.prototype.fbm = function (cell, octaves, pers, loRes) {
+    octaves = octaves || 5; pers = pers == null ? 0.5 : pers;
+    var f = loRes || 1, H = this.H, W = this.W, h = Math.max(8, Math.floor(H / f)), w = Math.max(8, Math.floor(W / f));
+    var out = new Float32Array(h * w), amp = 1, tot = 0, i;
+    for (var o = 0; o < octaves; o++) {
+      var c = cell / f / Math.pow(2, o);
+      var prm = this.params();               // drawn for every octave so random use doesn't depend on resolution
+      if (c < 1.5 && o > 0) continue;        // too fine to see at this size (always keep the first octave)
+      var v = this.value(Math.max(c, 1.5), h, w, prm);
+      for (i = 0; i < out.length; i++) out[i] += amp * v[i];
+      tot += amp; amp *= pers;
+    }
+    for (i = 0; i < out.length; i++) out[i] /= tot;
+    if (f > 1) out = resize(out, w, h, W, H, true);
+    // percentile normalize (0.5 / 99.5) on a subsample
+    var sub = []; for (i = 0; i < out.length; i += 37) sub.push(out[i]);
+    sub.sort(function (a, b) { return a - b; });
+    var lo = sub[Math.floor(sub.length * 0.005)], hi = sub[Math.floor(sub.length * 0.995)], sc = 1 / (hi - lo + 1e-6);
+    for (i = 0; i < out.length; i++) out[i] = clamp01((out[i] - lo) * sc);
+    return out;
+  };
+
+  // ------------------------------------------------------------ canvas
+  function Flyer(pal, W, H, seed) {
+    this.pal = pal; this.W = W; this.H = H; this.N_ = W * H;
+    this.k = W / 2550; this.rng = new RNG(seed); this.N = new Noise(H, W, this.rng);
+    var cx = W / 2, cy = H / 2; this.D = (cx + cy) / Math.SQRT2;
+    this.s = new Float32Array(this.N_); this.t = new Float32Array(this.N_);
+    for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) {
+      var i = y * W + x, dx = x - cx, dy = y - cy;
+      this.s[i] = (dx + dy) / Math.SQRT2 / this.D; this.t[i] = (dx - dy) / Math.SQRT2 / this.D;
+    }
+    this.R = new Float32Array(this.N_); this.G = new Float32Array(this.N_); this.B = new Float32Array(this.N_);
+    this.grit = null; this.setOpen(1.0);
+  }
+  Flyer.prototype.setOpen = function (o) {
+    this.open = o; this.edge = Math.min(0.9, Math.max(0.4, 0.57 + (o - 1) * 0.7)); this.shift = this.edge - 0.43;
+  };
+  Flyer.prototype.px = function (i) { return ((i % this.W) - this.W / 2) / (this.W / 2); };
+  Flyer.prototype.py = function (i) { return (Math.floor(i / this.W) - this.H / 2) / (this.H / 2); };
+  // per-pixel color source: [r,g,b] constant, or {R,G,B} arrays
+  Flyer.prototype.over = function (color, alpha, alphaScale) {
+    var R = this.R, G = this.G, B = this.B, n = this.N_, sc = alphaScale == null ? 1 : alphaScale, i, a;
+    if (color.R) {
+      for (i = 0; i < n; i++) { a = clamp01(alpha[i] * sc); if (a <= 0) continue; R[i] += (color.R[i] - R[i]) * a; G[i] += (color.G[i] - G[i]) * a; B[i] += (color.B[i] - B[i]) * a; }
+    } else {
+      var r = color[0], g = color[1], b = color[2];
+      for (i = 0; i < n; i++) { a = clamp01(alpha[i] * sc); if (a <= 0) continue; R[i] += (r - R[i]) * a; G[i] += (g - G[i]) * a; B[i] += (b - B[i]) * a; }
+    }
+  };
+  Flyer.prototype.screen = function (color, amt) {
+    var R = this.R, G = this.G, B = this.B, r = color[0], g = color[1], b = color[2];
+    for (var i = 0; i < this.N_; i++) {
+      var a = clamp01(amt[i]); if (a <= 0) continue;
+      R[i] = 1 - (1 - R[i]) * (1 - r * a); G[i] = 1 - (1 - G[i]) * (1 - g * a); B[i] = 1 - (1 - B[i]) * (1 - b * a);
+    }
+  };
+  Flyer.prototype.aniso = function (acrossPx, alongPx, octaves) {
+    var n = 1024, f = new Noise(n, n, this.rng).fbm(24, octaves || 4, 0.6), out = new Float32Array(this.N_);
+    var ox = this.rng.random() * n, oy = this.rng.random() * n;
+    var sa = this.D / (alongPx * this.k / 24), sc = this.D / (acrossPx * this.k / 24);
+    for (var i = 0; i < this.N_; i++) out[i] = sampleBilinear(f, n, n, this.t[i] * sa + ox, this.s[i] * sc + oy, 'wrap');
+    return out;
+  };
+  Flyer.prototype.base = function (mode, grunge) {
+    var p = this.pal.primary, c;
+    if (mode === 'tint') c = adj(p, { s: 0.9, v_abs: 0.30 });
+    else { var t = adj(p, { v_abs: 0.08 }); c = [0.075 * 0.85 + t[0] * 0.15, 0.075 * 0.85 + t[1] * 0.15, 0.08 * 0.85 + t[2] * 0.15]; }
+    var tex = this.N.fbm(this.W / 4, 7, 0.55), fine = this.N.fbm(20 * this.k, 3, 0.6), i;
+    var crack = null, crackGate = null, blot = null, spk = null;
+    if (grunge > 0.3) {
+      crack = this.N.fbm(this.W / 3.2, 6, 0.55); crackGate = this.N.fbm(this.W / 8, 3, 0.5, 4);
+      blot = this.N.fbm(70 * this.k, 5, 0.62); spk = this.N.fbm(6 * this.k, 2, 0.5);
+    }
+    for (i = 0; i < this.N_; i++) {
+      var px = this.px(i), py = this.py(i);
+      var shade = 0.80 + 0.36 * (tex[i] - 0.5) * grunge + 0.16 * (fine[i] - 0.5) * grunge;
+      var r = Math.sqrt(px * px * 0.9 + py * py * 0.75), spot = 1.22 - 0.5 * smoothstep(0.15, 1.3, r), m = shade * spot;
+      if (crack) {
+        var ridge = 1 - Math.abs(2 * crack[i] - 1);
+        m *= 1 - 0.30 * grunge * smoothstep(0.972, 0.995, ridge) * (crackGate[i] > 0.5 ? 1 : 0);
+        m *= 1 - 0.20 * grunge * smoothstep(0.60, 0.82, blot[i]);
+        m *= 1 + 0.25 * grunge * smoothstep(0.80, 0.9, spk[i]);
+      }
+      this.R[i] = c[0] * m; this.G[i] = c[1] * m; this.B[i] = c[2] * m;
+    }
+    this.baseR = this.R.slice(); this.baseG = this.G.slice(); this.baseB = this.B.slice();
+  };
+  Flyer.prototype.region = function (inner, outer, wobble, sides) {
+    var n = this.N.fbm(this.W / 2.2, 4, 0.5, 4), out = new Float32Array(this.N_);
+    inner += this.shift; outer = Math.min(outer + this.shift, 1.05);
+    for (var i = 0; i < this.N_; i++) {
+      var nn = n[i] - 0.5, diag = smoothstep(inner, outer, Math.abs(this.s[i]) + wobble * nn);
+      var px = this.px(i), py = this.py(i) * 0.92, e = Math.sqrt(px * px + py * py);
+      out[i] = Math.max(diag, smoothstep(0.92, 1.3, e + wobble * nn) * sides);
+    }
+    return out;
+  };
+  Flyer.prototype.flowField = function (scale, steps, strength, drift, octaves) {
+    scale = scale || 0.5; drift = drift == null ? 0.35 : drift; octaves = octaves || 4;
+    var W = this.W, H = this.H, f = 2, h = Math.floor(H / f), w = Math.floor(W / f), n = w * h, i, x, y;
+    var P = gaussBlur(new Noise(h, w, this.rng).fbm(w * scale, octaves, 0.5), w, h, 2);
+    var vx = new Float32Array(n), vy = new Float32Array(n), mags = [];
+    for (y = 0; y < h; y++) for (x = 0; x < w; x++) {
+      i = y * w + x;
+      var gx = x === 0 ? P[i + 1] - P[i] : (x === w - 1 ? P[i] - P[i - 1] : (P[i + 1] - P[i - 1]) / 2);
+      var gy = y === 0 ? P[i + w] - P[i] : (y === h - 1 ? P[i] - P[i - w] : (P[i + w] - P[i - w]) / 2);
+      vx[i] = gy; vy[i] = -gx; if (i % 13 === 0) mags.push(Math.hypot(gx, gy));
+    }
+    mags.sort(function (a, b) { return a - b; });
+    var mag = mags[Math.floor(mags.length * 0.95)] + 1e-6;
+    for (i = 0; i < n; i++) { vx[i] /= mag; vy[i] /= mag; }
+    var X = new Float32Array(n), Y = new Float32Array(n), step = strength * w * 0.028, dd = drift * step * 0.3;
+    for (y = 0; y < h; y++) for (x = 0; x < w; x++) { X[y * w + x] = x; Y[y * w + x] = y; }
+    for (var s = 0; s < steps; s++) for (i = 0; i < n; i++) {
+      X[i] += step * sampleBilinear(vx, w, h, X[i], Y[i], 'reflect') + dd;
+      Y[i] += step * sampleBilinear(vy, w, h, X[i], Y[i], 'reflect') - dd;
+    }
+    var XF = resize(X, w, h, W, H, false), YF = resize(Y, w, h, W, H, false);
+    for (i = 0; i < this.N_; i++) { XF[i] *= f; YF[i] *= f; }
+    return { X: XF, Y: YF };
+  };
+  function makeLUT(stops) {
+    var L = new Float32Array(1024 * 3), j = 0;
+    for (var q = 0; q < 1024; q++) {
+      var t = q / 1023;
+      while (j < stops.length - 2 && t > stops[j + 1][0]) j++;
+      var a = stops[j], b = stops[Math.min(j + 1, stops.length - 1)], span = b[0] - a[0];
+      var u = span > 0 ? clamp01((t - a[0]) / span) : 0;
+      if (t <= stops[0][0]) { a = b = stops[0]; u = 0; }
+      if (t >= stops[stops.length - 1][0]) { a = b = stops[stops.length - 1]; u = 0; }
+      L[q * 3] = a[1][0] + (b[1][0] - a[1][0]) * u; L[q * 3 + 1] = a[1][1] + (b[1][1] - a[1][1]) * u; L[q * 3 + 2] = a[1][2] + (b[1][2] - a[1][2]) * u;
+    }
+    return L;
+  }
+  Flyer.prototype.marble = function (mask, stops, freq, cell, steps, strength) {
+    freq = freq || 1.2; cell = cell || 0.3; steps = steps || 8; strength = strength || 0.8;
+    var fl = this.flowField(0.5, steps, strength), f = this.N.fbm(this.W * cell, 4, 0.45, 2), det = this.aniso(2, 30, 3);
+    var L = makeLUT(stops), C = { R: new Float32Array(this.N_), G: new Float32Array(this.N_), B: new Float32Array(this.N_) };
+    for (var i = 0; i < this.N_; i++) {
+      var m = sampleBilinear(f, this.W, this.H, fl.X[i], fl.Y[i], 'reflect'), t = (m * freq) % 1, q = Math.round(t * 1023) * 3, d = 0.9 + 0.16 * det[i];
+      C.R[i] = L[q] * d; C.G[i] = L[q + 1] * d; C.B[i] = L[q + 2] * d;
+    }
+    this.over(C, mask);
+  };
+  Flyer.prototype.waves = function (side, sEdge, stops, width, amp, freq) {
+    var ph = this.rng.random() * 6.283, ph2 = this.rng.random() * 6.283, n = this.N.fbm(this.W * 0.6, 3, 0.5, 4);
+    var fl = this.flowField(0.5, 6, 0.55), g = this.N.fbm(this.W * 0.25, 4, 0.5, 2), an = this.aniso(3, 55, 3);
+    var L = makeLUT(stops), C = { R: new Float32Array(this.N_), G: new Float32Array(this.N_), B: new Float32Array(this.N_) };
+    var A = new Float32Array(this.N_), SH = new Float32Array(this.N_), grit = this.grit;
+    for (var i = 0; i < this.N_; i++) {
+      var t = this.t[i], sw = side * this.s[i] - sEdge + amp * Math.sin(t * freq * 6.283 + ph) + amp * 0.4 * Math.sin(t * freq * 2.3 * 6.283 + ph2) + 0.02 * (n[i] - 0.5);
+      var gg = sampleBilinear(g, this.W, this.H, fl.X[i], fl.Y[i], 'reflect');
+      var u = clamp01(sw / width + 0.09 * (gg - 0.5) * smoothstep(0, 0.05, sw)), q = Math.round(u * 1023) * 3, d = 0.92 + 0.12 * an[i];
+      C.R[i] = L[q] * d; C.G[i] = L[q + 1] * d; C.B[i] = L[q + 2] * d;
+      A[i] = smoothstep(0, 0.0015, sw + 0.0025 * ((grit ? grit[i] : 0.5) - 0.5));
+      SH[i] = sw < 0 ? Math.exp(-Math.pow((sw + 0.012) / 0.02, 2)) * 0.6 : 0;
+    }
+    this.over(DARK, SH); this.over(C, A);
+  };
+  Flyer.prototype.brush = function (mask, color, color2, split, alpha, density) {
+    var st = this.aniso(4, 70, 4), lf = this.N.fbm(this.W / 3, 4, 0.5, 4), A = new Float32Array(this.N_);
+    var C = { R: new Float32Array(this.N_), G: new Float32Array(this.N_), B: new Float32Array(this.N_) };
+    for (var i = 0; i < this.N_; i++) {
+      var a = smoothstep(1 - density, 1.2 - density, 0.55 * st[i] + 0.55 * lf[i] + 0.4 * mask[i] - 0.2);
+      a *= mask[i] * smoothstep(0.25, 0.55, this.grit[i] + 0.3 * mask[i]);
+      A[i] = a * alpha;
+      var sp = color2 ? split[i] : 0, sh = 0.75 + 0.45 * st[i];
+      var c2 = color2 || color;
+      C.R[i] = (color[0] * (1 - sp) + c2[0] * sp) * sh; C.G[i] = (color[1] * (1 - sp) + c2[1] * sp) * sh; C.B[i] = (color[2] * (1 - sp) + c2[2] * sp) * sh;
+    }
+    this.over(C, A);
+  };
+  Flyer.prototype.band = function (s0, width, color, alpha, erode, tfade, sheen) {
+    var soft = 0.002, A = new Float32Array(this.N_), useSheen = sheen > 0;
+    var C = useSheen ? { R: new Float32Array(this.N_), G: new Float32Array(this.N_), B: new Float32Array(this.N_) } : null;
+    for (var i = 0; i < this.N_; i++) {
+      var d = Math.abs(this.s[i] - s0);
+      if (d > width / 2 + soft) continue;
+      var a = 1 - smoothstep(width / 2, width / 2 + soft, d);
+      if (tfade) a *= smoothstep(tfade[0], tfade[1], this.t[i]);
+      if (erode > 0) a *= smoothstep(erode - 0.1, erode + 0.1, this.grit[i]);
+      A[i] = a * alpha;
+      if (useSheen) {
+        var g = clamp01((this.s[i] - (s0 - width / 2)) / width), m = 0.7 + sheen * g;
+        C.R[i] = clamp01(color[0] * m); C.G[i] = clamp01(color[1] * m); C.B[i] = clamp01(color[2] * m);
+      }
+    }
+    this.over(useSheen ? C : color, A);
+  };
+  Flyer.prototype.line = function (s0, color, widthPx, alpha, glowPx, tfade) {
+    var w = widthPx * this.k, g = glowPx * this.k, A = new Float32Array(this.N_), lim = (g * 4) / this.D;
+    for (var i = 0; i < this.N_; i++) {
+      var ds = Math.abs(this.s[i] - s0); if (ds > lim) continue;
+      var d = ds * this.D, a = Math.exp(-Math.pow(d / (w / 2), 2)) + 0.35 * Math.exp(-Math.pow(d / g, 2));
+      if (tfade) a *= smoothstep(tfade[0], tfade[1], this.t[i]);
+      A[i] = a * alpha;
+    }
+    this.screen(color, A);
+  };
+  Flyer.prototype.halftone = function (mask, color, spacing, alpha) {
+    var sp = spacing * this.k, A = new Float32Array(this.N_), W = this.W;
+    for (var i = 0; i < this.N_; i++) {
+      var m = clamp01(mask[i]); if (m <= 0) continue;
+      var x = i % W, y = (i - x) / W, u = (x + y) / Math.SQRT2, v = (x - y) / Math.SQRT2;
+      var du = (((u % sp) + sp) % sp) - sp / 2, dv = (((v % sp) + sp) % sp) - sp / 2, d = Math.sqrt(du * du + dv * dv), r = sp * 0.5 * m;
+      if (r > 0.8) A[i] = (1 - smoothstep(r - 1, r + 1, d)) * alpha;
+    }
+    this.over(color, A);
+  };
+  Flyer.prototype.hexgrid = function (mask, color, size, alpha, lw) {
+    size = (size || 55) * this.k; lw = lw || 3; var s3 = Math.sqrt(3), A = new Float32Array(this.N_), W = this.W;
+    var e0 = lw * this.k / size * 0.4, e1 = lw * this.k / size;
+    for (var i = 0; i < this.N_; i++) {
+      if (mask[i] <= 0) continue;
+      var x = i % W, y = (i - x) / W, px = x / size, py = y / size;
+      var a1x = px - Math.round(px / s3) * s3, a1y = py - Math.round(py);
+      var a2x = px - (Math.floor(px / s3) + 0.5) * s3, a2y = py - (Math.floor(py) + 0.5);
+      var use1 = (a1x * a1x + a1y * a1y) < (a2x * a2x + a2y * a2y);
+      var gx = Math.abs(use1 ? a1x : a2x), gy = Math.abs(use1 ? a1y : a2y), hexd = Math.max(gy, gx * s3 / 2 + gy * 0.5);
+      A[i] = (1 - smoothstep(e0, e1, Math.abs(hexd - 0.5))) * mask[i] * alpha;
+    }
+    this.over(color, A);
+  };
+  function drawEllipse(M, W, H, x, y, rx, ry, val) {
+    var x0 = Math.max(0, Math.floor(x - rx - 1)), x1 = Math.min(W - 1, Math.ceil(x + rx + 1));
+    var y0 = Math.max(0, Math.floor(y - ry - 1)), y1 = Math.min(H - 1, Math.ceil(y + ry + 1)), rm = Math.min(rx, ry);
+    for (var yy = y0; yy <= y1; yy++) for (var xx = x0; xx <= x1; xx++) {
+      var dx = (xx + 0.5 - x) / rx, dy = (yy + 0.5 - y) / ry, d = Math.sqrt(dx * dx + dy * dy);
+      var cov = clamp01((1 - d) * rm + 0.5) * val, o = yy * W + xx;
+      if (cov > M[o]) M[o] = cov;
+    }
+  }
+  Flyer.prototype.splatter = function (weight, colors, o) {
+    o = o || {};
+    var clusters = o.clusters || 28, per = o.per || [15, 70], spread = o.spread || [30, 140], rmax = o.rmax || 13, alpha = o.alpha || 0.9, spray = o.spray == null ? 9000 : o.spray;
+    var W = this.W, H = this.H, k = this.k, rng = new RNG(this.rng.int(1, 2147483647)), self = this;   // own stream: keeps later steps stable
+    var masks = colors.map(function () { return new Float32Array(self.N_); });
+    var cw = [0.7]; for (var c = 1; c < colors.length; c++) cw.push(0.3 / Math.max(1, colors.length - 1));
+    var tot = cw.reduce(function (a, b) { return a + b; }, 0); cw = cw.map(function (v) { return v / tot; });
+    function pick(n) {
+      var pts = [], guard = 0;
+      while (pts.length < n && guard++ < 2000) for (var j = 0; j < n * 6 && pts.length < n; j++) {
+        var x = rng.random() * W, y = rng.random() * H, w = weight[Math.min(H - 1, Math.floor(y)) * W + Math.min(W - 1, Math.floor(x))];
+        if (rng.random() < w) pts.push([x, y]);
+      }
+      return pts;
+    }
+    pick(clusters).forEach(function (pt) {
+      var ci = rng.choice(cw), sg = rng.uniform(spread[0], spread[1]) * k, cnt = rng.int(per[0], per[1]);
+      for (var j = 0; j < cnt; j++) {
+        var x = pt[0] + rng.normal() * sg, y = pt[1] + rng.normal() * sg * 0.7, dd = Math.hypot(x - pt[0], y - pt[1]) / sg;
+        var r = Math.min(rmax, 1.2 * (1 + rng.pareto(1.8))) * k * Math.max(0.35, 1.2 - 0.4 * dd), e = r * (0.75 + 0.5 * rng.random());
+        drawEllipse(masks[ci], W, H, x, y, Math.max(0.5, r), Math.max(0.5, e), 1);
+      }
+    });
+    pick(spray).forEach(function (pt) {
+      var r = (0.6 + 1.6 * rng.random()) * k, ci = rng.choice(cw);
+      drawEllipse(masks[ci], W, H, pt[0], pt[1], Math.max(0.5, r), Math.max(0.5, r), (120 + 100 * rng.random()) / 255);
+    });
+    colors.forEach(function (col, i) { self.over(col, masks[i], alpha); });
+  };
+  Flyer.prototype.arc = function (cx, cy, a, b, rot, color, widthPx, glowPx, alpha, ang, ribbon, ribbonAlpha) {
+    var cr = Math.cos(rot), sr = Math.sin(rot), W = this.W, n = this.N_, mn = Math.min(a, b);
+    var w = widthPx * this.k, g = glowPx * this.k, rb = ribbon * this.k, hc = hot(color), core = mix(hc, WHITE, 0.7), rc = adj(color, { v: 0.55 });
+    var Arib = new Float32Array(n), Aglow = new Float32Array(n), Acore = new Float32Array(n);
+    var c = (ang[0] + ang[1]) / 2, hw = (ang[1] - ang[0]) / 2;
+    for (var i = 0; i < n; i++) {
+      var x = (i % W) - cx, y = Math.floor(i / W) - cy, u = x * cr + y * sr, v = -x * sr + y * cr;
+      var e = Math.sqrt((u / a) * (u / a) + (v / b) * (v / b)), d = (e - 1) * mn;
+      if (Math.abs(d) > Math.max(g * 8, rb + 10)) continue;
+      var th = Math.atan2(v / b, u / a), dth = Math.abs(((th - c + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI);
+      var m = 1 - smoothstep(hw * 0.5, hw, dth); if (m <= 0) continue;
+      if (rb > 0) Arib[i] = smoothstep(0, 4 * this.k, d) * Math.pow(clamp01(1 - d / rb), 1.4) * m * ribbonAlpha;
+      Aglow[i] = 0.45 * Math.exp(-Math.pow(Math.abs(d) / g, 1.4)) * m * alpha;
+      Acore[i] = Math.exp(-Math.pow(d / (w / 2), 2)) * m * alpha;
+    }
+    if (rb > 0) this.over(rc, Arib);
+    this.screen(hc, Aglow); this.screen(core, Acore);
+  };
+  Flyer.prototype.protect = function () {
+    if (!this.baseR) return;
+    var n = this.N.fbm(this.W / 3, 3, 0.5, 4);
+    for (var i = 0; i < this.N_; i++) {
+      var keep = 1 - smoothstep(this.edge - 0.05, this.edge + 0.015, Math.abs(this.s[i]) + 0.06 * (n[i] - 0.5));
+      if (keep <= 0) continue;
+      this.R[i] += (this.baseR[i] - this.R[i]) * keep; this.G[i] += (this.baseG[i] - this.G[i]) * keep; this.B[i] += (this.baseB[i] - this.B[i]) * keep;
+    }
+  };
+  Flyer.prototype.finish = function (grain, vignette) {
+    this.protect();
+    for (var i = 0; i < this.N_; i++) {
+      var px = this.px(i), py = this.py(i), r = Math.sqrt(px * px + py * py) / Math.SQRT2;
+      var m = (1 - vignette * smoothstep(0.55, 1.05, r)) * (1 + this.rng.normal() * grain);
+      this.R[i] = clamp01(this.R[i] * m); this.G[i] = clamp01(this.G[i] * m); this.B[i] = clamp01(this.B[i] * m);
+    }
+  };
+  Flyer.prototype.toRGBA = function () {
+    var out = new Uint8ClampedArray(this.N_ * 4);
+    for (var i = 0; i < this.N_; i++) { out[i * 4] = this.R[i] * 255 + 0.5; out[i * 4 + 1] = this.G[i] * 255 + 0.5; out[i * 4 + 2] = this.B[i] * 255 + 0.5; out[i * 4 + 3] = 255; }
+    return out;
+  };
+
+  // ------------------------------------------------------------ recipes
+  function fluidStops(p, silver, p2) {
+    var st = [[0, DARK], [0.10, DARK], [0.13, adj(p, { v: 0.35 })], [0.24, p], [0.30, mix(p, WHITE, 0.30)], [0.33, adj(p, { v: 0.8 })], [0.42, adj(p, { v: 0.45 })], [0.46, DARK]], nxt = 0.52;
+    if (silver) { st.push([nxt, adj(silver, { v: 0.35 })], [nxt + 0.06, silver], [nxt + 0.09, mix(silver, WHITE, 0.5)], [nxt + 0.14, adj(silver, { v: 0.55 })], [nxt + 0.18, DARK]); nxt += 0.24; }
+    if (p2) { st.push([nxt, adj(p2, { v: 0.4 })], [nxt + 0.06, p2], [nxt + 0.09, mix(p2, WHITE, 0.25)], [nxt + 0.14, adj(p2, { v: 0.4 })], [nxt + 0.17, DARK]); nxt += 0.2; }
+    st.push([Math.max(nxt, 0.8), adj(p, { v: 0.25 })], [1, DARK]);
+    return st;
+  }
+  function recipeGrunge(F, pal, o, prog) {
+    var rng = F.rng, p = pal.primary, p2 = pal.second, silver = pal.silver, i, n = F.N_;
+    if (o.pop && pal.pop) p2 = pal.pop;
+    var useSilver = pal.hasSilver || pal.mono;
+    F.base(o.base, 1.0); prog(0.12);
+    F.grit = F.N.fbm(14 * F.k, 4, 0.62);
+    var reg = F.region(0.32, 0.64, 0.30, 0.22), sn = F.N.fbm(F.W / 2, 3, 0.5, 4), split = new Float32Array(n);
+    for (i = 0; i < n; i++) split[i] = smoothstep(-0.25, 0.25, F.t[i] + 0.3 * (sn[i] - 0.5));
+    prog(0.2);
+    if (o.fill === 'marble' || o.fill === 'mix') {
+      var mk = new Float32Array(n);
+      for (i = 0; i < n; i++) { var rough = reg[i] + 0.22 * (F.grit[i] - 0.5); mk[i] = (o.fill === 'marble' ? smoothstep(0.30, 0.46, rough) : smoothstep(0.5, 0.7, rough)) * 0.97; }
+      F.marble(mk, fluidStops(p, useSilver ? silver : null, p2), 1.1 + 0.3 * rng.random());
+    }
+    prog(0.5);
+    if (o.fill === 'brush' || o.fill === 'mix') {
+      var c2 = p2 || (useSilver ? silver : null);
+      F.brush(reg, p, c2, split, 0.9, o.fill === 'brush' ? 0.62 : 0.45);
+    }
+    prog(0.6);
+    if (o.hex) {
+      var hg = F.N.fbm(F.W / 3, 3, 0.5, 4), hm = new Float32Array(n);
+      for (i = 0; i < n; i++) hm[i] = reg[i] * smoothstep(0.4, 0.7, hg[i]);
+      F.hexgrid(hm, adj(p, { v: 1.15 }), 55, 0.45);
+    }
+    [-1, 1].forEach(function (side) {
+      var nb = rng.int(4, 7);
+      for (var b = 0; b < nb; b++) {
+        var s0 = side * rng.uniform(Math.min(0.34 + F.shift, 0.92), 1.0), w = rng.uniform(0.008, 0.07) * (rng.random() < 0.6 ? 1 : 0.35), r = rng.random();
+        var col = r < 0.35 ? DARK : (r < 0.7 ? p : (useSilver ? silver : (p2 || adj(p, { v: 0.6 })))), tf = null;
+        if (rng.random() < 0.5) { var t0 = rng.uniform(-0.5, 0.5); tf = [t0, t0 + rng.sign() * rng.uniform(0.1, 0.4)]; }
+        F.band(s0, w, col, rng.uniform(0.35, 0.8), rng.uniform(0, 0.35), tf, col === DARK ? 0 : 0.5);
+      }
+      var nl = rng.int(2, 5);
+      for (var l = 0; l < nl; l++) {
+        var s1 = side * rng.uniform(Math.min(0.30 + F.shift, 0.9), 0.98), t1 = rng.uniform(-0.4, 0.4), tf1 = [t1, t1 + rng.sign() * rng.uniform(0.1, 0.35)];
+        var lc = (o.pop && p2 && l % 2 === 0) ? hot(p2) : mix(p, WHITE, 0.25);
+        F.line(s1, lc, rng.uniform(2, 5), 0.85, 16, tf1);
+      }
+    });
+    prog(0.75);
+    var htn = F.N.fbm(F.W / 4, 3, 0.5, 4), ht = new Float32Array(n), sw = new Float32Array(n), mx = 0;
+    for (i = 0; i < n; i++) {
+      ht[i] = reg[i] * smoothstep(0.5, 0.8, htn[i]) * 0.9;
+      sw[i] = Math.pow(clamp01(reg[i] * (1.25 - reg[i]) * 2.4), 1.3) + 0.03; if (sw[i] > mx) mx = sw[i];
+    }
+    F.halftone(ht, pal.mono ? silver : adj(p, { v: 0.85 }), 24, 0.5);
+    for (i = 0; i < n; i++) sw[i] /= mx;
+    var cols = pal.mono ? [silver, DARK, [0.9, 0.9, 0.9]] : [p, DARK, mix(p, WHITE, 0.2)];
+    if (p2) cols.push(p2);
+    F.splatter(sw, cols, { clusters: 30, spray: 11000, alpha: 0.92 });
+    prog(0.9);
+    F.finish(0.028, 0.28);
+  }
+  function recipeMinimal(F, pal, o, prog) {
+    var rng = F.rng, W = F.W, H = F.H, p = pal.primary, n = F.N_, i;
+    F.base(o.base, 0.5); prog(0.12);
+    F.grit = F.N.fbm(14 * F.k, 4, 0.62);
+    if (o.motif === 'arcs') {
+      var half = Math.hypot(W, H) / 2, cx = W * rng.uniform(0.48, 0.53), cy = H * rng.uniform(0.48, 0.52);
+      var rot = (-45 + rng.uniform(-8, 8)) * Math.PI / 180;
+      var A = half * (rng.uniform(0.86, 0.95) + 0.5 * F.shift), B = half * (rng.uniform(0.56, 0.64) + F.shift);
+      var cr = Math.cos(rot), sr = Math.sin(rot), sheen = F.aniso(10, 160, 3), spn = F.N.fbm(F.W / 5, 3, 0.5, 4);
+      var fill = adj(p, { v: 0.30 }), C = { R: new Float32Array(n), G: new Float32Array(n), B: new Float32Array(n) }, Ao = new Float32Array(n), As = new Float32Array(n);
+      for (i = 0; i < n; i++) {
+        var x = (i % W) - cx, y = Math.floor(i / W) - cy, e = Math.sqrt(Math.pow((x * cr + y * sr) / A, 2) + Math.pow((-x * sr + y * cr) / B, 2));
+        var out = smoothstep(0.98, 1.25, e), m = 0.7 + 0.7 * sheen[i];
+        C.R[i] = fill[0] * m; C.G[i] = fill[1] * m; C.B[i] = fill[2] * m; Ao[i] = out * 0.95;
+        As[i] = out * smoothstep(0.62, 0.78, F.grit[i]) * smoothstep(0.3, 0.7, spn[i]) * 0.55;
+      }
+      F.over(C, Ao); F.over(p, As); prog(0.35);
+      for (var k = 0; k < 5; k++) {
+        var f = 1.0 + 0.045 * k + 0.015 * rng.random(), side = k % 2 === 0 ? 1 : -1, c = 90 * side + rng.uniform(-15, 15), span = rng.uniform(50, 80);
+        F.arc(cx, cy, A * f, B * f, rot + rng.uniform(-0.03, 0.03), k < 2 ? hot(p) : p, 6 - k * 0.8, 60 - 8 * k, 1.0 - 0.13 * k,
+          [(c - span) * Math.PI / 180, (c + span) * Math.PI / 180], 380 - 50 * k, 0.85 - 0.12 * k);
+        prog(0.35 + 0.08 * k);
+      }
+      [-1, 1].forEach(function (side) {
+        for (var j = 0; j < 3; j++) {
+          var s0 = side * rng.uniform(Math.min(0.15 + F.shift, 0.9), 0.98), t0 = rng.uniform(-0.5, 0.5);
+          F.line(s0, mix(p, WHITE, 0.5), 1.6, 0.3, 5, [t0, t0 + side * 0.35]);
+        }
+      });
+    } else {
+      var light = mix(hot(p, 0.85), WHITE, 0.12);
+      var stops = [[0, hot(p)], [0.02, light], [0.05, hot(p)], [0.10, p], [0.112, DARK], [0.17, DARK], [0.182, p], [0.25, hot(p)], [0.29, light], [0.35, p],
+        [0.362, DARK], [0.41, DARK], [0.422, adj(p, { v: 0.6 })], [0.55, p], [0.62, light], [0.70, p], [0.8, adj(p, { v: 0.45 })], [1, p]];
+      [-1, 1].forEach(function (side, j) {
+        F.waves(side, rng.uniform(0.50, 0.60) + F.shift, stops, 0.5, rng.uniform(0.04, 0.07), rng.uniform(1.0, 1.6)); prog(0.35 + 0.25 * j);
+      });
+      [-1, 1].forEach(function (side) {
+        var nl = rng.int(2, 4);
+        for (var j = 0; j < nl; j++) {
+          var s0 = side * rng.uniform(Math.min(0.35 + F.shift, 0.9), 0.98), t0 = rng.uniform(-0.4, 0.4);
+          F.line(s0, p, 2.5, 0.75, 10, [t0, t0 + rng.sign() * 0.3]);
+        }
+      });
+    }
+    prog(0.8);
+    var sw = F.region(0.30, 0.75, 0.3, 0.3), mx = 0;
+    for (i = 0; i < n; i++) { sw[i] = Math.pow(clamp01(sw[i] * (1.2 - sw[i]) * 2.4), 1.5) + 0.01; if (sw[i] > mx) mx = sw[i]; }
+    for (i = 0; i < n; i++) sw[i] /= mx;
+    F.splatter(sw, [p, DARK, hot(p)], { clusters: o.motif === 'waves' ? 18 : 12, per: [8, 30], rmax: 9, spray: 4500, alpha: 0.85 });
+    prog(0.92);
+    F.finish(0.022, 0.32);
+  }
+
+  // opts: {palette (hex form), accents?: [hex,...], style, fill, motif, base, hex, pop, seed, open, width, height}
+  function render(opts, onProgress) {
+    var prog = onProgress || function () {};
+    var pal = paletteFromHex(opts.palette);
+    if (opts.accents && opts.accents.length) { pal.accents = opts.accents.map(hex2rgb); pal.mono = false; }
+    pal.primary = pal.accents[0]; pal.second = pal.accents[1] || null;
+    var F = new Flyer(pal, opts.width || 2550, opts.height || 3300, opts.seed || 1);
+    F.setOpen(opts.open == null ? 1 : opts.open);
+    prog(0.05);
+    if (opts.style === 'minimal') recipeMinimal(F, pal, { base: opts.base || 'dark', motif: opts.motif || 'arcs', pop: !!opts.pop }, prog);
+    else recipeGrunge(F, pal, { base: opts.base || 'dark', fill: opts.fill || 'mix', hex: !!opts.hex, pop: !!opts.pop }, prog);
+    var out = F.toRGBA(); prog(1);
+    return out;
+  }
+
+  return { extractPalette: function (rgba, w, h) { return paletteToHex(extractPalette(rgba, w, h)); }, render: render, version: '1.0' };
+})();
+if (typeof module !== 'undefined') module.exports = PIBG;
+
+</script>
+<script>
+// ===================================================================
+// Background Generator — builds a flyer background from a ball image.
+// The drawing engine (PIBG, in the text/plain script above) runs in a
+// Web Worker so the page stays responsive; falls back to the main thread
+// if workers aren't available (e.g. some file:// setups).
+// ===================================================================
+(function () {
+  var FULL_W = 2550, FULL_H = 3300;            // 8.5 x 11 in at 300 dpi
+  var PREV_W = 510, PREV_H = 660;
+  var st = {
+    palette: null, ballName: 'ball', seed: 1, style: 'grunge', fill: 'marble', motif: 'arcs',
+    base: 'dark', hex: false, pop: false, open: 1, colors: null, useColor2: true,
+    jobId: 0, busy: false, lastFull: null
+  };
+  var worker = null, workerFailed = false, coreFn = null, pending = {};
+  var $ = function (id) { return document.getElementById(id); };
+
+  function coreSrc() { return $('pibgCoreSrc').textContent; }
+  function getWorker() {
+    if (worker || workerFailed) return worker;
+    try {
+      var src = coreSrc() + '\nself.onmessage=function(e){var d=e.data;try{if(d.type==="palette"){self.postMessage({id:d.id,palette:PIBG.extractPalette(d.rgba,d.w,d.h)});}else{var out=PIBG.render(d.opts,function(p){self.postMessage({id:d.id,progress:p});});self.postMessage({id:d.id,rgba:out},[out.buffer]);}}catch(err){self.postMessage({id:d.id,error:String(err&&err.message||err)});}};';
+      worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'application/javascript' })));
+      worker.onmessage = function (e) {
+        var p = pending[e.data.id]; if (!p) return;
+        if (e.data.progress != null) { p.onProgress && p.onProgress(e.data.progress); return; }
+        delete pending[e.data.id];
+        if (e.data.error) p.reject(new Error(e.data.error)); else p.resolve(e.data);
+      };
+      worker.onerror = function () { workerFailed = true; worker = null; Object.keys(pending).forEach(function (k) { pending[k].retry(); delete pending[k]; }); };
+    } catch (err) { workerFailed = true; worker = null; }
+    return worker;
+  }
+  function mainThreadCore() { if (!coreFn) coreFn = new Function(coreSrc() + '\nreturn PIBG;')(); return coreFn; }
+  var nextId = 1;
+  function call(msg, onProgress) {
+    return new Promise(function (resolve, reject) {
+      function runLocal() {
+        setTimeout(function () {
+          try {
+            var P = mainThreadCore();
+            if (msg.type === 'palette') resolve({ palette: P.extractPalette(msg.rgba, msg.w, msg.h) });
+            else resolve({ rgba: P.render(msg.opts, onProgress) });
+          } catch (err) { reject(err); }
+        }, 30);
+      }
+      var w = getWorker();
+      if (!w) return runLocal();
+      var id = nextId++;
+      pending[id] = { resolve: resolve, reject: reject, onProgress: onProgress, retry: runLocal };
+      msg.id = id; w.postMessage(msg);
+    });
+  }
+
+  function setStatus(t) { $('pibgStatus').textContent = t || ''; }
+  function setBusy(on, p) {
+    var b = $('pibgBusy'); b.style.display = on ? 'block' : 'none';
+    b.firstElementChild.style.width = Math.round((p || 0) * 100) + '%';
+  }
+  function currentOpts(w, h) {
+    var accents = null;
+    if (st.colors) { accents = [st.colors[0]]; if (st.useColor2 && st.colors[1]) accents.push(st.colors[1]); }
+    return { palette: st.palette, accents: accents, style: st.style, fill: st.fill, motif: st.motif, base: st.base,
+             hex: st.hex, pop: st.pop, seed: st.seed, open: st.open, width: w, height: h };
+  }
+  function putRGBA(canvas, rgba, w, h) {
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(rgba.buffer || rgba), w, h), 0, 0);
+  }
+
+  var previewTimer = null;
+  function schedulePreview() {
+    if (!st.palette) return;
+    clearTimeout(previewTimer);
+    previewTimer = setTimeout(renderPreview, 120);
+  }
+  function renderPreview() {
+    var job = ++st.jobId;
+    st.lastFull = null;
+    setBusy(true, 0.02); setStatus('Building preview…');
+    call({ type: 'render', opts: currentOpts(PREV_W, PREV_H) }, function (p) { if (job === st.jobId) setBusy(true, p); })
+      .then(function (r) {
+        if (job !== st.jobId) return;
+        putRGBA($('pibgPreviewCanvas'), r.rgba, PREV_W, PREV_H);
+        $('pibgPreviewEmpty').style.display = 'none';
+        setBusy(false); setStatus('Preview (variation ' + st.seed + ')');
+        $('pibgUseBtn').disabled = false; $('pibgDownloadBtn').disabled = false;
+      })
+      .catch(function (err) { if (job === st.jobId) { setBusy(false); setStatus('Something went wrong: ' + err.message); } });
+  }
+  function renderFull() {
+    if (st.lastFull) return Promise.resolve(st.lastFull);
+    var job = ++st.jobId;
+    $('pibgUseBtn').disabled = true; $('pibgDownloadBtn').disabled = true;
+    setBusy(true, 0.01); setStatus('Rendering full size (about 10–20 seconds)…');
+    return call({ type: 'render', opts: currentOpts(FULL_W, FULL_H) }, function (p) { if (job === st.jobId) setBusy(true, p); })
+      .then(function (r) {
+        var c = document.createElement('canvas'); putRGBA(c, r.rgba, FULL_W, FULL_H);
+        return new Promise(function (res) { c.toBlob(function (blob) { res(blob); }, 'image/png'); });
+      })
+      .then(function (blob) {
+        setBusy(false); $('pibgUseBtn').disabled = false; $('pibgDownloadBtn').disabled = false; setStatus('');
+        if (job !== st.jobId) { st.lastFull = null; throw new Error('Settings changed, try again'); }
+        st.lastFull = blob; return blob;
+      })
+      .catch(function (err) { setBusy(false); $('pibgUseBtn').disabled = false; $('pibgDownloadBtn').disabled = false; setStatus(err.message); throw err; });
+  }
+
+  function loadBall(file) {
+    if (!file) return;
+    st.ballName = (file.name || 'ball').replace(/\.[^.]+$/, '').replace(/[^\w\-]+/g, '_');
+    var url = URL.createObjectURL(file), img = new Image();
+    img.onload = function () {
+      $('pibgBallThumb').src = url; $('pibgBallThumb').style.display = 'block';
+      $('pibgBallBtn').textContent = 'Change Ball Image';
+      var s = Math.min(1, 420 / Math.max(img.naturalWidth, img.naturalHeight));
+      var w = Math.max(1, Math.round(img.naturalWidth * s)), h = Math.max(1, Math.round(img.naturalHeight * s));
+      var c = document.createElement('canvas'); c.width = w; c.height = h;
+      var ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
+      var data = ctx.getImageData(0, 0, w, h).data;
+      setStatus('Reading ball colors…');
+      call({ type: 'palette', rgba: data, w: w, h: h }).then(function (r) {
+        st.palette = r.palette; st.seed = 1;
+        st.colors = r.palette.accents.slice(0, 2);
+        st.useColor2 = st.colors.length > 1;
+        // sensible starting point: swirled multi-color balls -> marble, solid balls -> brush
+        st.fill = (r.palette.accents.length > 1 || r.palette.hasSilver) ? 'marble' : 'brush';
+        $('pibgFill').value = st.fill;
+        st.pop = false; $('pibgPop').checked = false;
+        syncColorInputs(); syncVisibility();
+        $('pibgOptions').style.display = 'block';
+        schedulePreview();
+      }).catch(function (err) { setStatus('Couldn\'t read that image: ' + err.message); });
+    };
+    img.onerror = function () { setStatus('Couldn\'t open that image.'); };
+    img.src = url;
+  }
+  function syncColorInputs() {
+    var c = st.colors || [];
+    $('pibgColor1').value = c[0] || '#cc2233';
+    $('pibgColor2').value = c[1] || c[0] || '#cc2233';
+    $('pibgUseColor2').checked = !!(st.useColor2 && c[1]);
+    $('pibgColor2').style.opacity = $('pibgUseColor2').checked ? 1 : 0.35;
+    var pop = st.palette && st.palette.pop;
+    $('pibgPopWrap').style.display = pop ? 'flex' : 'none';
+    if (pop) $('pibgPopSwatch').innerHTML = '<span style="display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;background:' + pop + ';border:1px solid #ccc;"></span>';
+  }
+  function syncVisibility() {
+    var g = st.style === 'grunge';
+    $('pibgFillWrap').style.display = g ? '' : 'none';
+    $('pibgMotifWrap').style.display = g ? 'none' : '';
+    $('pibgGrungeExtras').style.display = g ? '' : 'none';
+    Array.prototype.forEach.call($('pibgStyleSeg').children, function (b) { b.classList.toggle('active', b.dataset.v === st.style); });
+    var o = st.open, lbl = o === 1 ? 'Default' : (o > 1 ? 'Roomier' : 'Tighter');
+    $('pibgOpenVal').textContent = lbl;
+  }
+
+  function applyToFlyer() {
+    renderFull().then(function (blob) {
+      var img = new Image();
+      img.onload = function () {
+        img.dataset.pibg = '1';
+        backgroundImage = img;          // same globals the library / upload paths use
+        selectedLibraryBg = null;
+        var inp = $('backgroundInput'); if (inp) inp.value = '';
+        renderBackgroundPreview();
+        updateLibrarySelectionHighlight();
+        if (typeof isPreviewInteractive !== 'undefined' && isPreviewInteractive) renderFlyerToCanvas(true);
+        if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: 'bg-generator-used', title: 'Generated background applied', event: true });
+        closeModal();
+      };
+      img.src = URL.createObjectURL(blob);
+    }).catch(function () {});
+  }
+  function download() {
+    renderFull().then(function (blob) {
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = st.ballName + '_flyer_bg_' + st.style + '_v' + st.seed + '.png';
+      document.body.appendChild(a); a.click(); a.remove();
+    }).catch(function () {});
+  }
+
+  function openModal() { $('pibgModalOverlay').classList.add('open'); }
+  function closeModal() { $('pibgModalOverlay').classList.remove('open'); }
+
+  function init() {
+    $('pibgOpenBtn').addEventListener('click', openModal);
+    $('pibgModalClose').addEventListener('click', closeModal);
+    $('pibgModalOverlay').addEventListener('click', function (e) { if (e.target === this) closeModal(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+    $('pibgBallBtn').addEventListener('click', function () { $('pibgBallInput').click(); });
+    $('pibgBallInput').addEventListener('change', function (e) { loadBall(e.target.files[0]); });
+    $('pibgStyleSeg').addEventListener('click', function (e) {
+      var v = e.target && e.target.dataset && e.target.dataset.v; if (!v || v === st.style) return;
+      st.style = v; syncVisibility(); schedulePreview();
+    });
+    $('pibgFill').addEventListener('change', function (e) { st.fill = e.target.value; schedulePreview(); });
+    $('pibgMotif').addEventListener('change', function (e) { st.motif = e.target.value; schedulePreview(); });
+    $('pibgBase').addEventListener('change', function (e) { st.base = e.target.value; schedulePreview(); });
+    $('pibgHex').addEventListener('change', function (e) { st.hex = e.target.checked; schedulePreview(); });
+    $('pibgPop').addEventListener('change', function (e) { st.pop = e.target.checked; schedulePreview(); });
+    $('pibgOpen').addEventListener('input', function (e) { st.open = parseFloat(e.target.value); syncVisibility(); schedulePreview(); });
+    $('pibgColor1').addEventListener('input', function (e) { if (!st.colors) return; st.colors[0] = e.target.value; schedulePreview(); });
+    $('pibgColor2').addEventListener('input', function (e) {
+      if (!st.colors) return; st.colors[1] = e.target.value; st.useColor2 = true; syncColorInputs(); schedulePreview();
+    });
+    $('pibgUseColor2').addEventListener('change', function (e) {
+      if (!st.colors) return; st.useColor2 = e.target.checked; if (st.useColor2 && !st.colors[1]) st.colors[1] = $('pibgColor2').value;
+      syncColorInputs(); schedulePreview();
+    });
+    $('pibgResetColors').addEventListener('click', function (e) {
+      e.preventDefault(); if (!st.palette) return;
+      st.colors = st.palette.accents.slice(0, 2); st.useColor2 = st.colors.length > 1; syncColorInputs(); schedulePreview();
+    });
+    $('pibgVariationBtn').addEventListener('click', function () { st.seed += 1; schedulePreview(); });
+    $('pibgUseBtn').addEventListener('click', applyToFlyer);
+    $('pibgDownloadBtn').addEventListener('click', download);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
 </script>
 </body>
 </html>
