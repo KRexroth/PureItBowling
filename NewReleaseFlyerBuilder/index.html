@@ -46,6 +46,9 @@
   .ctrl-btn{border:1px solid #ddd;border-radius:5px;background:#fafafa;color:#777;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:6px 12px;cursor:pointer;white-space:nowrap;font-family:'Barlow',sans-serif;}
   .ctrl-btn:hover{border-color:#EF4123;color:#EF4123;}
   .ctrl-hint{font-size:11px;color:#999;}
+  .size-btn-group{display:inline-flex;gap:4px;margin-left:6px;vertical-align:middle;}
+  .size-btn{width:28px;height:28px;border:1px solid #ddd;border-radius:5px;background:#fafafa;color:#444;font-size:16px;font-weight:700;line-height:1;cursor:pointer;padding:0;font-family:'Barlow',sans-serif;}
+  .size-btn:hover{border-color:#EF4123;color:#EF4123;}
 
   .slot-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#aaa;}
 
@@ -240,6 +243,29 @@
   canvas.interactive{cursor:default;touch-action:none;}
   canvas.dragging{cursor:grabbing !important;}
   #cardWrap{display:none;max-width:720px;margin:0 auto;overflow:hidden;}
+  #previewPlaceholder{display:none;}
+
+  /* Desktop split layout: use the whole window instead of a centered
+     680px column. The tools stay on the left and scroll with the page; the
+     flyer preview is pinned to the right (sticky, one full viewport tall) so
+     it never scrolls out of view while you edit. The canvas itself is sized
+     to fit that pane by fitPreviewCanvas() in JS (kept as a real pixel
+     width/height so drag/click hit-testing, which reads the canvas's
+     on-screen rect, stays exact). Below this width everything falls back to
+     the original single-column layout. */
+  @media (min-width: 1000px) {
+    body{max-width:none;margin:0;padding:0;}
+    #appLayout{display:grid;grid-template-columns:clamp(460px, 40vw, 640px) 1fr;align-items:start;}
+    #toolsPane{padding:12px;min-width:0;}
+    #previewPane{position:sticky;top:0;height:100vh;box-sizing:border-box;padding:14px;background:#e4e4e4;border-left:1px solid #d3d3d3;min-width:0;display:flex;flex-direction:column;}
+    #previewPlaceholder{display:flex;flex:1;align-items:center;justify-content:center;text-align:center;color:#888;font-size:15px;line-height:1.7;}
+    #previewPane.has-preview #previewPlaceholder{display:none;}
+    #previewPane.has-preview #cardWrap{display:grid !important;flex:1;min-height:0;max-width:none;margin:0;overflow:visible;grid-template-rows:auto minmax(0,1fr) auto;}
+    #canvasHolder{min-height:0;min-width:0;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+    #canvasHolder canvas{flex:none;box-shadow:0 4px 18px rgba(0,0,0,0.25);}
+    #cardWrap #dragHint{margin-bottom:8px !important;}
+    #cardWrap .btn{margin-bottom:0;margin-top:10px !important;padding:11px;}
+  }
 
   .link-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #eee;}
   .link-row input[type="checkbox"]{width:16px;height:16px;cursor:pointer;accent-color:#EF4123;flex-shrink:0;}
@@ -255,7 +281,7 @@
   .field-restore-chip .plus{font-size:14px;font-weight:800;margin-right:4px;}
   .field-restore-chip .hint{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#bbb;}
   .field-restore-chip:hover .hint{color:#EF4123;}
-  .swatch-holder{flex-shrink:0;}
+  .swatch-holder{flex-shrink:0;display:flex;align-items:center;}
   .text-row .edit-trigger-row{margin:0;}
 
   .swatch-row{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:4px;}
@@ -417,6 +443,9 @@
   <span style="font-family:'Space Mono'; font-weight:700;">Aa</span>
   <span style="font-family:'Titan One'; font-weight:400;">Aa</span>
 </div>
+
+<div id="appLayout">
+<div id="toolsPane">
 
 <div class="page-title">Pure It Bowling — Flyer Generator</div>
 
@@ -664,9 +693,26 @@
       <div class="ig"><label>Callout Line 2</label><input type="text" id="fitLine2" value="A PROFESSIONAL FIT."/></div>
       <div class="swatch-holder" id="swatch_fitLine2Color"></div>
     </div>
+    <!-- Callout Description: pick a pre-loaded or previously saved description
+         by its short title, or choose "Custom text…" to type your own (and
+         optionally save it). #fitDesc stays the single source of truth that
+         the flyer reads from — the dropdown just fills it in. See
+         initCalloutDescriptionPresets(). -->
     <div class="text-row">
-      <div class="ig"><label>Callout Description</label><input type="text" id="fitDesc" value="Pre-order from Pure It Bowling and receive FREE standard drilling."/></div>
+      <div class="ig"><label>Callout Description</label>
+        <select id="fitDescPreset"></select>
+        <input type="text" id="fitDesc" value="Pre-order from Pure It Bowling and receive FREE standard drilling."/>
+      </div>
       <div class="swatch-holder" id="swatch_fitDescColor"></div>
+    </div>
+    <div id="fitDescExtras" style="margin:-4px 0 12px;">
+      <div class="ctrl-hint" id="fitDescPresetText" style="display:none;"></div>
+      <div id="fitDescSaveRow" style="display:none;gap:8px;align-items:center;">
+        <input type="text" id="fitDescSaveTitle" maxlength="40" placeholder="Short title to save this text under" style="flex:1;min-width:0;border:1px solid #ddd;border-radius:5px;padding:7px 8px;font-size:14px;font-family:'Barlow',sans-serif;"/>
+        <button type="button" class="ctrl-btn" id="fitDescSaveBtn">Save</button>
+      </div>
+      <div class="ctrl-hint" id="fitDescSaveMsg" style="display:none;margin-top:4px;"></div>
+      <div class="ctrl-hint" id="fitDescDeleteWrap" style="display:none;margin-top:4px;"><a href="#" id="fitDescDeleteLink">Delete this option permanently</a></div>
     </div>
     <div class="text-row">
       <div class="ig"><label>Fine Print</label><input type="text" id="finePrint" value="Grips, slugs & interchangeable thumb systems additional."/></div>
@@ -716,11 +762,18 @@
 
 <button class="btn" onclick="previewFlyer()">Preview Image</button>
 
-<div id="cardWrap">
-  <div id="dragHint" class="ctrl-hint" style="display:none;text-align:center;margin-bottom:10px;">Drag any outlined element to move it, or drag its corner handle to resize it. The footer bar stays fixed. Your layout is remembered the next time you preview — <a href="#" id="resetPositionsBtn">reset positions</a> to start over. Click <strong>Download Images</strong> below when you're happy — it saves a Feed version (Facebook/Instagram posts) and a Story version together.</div>
-  <canvas id="flyerCanvas"></canvas>
-  <button class="btn" id="generateBtn" onclick="generateFinalImage()" style="display:none;margin-top:14px;">Download Images</button>
+</div><!-- /toolsPane -->
+
+<div id="previewPane">
+  <div id="previewPlaceholder"><div>Your flyer preview will appear here.<br>Click <strong>Preview Image</strong> to generate it.</div></div>
+  <div id="cardWrap">
+    <div id="dragHint" class="ctrl-hint" style="display:none;text-align:center;margin-bottom:10px;">Drag any outlined element to move it, or drag any corner or edge handle to resize it freely (hold Shift on a corner to keep proportions). The footer bar stays fixed. Your layout is remembered the next time you preview — <a href="#" id="resetPositionsBtn">reset positions</a> to start over. Click <strong>Download Images</strong> below when you're happy — it saves a Feed version (Facebook/Instagram posts) and a Story version together.</div>
+    <div id="canvasHolder"><canvas id="flyerCanvas"></canvas></div>
+    <button class="btn" id="generateBtn" onclick="generateFinalImage()" style="display:none;margin-top:14px;">Download Images</button>
+  </div>
 </div>
+
+</div><!-- /appLayout -->
 
 <div id="colorPopover" class="color-popover">
   <div class="popover-header">
@@ -1685,6 +1738,7 @@ function updateColorUI(key, hex) {
 // black<->white swap, not a user choice — it must NOT set the flag itself.
 function setColor(key, hex, visited, markCustomized) {
   if (!isValidHex(hex)) return;
+  scheduleLivePreview();
   if (hex.charAt(0) !== '#') hex = '#' + hex;
   hex = hex.toUpperCase();
   if (markCustomized === undefined) markCustomized = true;
@@ -2073,7 +2127,13 @@ function initTextFieldEditButtons() {
         if (fieldEl && fieldEl.readOnly) {
           previewInput.readOnly = true;
         } else if (fieldEl) {
-          previewInput.addEventListener('input', function(e) { fieldEl.value = e.target.value; });
+          previewInput.addEventListener('input', function(e) {
+            fieldEl.value = e.target.value;
+            // Assigning .value fires no event on its own; dispatching one lets
+            // anything watching the real field (e.g. the Callout Description
+            // preset dropdown) notice the change made from inside this modal.
+            fieldEl.dispatchEvent(new Event('input', { bubbles: true }));
+          });
         }
         const previewWrap = document.createElement('div');
         previewWrap.className = 'edit-modal-row';
@@ -2178,7 +2238,38 @@ function initTextFieldEditButtons() {
       !row.hideSwatch
     );
     container.appendChild(trigger);
+
+    // − / + font size buttons (every text field except the footer, which is
+    // always auto-fitted to the full width). Each press changes that field's
+    // size multiplier by 10%; see sizeMul() in the renderer.
+    if (row.key !== 'footer') {
+      const grp = document.createElement('span');
+      grp.className = 'size-btn-group';
+      [['−', -1, 'Decrease font size'], ['+', 1, 'Increase font size']].forEach(function(d) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'size-btn';
+        b.textContent = d[0];
+        b.title = d[2];
+        b.setAttribute('aria-label', d[2] + ' — ' + row.title.replace(/^Edit\s+/, ''));
+        b.addEventListener('click', function() { adjustTextSize(row.key, d[1]); });
+        grp.appendChild(b);
+      });
+      container.appendChild(grp);
+    }
   });
+}
+
+// Per-text-field font size multiplier (1 = default), changed by the − / +
+// buttons next to each text field. Persists for the page session like drag
+// positions do; "Reset positions" clears it too.
+var textSizeMul = {};
+function sizeMul(key) { return textSizeMul[key] || 1; }
+function adjustTextSize(key, dir) {
+  var next = Math.round((sizeMul(key) + dir * 0.1) * 100) / 100;
+  textSizeMul[key] = Math.max(0.4, Math.min(2.5, next));
+  if (isPreviewInteractive) renderFlyerToCanvas(true);
+  else if (typeof scheduleLivePreview === 'function') scheduleLivePreview();
 }
 
 /* ---- Logo slot uploads ---- */
@@ -2711,6 +2802,7 @@ function createLayoutSlotEl(slotIdx, colIdx, rowIdx) {
 }
 
 function renderLayoutBoard() {
+  scheduleLivePreview();
   validateMergeGroups();
 
   const board = document.getElementById('layoutBoard');
@@ -2830,6 +2922,7 @@ function removeCustomElement(id) {
 }
 
 function renderCustomElementsList() {
+  scheduleLivePreview();
   const container = document.getElementById('customElementsList');
   if (!container) return;
   container.innerHTML = '';
@@ -3302,6 +3395,7 @@ function handleBackgroundUpload(e) {
 }
 
 function renderBackgroundPreview() {
+  scheduleLivePreview();
   const btn = document.getElementById('bgUploadBtn');
   const previewWrap = document.getElementById('bgSelectedPreview');
   const preview = document.getElementById('bgUploadPreview');
@@ -3838,6 +3932,10 @@ function initRemovableTextFields() {
     row.parentNode.insertBefore(restoreChip, row.nextSibling);
 
     function setRemoved(isRemoved) {
+      // Some fields have extra controls living just below their row (e.g.
+      // Callout Description's save/delete tools) — hide those too.
+      const extras = document.getElementById(f.id + 'Extras');
+      if (extras) extras.style.display = isRemoved ? 'none' : '';
       if (isRemoved) {
         removedTextFields.add(f.id);
         row.style.display = 'none';
@@ -4335,7 +4433,7 @@ function allDragKeys() {
 
 let elementOffsets = {};
 function ensureElementOffset(key) {
-  if (!elementOffsets[key]) elementOffsets[key] = { x: 0, y: 0, scale: 1 };
+  if (!elementOffsets[key]) elementOffsets[key] = { x: 0, y: 0, sx: 1, sy: 1 };
 }
 function resetElementOffsets() {
   elementOffsets = {};
@@ -4393,8 +4491,8 @@ function transformPoint(px, py, key) {
   const off = elementOffsets[key];
   const piv = elementPivots[key];
   return {
-    x: piv.x + (px - piv.x) * off.scale + off.x,
-    y: piv.y + (py - piv.y) * off.scale + off.y
+    x: piv.x + (px - piv.x) * off.sx + off.x,
+    y: piv.y + (py - piv.y) * off.sy + off.y
   };
 }
 
@@ -4436,7 +4534,7 @@ function applyElementTransform(ctx, key) {
   const piv = elementPivots[key];
   ctx.translate(off.x, off.y);
   ctx.translate(piv.x, piv.y);
-  ctx.scale(off.scale, off.scale);
+  ctx.scale(off.sx, off.sy);
   ctx.translate(-piv.x, -piv.y);
 }
 
@@ -4547,13 +4645,13 @@ function renderFlyerToCanvas(interactive, format, targetCanvas) {
   const CB_ICON_GAP = 46 * CB_SCALE;
   const CB_ICON_DIAM = 154 * CB_SCALE;
   const CB_TEXT_COL_W = CB_WIDTH - CB_PAD_LEFT - CB_PAD_RIGHT - CB_ICON_COL_W - CB_ICON_GAP;
-  const CB_H1_SIZE = 42 * CB_VSCALE;
+  const CB_H1_SIZE = 42 * CB_VSCALE * sizeMul('fitLine1');
   const CB_H1_TRACKING = 8 * CB_VSCALE;
   const CB_H1_GAP = 4 * CB_VSCALE;
-  const CB_H2_SIZE = 49 * CB_VSCALE;
+  const CB_H2_SIZE = 49 * CB_VSCALE * sizeMul('fitLine2');
   const CB_H2_TRACKING = 4 * CB_VSCALE;
   const CB_H2_GAP = 10 * CB_VSCALE;
-  const CB_BODY_SIZE = 30 * CB_VSCALE;
+  const CB_BODY_SIZE = 30 * CB_VSCALE * sizeMul('fitDesc');
   const CB_BODY_LINE_HEIGHT = CB_BODY_SIZE * 1.10;
 
   ctx.font = "500 " + Math.round(CB_BODY_SIZE) + "px 'Montserrat', 'Oswald', sans-serif";
@@ -4601,8 +4699,8 @@ function renderFlyerToCanvas(interactive, format, targetCanvas) {
   // contributes zero height instead of the empty-string/probe-size fallback,
   // so its band collapses too and that space also flows into the grid.
   const TOP_ROWS_SCALE = fmt.topRowsScale;
-  const hSize1 = headline1 ? fitFontSizeToWidth(ctx, headline1, headlineFontFamily, headlineMaxW) * TOP_ROWS_SCALE : 0;
-  const hSize2 = headline2 ? fitFontSizeToWidth(ctx, headline2, headlineFontFamily, headlineMaxW) * TOP_ROWS_SCALE : 0;
+  const hSize1 = headline1 ? fitFontSizeToWidth(ctx, headline1, headlineFontFamily, headlineMaxW) * TOP_ROWS_SCALE * sizeMul('headline1') : 0;
+  const hSize2 = headline2 ? fitFontSizeToWidth(ctx, headline2, headlineFontFamily, headlineMaxW) * TOP_ROWS_SCALE * sizeMul('headline2') : 0;
 
   const HEADER_H = 200 * fmt.textScale;
   const HEADLINE_H = 2 * QUARTER_INCH + hSize1 * CAP_RATIO + (headline1 && headline2 ? LINE_GAP : 0) + hSize2 * CAP_RATIO;
@@ -4623,7 +4721,7 @@ function renderFlyerToCanvas(interactive, format, targetCanvas) {
   // misreads a decimal value like "25.6px" as just "6" and falls back to
   // whatever font was last set on the canvas — producing wildly oversized,
   // overflowing text. Every size fed through fitText must stay an integer.
-  const FINEPRINT_SIZE = Math.round(20 * fmt.textScale);
+  const FINEPRINT_SIZE = Math.round(20 * fmt.textScale * sizeMul('finePrint'));
   const FP_GAP = finePrint ? 10 * CB_VSCALE : 0;
   const FP_H = finePrint ? Math.round(FINEPRINT_SIZE * 1.2) : 0;
   const FP_BOTTOM_MARGIN = finePrint ? 14 * CB_VSCALE : 0; // small close-out so it doesn't touch the border
@@ -4727,7 +4825,7 @@ function renderFlyerToCanvas(interactive, format, targetCanvas) {
     applyElementTransform(ctx, 'tagline');
     ctx.fillStyle = colorState.taglineColor;
     ctx.textAlign = 'center';
-    const taglineW = drawSmallCaps(ctx, tagline, DESIGN_W/2, taglineY + 7, "800 " + Math.round(21 * fmt.textScale) + "px " + fontState.tagline, 5, true);
+    const taglineW = drawSmallCaps(ctx, tagline, DESIGN_W/2, taglineY + 7, "800 " + Math.round(21 * fmt.textScale * sizeMul('tagline')) + "px " + fontState.tagline, 5, true);
     ctx.strokeStyle = colorState.taglineFlankColor; ctx.lineWidth = 3;
     const lineGap = 22 * fmt.textScale, lineLen = 80 * fmt.textScale;
     ctx.beginPath();
@@ -5087,8 +5185,118 @@ function renderFlyerToCanvas(interactive, format, targetCanvas) {
 
   if (interactive) drawDragHandles(ctx);
 
-  document.getElementById('cardWrap').style.display = 'block';
+  showPreviewCard();
   return canvas;
+}
+
+// Desktop (>=1000px) uses a split layout: tools on the left, a sticky
+// full-height preview pane on the right (see the @media block in the CSS).
+// Narrower windows keep the original single column.
+const SPLIT_LAYOUT_MQ = window.matchMedia('(min-width: 1000px)');
+function isSplitLayout() { return SPLIT_LAYOUT_MQ.matches; }
+
+// Sizes the canvas to the largest box that fits its pane while keeping its
+// aspect ratio. Done in JS (as explicit pixel width/height) rather than with
+// CSS max-height tricks so the canvas's on-screen rect is exactly its drawn
+// area — canvasPointToDesign() relies on that for drag/click hit-testing.
+function fitPreviewCanvas() {
+  const canvas = document.getElementById('flyerCanvas');
+  const holder = document.getElementById('canvasHolder');
+  if (!canvas || !holder) return;
+  if (!isSplitLayout()) { canvas.style.width = ''; canvas.style.height = ''; return; }
+  const cw = holder.clientWidth, ch = holder.clientHeight;
+  if (!cw || !ch || !canvas.width || !canvas.height) return;
+  const ratio = canvas.width / canvas.height;
+  let w = cw, h = w / ratio;
+  if (h > ch) { h = ch; w = h * ratio; }
+  canvas.style.width = Math.floor(w) + 'px';
+  canvas.style.height = Math.floor(h) + 'px';
+}
+
+function showPreviewCard() {
+  document.getElementById('cardWrap').style.display = 'block';
+  const pane = document.getElementById('previewPane');
+  if (pane) pane.classList.add('has-preview');
+  fitPreviewCanvas();
+}
+
+// In the split layout the preview is always on screen, so there's nothing to
+// scroll to; only the stacked (narrow) layout needs it.
+function scrollToPreview() {
+  if (isSplitLayout()) return;
+  document.getElementById('cardWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ---- Live preview (desktop split layout only) ----
+// The flyer on the right re-renders itself shortly after anything changes,
+// instead of waiting for a click on Preview Image. Two ways in:
+//  1. Generic: any input/change/click/drop anywhere outside the preview pane
+//     (text typing, dropdowns, checkboxes, modal buttons, layout drags...).
+//  2. Direct: scheduleLivePreview() is also called from the few functions
+//     that finish asynchronously or via custom widgets (image/background
+//     loads, color picker drags via setColor, layout board rebuilds), which
+//     don't reliably produce a DOM event at the moment their data changes.
+// Everything is debounced into one render, and skipped mid-drag on the canvas
+// (the canvas's own dragging already redraws itself).
+// `var` (not let): scheduleLivePreview() is called from functions that can
+// run during page setup, possibly before this line has executed.
+var livePreviewEnabled = false;
+var livePreviewTimer = null;
+var livePreviewFontsLoaded = false;
+
+function scheduleLivePreview() {
+  if (!livePreviewEnabled || !isSplitLayout()) return;
+  clearTimeout(livePreviewTimer);
+  livePreviewTimer = setTimeout(livePreviewRender, 120);
+}
+
+async function livePreviewRender() {
+  if (!isSplitLayout() || activeDrag) return;
+  if (!livePreviewFontsLoaded) {
+    await ensureFontsReady(); // first draw only — later renders reuse the loaded fonts
+    livePreviewFontsLoaded = true;
+  }
+  if (activeDrag) return;
+  const canvas = document.getElementById('flyerCanvas');
+  canvas.classList.add('interactive');
+  renderFlyerToCanvas(true);
+  document.getElementById('dragHint').style.display = 'block';
+  document.getElementById('generateBtn').style.display = 'block';
+  fitPreviewCanvas();
+}
+
+function initPreviewPaneLayout() {
+  const holder = document.getElementById('canvasHolder');
+  if (window.ResizeObserver && holder) new ResizeObserver(fitPreviewCanvas).observe(holder);
+  window.addEventListener('resize', fitPreviewCanvas);
+
+  // Crossing the 1000px breakpoint (resize, or maximizing the window): start
+  // live-previewing when entering the split layout.
+  function onLayoutModeChange() { fitPreviewCanvas(); scheduleLivePreview(); }
+  if (SPLIT_LAYOUT_MQ.addEventListener) SPLIT_LAYOUT_MQ.addEventListener('change', onLayoutModeChange);
+
+  ['input', 'change', 'click', 'drop'].forEach(function(evt) {
+    document.addEventListener(evt, function(e) {
+      const t = e.target;
+      // The preview pane handles its own redraws, and the temporary <a
+      // download> link that Download Images clicks must not flip the finished
+      // image back into editing mode.
+      if (t && t.closest && t.closest('#previewPane, a[download]')) return;
+      scheduleLivePreview();
+    });
+  });
+  // Custom color picker drags (saturation square / hue slider) fire pointer
+  // moves rather than input events.
+  document.addEventListener('pointermove', function(e) {
+    if (e.buttons) scheduleLivePreview();
+  });
+  // A font finishing its download after being picked should redraw with it.
+  if (document.fonts && document.fonts.addEventListener) {
+    document.fonts.addEventListener('loadingdone', scheduleLivePreview);
+  }
+
+  livePreviewEnabled = true;
+  scheduleLivePreview(); // initial draw, so the right-hand pane isn't empty on load
 }
 
 // Size (in design-space px) of the little square resize handle drawn at
@@ -5096,6 +5304,21 @@ function renderFlyerToCanvas(interactive, format, targetCanvas) {
 // gives around it so it's easy to grab with a mouse or a finger.
 const RESIZE_HANDLE_SIZE = 11;
 const RESIZE_HANDLE_HIT_R = 15;
+// Eight handles (corners + edge midpoints). dx/dy say which edge(s) the
+// handle moves: -1 = left/top edge, +1 = right/bottom edge, 0 = that axis
+// is untouched. Edge handles stretch one axis only; corners stretch both
+// freely (hold Shift for proportional).
+const RESIZE_HANDLES = [
+  { dx: -1, dy: -1, cursor: 'nwse-resize' }, { dx: 0, dy: -1, cursor: 'ns-resize' }, { dx: 1, dy: -1, cursor: 'nesw-resize' },
+  { dx: -1, dy: 0, cursor: 'ew-resize' },                                           { dx: 1, dy: 0, cursor: 'ew-resize' },
+  { dx: -1, dy: 1, cursor: 'nesw-resize' },  { dx: 0, dy: 1, cursor: 'ns-resize' },  { dx: 1, dy: 1, cursor: 'nwse-resize' }
+];
+function handlePoint(box, h) {
+  return { x: box.x + box.w * (h.dx + 1) / 2, y: box.y + box.h * (h.dy + 1) / 2 };
+}
+var shiftHeld = false;
+window.addEventListener('keydown', function(e) { if (e.key === 'Shift') shiftHeld = true; });
+window.addEventListener('keyup', function(e) { if (e.key === 'Shift') shiftHeld = false; });
 
 // Draws a dashed outline + resize handle over every currently-draggable
 // element so the user can see what's grabbable/resizable in the preview.
@@ -5115,8 +5338,11 @@ function drawDragHandles(ctx) {
 
     ctx.setLineDash([]);
     const isResizing = isActive && activeDrag.mode === 'resize';
-    ctx.fillStyle = isResizing ? 'rgba(239,65,35,0.95)' : 'rgba(0,123,255,0.9)';
-    ctx.fillRect(box.x + box.w - RESIZE_HANDLE_SIZE / 2, box.y + box.h - RESIZE_HANDLE_SIZE / 2, RESIZE_HANDLE_SIZE, RESIZE_HANDLE_SIZE);
+    RESIZE_HANDLES.forEach(function(h) {
+      const p = handlePoint(box, h);
+      ctx.fillStyle = (isResizing && activeDrag.handle === h) ? 'rgba(239,65,35,0.95)' : 'rgba(0,123,255,0.9)';
+      ctx.fillRect(p.x - RESIZE_HANDLE_SIZE / 2, p.y - RESIZE_HANDLE_SIZE / 2, RESIZE_HANDLE_SIZE, RESIZE_HANDLE_SIZE);
+    });
   });
   ctx.restore();
 }
@@ -5137,9 +5363,11 @@ function hitDragTarget(pt) {
     const key = keys[i];
     const box = getDisplayBox(key);
     if (!box) continue;
-    const hx = box.x + box.w, hy = box.y + box.h;
-    if (Math.abs(pt.x - hx) <= RESIZE_HANDLE_HIT_R && Math.abs(pt.y - hy) <= RESIZE_HANDLE_HIT_R) {
-      return { key: key, mode: 'resize' };
+    for (let j = 0; j < RESIZE_HANDLES.length; j++) {
+      const p = handlePoint(box, RESIZE_HANDLES[j]);
+      if (Math.abs(pt.x - p.x) <= RESIZE_HANDLE_HIT_R && Math.abs(pt.y - p.y) <= RESIZE_HANDLE_HIT_R) {
+        return { key: key, mode: 'resize', handle: RESIZE_HANDLES[j] };
+      }
     }
   }
   for (let i = keys.length - 1; i >= 0; i--) {
@@ -5263,9 +5491,17 @@ function initCanvasDragging() {
     const clientPt = clientPointFromEvent(e);
     if (hit) {
       if (hit.mode === 'resize') {
-        const piv = elementPivots[hit.key];
-        const startDist = Math.hypot(pt.x - piv.x, pt.y - piv.y) || 1;
-        activeDrag = { key: hit.key, mode: 'resize', pivot: piv, startDist: startDist, startScale: elementOffsets[hit.key].scale, downClientX: clientPt.x, downClientY: clientPt.y, downPt: pt, moved: false };
+        const off0 = elementOffsets[hit.key];
+        const box0 = getDisplayBox(hit.key);
+        // The edge/corner opposite the grabbed handle stays pinned in place
+        // while the grabbed side follows the pointer.
+        activeDrag = {
+          key: hit.key, mode: 'resize', handle: hit.handle,
+          anchorX: hit.handle.dx === 1 ? box0.x : box0.x + box0.w,
+          anchorY: hit.handle.dy === 1 ? box0.y : box0.y + box0.h,
+          startSx: off0.sx, startSy: off0.sy, startW: box0.w, startH: box0.h,
+          downClientX: clientPt.x, downClientY: clientPt.y, downPt: pt, moved: false
+        };
       } else {
         activeDrag = { key: hit.key, mode: 'move', lastX: pt.x, lastY: pt.y, downClientX: clientPt.x, downClientY: clientPt.y, downPt: pt, moved: false };
       }
@@ -5294,7 +5530,7 @@ function initCanvasDragging() {
       const pt = pointFromEvent(e);
       const dragHit = hitDragTarget(pt);
       if (dragHit && dragHit.mode === 'resize') {
-        canvas.style.cursor = 'nwse-resize';
+        canvas.style.cursor = dragHit.handle.cursor;
         hideEditTooltip();
         return;
       }
@@ -5323,9 +5559,29 @@ function initCanvasDragging() {
       if (Math.hypot(dx, dy) > CLICK_DRAG_THRESHOLD_PX) activeDrag.moved = true;
     }
     if (activeDrag.mode === 'resize') {
-      const dist = Math.hypot(pt.x - activeDrag.pivot.x, pt.y - activeDrag.pivot.y) || 1;
-      const newScale = activeDrag.startScale * (dist / activeDrag.startDist);
-      elementOffsets[activeDrag.key].scale = Math.max(0.3, Math.min(3, newScale));
+      const d = activeDrag, h = d.handle, key = d.key;
+      const off = elementOffsets[key], piv = elementPivots[key], b = elementBounds[key];
+      const MIN_S = 0.2, MAX_S = 5;
+      let sx = d.startSx, sy = d.startSy;
+      if (h.dx !== 0) sx = d.startSx * (Math.abs(pt.x - d.anchorX) / (d.startW || 1));
+      if (h.dy !== 0) sy = d.startSy * (Math.abs(pt.y - d.anchorY) / (d.startH || 1));
+      // Shift (or a corner on a proportional-only element) keeps aspect.
+      if (h.dx !== 0 && h.dy !== 0 && shiftHeld) {
+        const f = Math.max(sx / d.startSx, sy / d.startSy);
+        sx = d.startSx * f; sy = d.startSy * f;
+      }
+      sx = Math.max(MIN_S, Math.min(MAX_S, sx));
+      sy = Math.max(MIN_S, Math.min(MAX_S, sy));
+      off.sx = sx; off.sy = sy;
+      // Re-solve the offset so the anchored edge doesn't move.
+      if (h.dx !== 0) {
+        const bx = h.dx === 1 ? b.x : b.x + b.w;
+        off.x = d.anchorX - piv.x - (bx - piv.x) * sx;
+      }
+      if (h.dy !== 0) {
+        const by = h.dy === 1 ? b.y : b.y + b.h;
+        off.y = d.anchorY - piv.y - (by - piv.y) * sy;
+      }
     } else {
       elementOffsets[activeDrag.key].x += pt.x - activeDrag.lastX;
       elementOffsets[activeDrag.key].y += pt.y - activeDrag.lastY;
@@ -5379,13 +5635,15 @@ async function previewFlyer() {
   renderFlyerToCanvas(true);
   document.getElementById('dragHint').style.display = 'block';
   document.getElementById('generateBtn').style.display = 'block';
-  document.getElementById('cardWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  fitPreviewCanvas(); // hint + button just became visible, which changes the room left for the canvas
+  scrollToPreview();
 }
 
 // Puts every element's position/size back to its computed default without
 // touching any text, colors, or images — just the drag/resize state.
 function resetPositions() {
   resetElementOffsets();
+  textSizeMul = {};
   activeDrag = null;
   if (isPreviewInteractive) renderFlyerToCanvas(true);
 }
@@ -5427,10 +5685,124 @@ function generateFinalImage() {
   triggerDownload(feedPng, 'pure-it-bowling-flyer-feed.png');
   logToCloudinary(feedPng, CLOUDINARY_GENERATED_FLYERS_PRESET);
 
-  document.getElementById('cardWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  fitPreviewCanvas(); // the drag hint just hid, freeing up vertical room
+  scrollToPreview();
+}
+
+// ---- Callout Description presets (title -> text; all deletable) ----
+var CALLOUT_DESC_DEFAULT = { title: 'Free Standard Drilling', text: 'Pre-order from Pure It Bowling and receive FREE standard drilling.' };
+var CALLOUT_DESC_STORE_KEY = 'pureItCalloutDescriptions';      // v1: only user-saved items
+var CALLOUT_DESC_STORE_KEY_V2 = 'pureItCalloutDescriptionsV2'; // v2: the full list, defaults included
+function loadCalloutDescs() {
+  try {
+    var raw = localStorage.getItem(CALLOUT_DESC_STORE_KEY_V2);
+    if (raw !== null) {
+      var a = JSON.parse(raw);
+      return Array.isArray(a) ? a.filter(function(x) { return x && x.title && x.text; }) : [];
+    }
+    // First run on v2: seed with the default plus anything saved earlier.
+    var old = [];
+    try { old = JSON.parse(localStorage.getItem(CALLOUT_DESC_STORE_KEY) || '[]'); } catch (e) {}
+    old = Array.isArray(old) ? old.filter(function(x) { return x && x.title && x.text; }) : [];
+    return [CALLOUT_DESC_DEFAULT].concat(old);
+  } catch (e) { return [CALLOUT_DESC_DEFAULT]; }
+}
+function storeCalloutDescs(list) {
+  try { localStorage.setItem(CALLOUT_DESC_STORE_KEY_V2, JSON.stringify(list)); return true; }
+  catch (e) { return false; }
+}
+function initCalloutDescriptionPresets() {
+  var sel = document.getElementById('fitDescPreset');
+  var field = document.getElementById('fitDesc');
+  if (!sel || !field) return;
+  var saveRow = document.getElementById('fitDescSaveRow');
+  var saveTitle = document.getElementById('fitDescSaveTitle');
+  var saveBtn = document.getElementById('fitDescSaveBtn');
+  var msg = document.getElementById('fitDescSaveMsg');
+  var delWrap = document.getElementById('fitDescDeleteWrap');
+  var delLink = document.getElementById('fitDescDeleteLink');
+  var textHint = document.getElementById('fitDescPresetText');
+  var items = loadCalloutDescs();
+
+  function say(t) {
+    msg.textContent = t || '';
+    msg.style.display = t ? '' : 'none';
+  }
+  function build(selectedVal) {
+    sel.innerHTML = '';
+    items.forEach(function(p, i) {
+      var o = document.createElement('option');
+      o.value = 'i:' + i; o.textContent = p.title; sel.appendChild(o);
+    });
+    var c = document.createElement('option');
+    c.value = 'custom'; c.textContent = 'Custom text…'; sel.appendChild(c);
+    sel.value = selectedVal;
+  }
+  function lookup(val) {
+    return val.indexOf('i:') === 0 ? items[+val.slice(2)] : null;
+  }
+  function refreshUI() {
+    var isCustom = sel.value === 'custom';
+    field.style.display = isCustom ? '' : 'none';
+    saveRow.style.display = isCustom ? 'flex' : 'none';
+    var p = lookup(sel.value);
+    textHint.style.display = p ? '' : 'none';
+    textHint.textContent = p ? p.text : '';
+    delWrap.style.display = p ? '' : 'none';
+  }
+  function setField(text) {
+    field.value = text;
+    field.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  function syncFromField() {
+    var t = field.value, val = 'custom';
+    items.some(function(p, i) { if (p.text === t) { val = 'i:' + i; return true; } });
+    build(val); refreshUI();
+  }
+
+  sel.addEventListener('change', function() {
+    say('');
+    var p = lookup(sel.value);
+    if (p) setField(p.text);
+    refreshUI();
+    if (sel.value === 'custom') field.focus();
+  });
+  saveBtn.addEventListener('click', function() {
+    var title = saveTitle.value.trim(), text = field.value.trim();
+    if (!text) { say('Type some text first.'); return; }
+    if (!title) { say('Enter a short title to save it under.'); return; }
+    var existing = -1;
+    items.forEach(function(p, i) { if (p.title.toLowerCase() === title.toLowerCase()) existing = i; });
+    if (existing >= 0) items[existing] = { title: title, text: text };
+    else items.push({ title: title, text: text });
+    if (!storeCalloutDescs(items)) say('Could not save (browser storage unavailable). It will still work for this session.');
+    else say('Saved as “' + title + '”.');
+    build('i:' + (existing >= 0 ? existing : items.length - 1)); refreshUI();
+    saveTitle.value = '';
+  });
+  delLink.addEventListener('click', function(e) {
+    e.preventDefault();
+    var p = lookup(sel.value);
+    if (!p) return;
+    if (!confirm('Permanently delete “' + p.title + '”? This can’t be undone.')) return;
+    items.splice(+sel.value.slice(2), 1);
+    storeCalloutDescs(items);
+    if (items.length) { build('i:0'); setField(items[0].text); }
+    else { build('custom'); }   // nothing left: keep the current text as Custom
+    refreshUI();
+    say('Deleted.');
+  });
+  field.addEventListener('input', function() {
+    if (sel.value !== 'custom') syncFromField();
+  });
+  // Start on the first option (the flyer's text follows it) unless the
+  // field already holds different text.
+  if (items.length && field.value === CALLOUT_DESC_DEFAULT.text && items[0].text !== field.value) setField(items[0].text);
+  syncFromField();
 }
 
 window.addEventListener('DOMContentLoaded', function() {
+  initCalloutDescriptionPresets();
   buildLayoutTemplateGallery();
   renderSlots();
   initColorControls();
@@ -5442,6 +5814,7 @@ window.addEventListener('DOMContentLoaded', function() {
   initImageLibraryControls();
   initRemovableTextFields();
   initCanvasDragging();
+  initPreviewPaneLayout();
   initCustomElementControls();
   document.getElementById('resetPositionsBtn').addEventListener('click', function(e) {
     e.preventDefault();
