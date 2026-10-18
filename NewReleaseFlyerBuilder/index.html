@@ -331,7 +331,7 @@
   .pibg-box{max-width:none;width:100vw;height:100vh;max-height:none;border-radius:0;display:flex;flex-direction:column;overflow:hidden;}
   .pibg-layout{display:flex;gap:20px;align-items:stretch;flex:1;min-height:0;}
   .pibg-controls{width:clamp(300px,30vw,400px);flex-shrink:0;overflow-y:auto;padding-right:6px;}
-  .pibg-preview-col{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;container-type:size;background:#eee;border-radius:8px;padding:10px;}
+  .pibg-preview-col{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;container-type:size;background:#eee;border-radius:8px;padding:10px;position:relative;}
   @media (max-width:760px){
     .pibg-box{overflow-y:auto;}
     .pibg-layout{flex-direction:column-reverse;flex:none;}
@@ -339,7 +339,7 @@
     .pibg-preview-col{width:100%;display:block;container-type:normal;padding:0;background:none;}
     .pibg-preview{width:100% !important;}
   }
-  .pibg-preview{position:relative;width:min(100cqw, calc(100cqh * 8.5 / 11));aspect-ratio:8.5/11;border-radius:8px;overflow:hidden;background:#1a1a1a;border:1px solid #ddd;box-shadow:0 6px 24px rgba(0,0,0,.25);}
+  .pibg-preview{position:relative;width:min(100cqw, calc((100cqh - 20px) * 8.5 / 11));aspect-ratio:8.5/11;border-radius:8px;overflow:hidden;background:#1a1a1a;border:1px solid #ddd;box-shadow:0 6px 24px rgba(0,0,0,.25);}
   .pibg-preview canvas{width:100%;height:100%;border-radius:0;display:block;background:#1a1a1a;}
   .pibg-preview-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:#777;font-size:11px;padding:14px;line-height:1.4;}
   .pibg-busy{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(255,255,255,0.12);display:none;}
@@ -365,6 +365,7 @@
   .pibg-secondary{border:1px solid #ddd;border-radius:8px;padding:10px;background:#fafafa;color:#666;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;font-family:'Barlow',sans-serif;}
   .pibg-variation{width:100%;margin-top:8px;}
   .pibg-status{font-size:11px;color:#888;margin-top:8px;min-height:15px;}
+  @media (min-width:761px){.pibg-status{position:absolute;left:12px;bottom:3px;margin:0;}}
   .pibg-ball-row{flex-wrap:wrap;}
   .pibg-ball{position:relative;width:56px;height:56px;border-radius:7px;border:1px solid #e6e6e6;background:#fafafa;}
   .pibg-ball img{width:100%;height:100%;object-fit:contain;display:block;border-radius:7px;}
@@ -455,7 +456,7 @@
 <div id="appLayout">
 <div id="toolsPane">
 
-<div class="page-title">Pure It Bowling — Flyer Generator</div>
+<div class="page-title">Pure It Bowling — Flyer Generator <span id="appVersion" title="Tool version" style="font-size:10px;font-weight:600;letter-spacing:.04em;color:#aaa;text-transform:none;margin-left:6px;">v2.0 · Oct 17, 2026</span></div>
 
 <div class="card collapsible" id="colorSection">
   <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')">
@@ -527,6 +528,16 @@
             <button type="button" data-v="minimal">Minimal</button>
             <button type="button" data-v="flame">Flame</button>
             <button type="button" data-v="geo">Geometric</button>
+            <button type="button" data-v="watercolor">Watercolor</button>
+            <button type="button" data-v="smoke">Smoke</button>
+            <button type="button" data-v="streaks">Light Trails</button>
+            <button type="button" data-v="stripes">Stripes</button>
+            <button type="button" data-v="topo">Topo</button>
+            <button type="button" data-v="halftone">Halftone</button>
+            <button type="button" data-v="glow">Glow</button>
+            <button type="button" data-v="shatter">Shatter</button>
+            <button type="button" data-v="paint">Paint</button>
+            <button type="button" data-v="electric">Electric</button>
           </div>
 
           <span class="pibg-label">Layout</span>
@@ -555,8 +566,13 @@
               <span class="pibg-label">Motif</span>
               <select id="pibgMotif">
                 <option value="arcs">Portal Arcs</option>
-                <option value="waves">Flowing Waves</option>
+                <option value="rays">Light Rays</option>
+                <option value="orbs">Soft Orbs</option>
               </select>
+            </div>
+            <div id="pibgSubWrap" style="display:none;">
+              <span class="pibg-label">Variation</span>
+              <select id="pibgSub"></select>
             </div>
             <div>
               <span class="pibg-label">Base Color</span>
@@ -575,6 +591,10 @@
             <label class="pibg-check"><input type="checkbox" id="pibgHex"/> Hex Pattern</label>
             <label class="pibg-check" id="pibgPopWrap"><input type="checkbox" id="pibgPop"/> Use Logo Color As Accent <span class="pibg-mini" id="pibgPopSwatch"></span></label>
           </div>
+
+          <span class="pibg-label">Edge Blend <span id="pibgBlendVal" style="text-transform:none;color:#aaa;font-weight:600;">Default</span></span>
+          <input type="range" id="pibgBlend" min="0" max="1" step="0.05" value="0.3"/>
+          <div class="ctrl-hint" style="display:flex;justify-content:space-between;margin-top:-2px;"><span>Hard edge</span><span>Soft fade</span></div>
 
           <span class="pibg-label"><span id="pibgOpenLbl">Open Center</span> <span id="pibgOpenVal" style="text-transform:none;color:#aaa;font-weight:600;">Default</span></span>
           <input type="range" id="pibgOpen" min="0.85" max="1.15" step="0.05" value="1"/>
@@ -5963,25 +5983,53 @@ var PIBG = (function () {
     var n = list.length / 3, step = Math.max(1, Math.floor(n / 25000)), px = [];
     for (var p = 0; p < n; p += step) px.push(list[p * 3], list[p * 3 + 1], list[p * 3 + 2]);
     px = new Float32Array(px);
-    var cols = kmeans(px, px.length / 3, 8, new RNG(7)).map(function (c) {
+    var cols = kmeans(px, px.length / 3, 12, new RNG(7)).map(function (c) {
       var hsv = rgb2hsv(c.rgb); return { rgb: c.rgb, w: c.w, h: hsv[0], s: hsv[1], v: hsv[2] };
     });
-    function hdist(a, b) { var d = Math.abs(a - b); return Math.min(d, 1 - d); }
-    var chroma = cols.filter(function (c) { return c.s > 0.30 && c.v > 0.22; }).sort(function (a, b) { return b.w - a.w; });
+    // Colors are grouped in HSV-cone space (not hue alone), so a pale tan and a vivid orange of the
+    // same hue stay separate colors instead of merging into one.
+    function cone(c) { var sv = c.s * c.v, a = c.h * 6.2832; return [sv * Math.cos(a), sv * Math.sin(a), c.v]; }
+    function cd(a, b) { var A = cone(a), B = cone(b); return Math.hypot(A[0] - B[0], A[1] - B[1], (A[2] - B[2]) * 0.6); }
+    function same(a, b) {   // same color family: close hue AND similar saturation/brightness (shaded orange merges with bright orange; pale tan stays separate)
+      var dh = Math.abs(a.h - b.h); dh = Math.min(dh, 1 - dh);
+      return dh < 0.06 && Math.abs(a.s - b.s) < 0.2 && Math.abs(a.v - b.v) < 0.45;
+    }
+    var chroma = cols.filter(function (c) { return c.s > 0.16 && c.v > 0.30; }).sort(function (a, b) { return b.w - a.w; });
     var fams = [];
     chroma.forEach(function (c) {
-      for (var i = 0; i < fams.length; i++) if (hdist(fams[i].h, c.h) < 0.06) { fams[i].w += c.w; fams[i].members.push(c); return; }
-      fams.push({ h: c.h, w: c.w, members: [c] });
+      for (var i = 0; i < fams.length; i++) if (same(fams[i].lead, c)) { fams[i].w += c.w; fams[i].members.push(c); return; }
+      fams.push({ lead: c, h: c.h, w: c.w, members: [c] });
     });
     function rep(f) {  // dominant member's hue (a red family doesn't drift to rust)
       var m = f.members.reduce(function (a, b) { return b.w * b.s > a.w * a.s ? b : a; });
       var v = Math.min(1, Math.max(0.70, m.v * 1.15));
-      if (m.h >= 25 / 360 && m.h <= 65 / 360 && m.s > 0.5) v = Math.max(v, 0.88);   // golds read brown otherwise
+      if (m.h >= 25 / 360 && m.h <= 65 / 360 && m.s > 0.5) v = Math.max(v, 0.88);
+      if (m.s > 0.55) v = Math.max(v, 0.9);   // vivid colors (orange, red...) read dull if left at their shaded average   // golds read brown otherwise
       return adj(m.rgb, { s: 1.12, v_abs: v });
     }
-    var body = fams.filter(function (f) { return f.w >= 0.05; }).sort(function (a, b) { return b.w - a.w; });
-    var pops = fams.filter(function (f) { return f.w >= 0.004 && f.w < 0.05 && Math.max.apply(null, f.members.map(function (m) { return m.s; })) > 0.6; });
-    var pal = { accents: body.slice(0, 3).map(rep), pop: pops.length ? rep(pops[0]) : null };
+    function score(f) { var m = f.lead; return f.w * (0.4 + m.s); }   // big AND vivid areas rank first
+    var body = fams.filter(function (f) { return f.w >= 0.04; }).sort(function (a, b) { return score(b) - score(a); });
+    var pops = fams.filter(function (f) { return f.w >= 0.004 && f.w < 0.04 && Math.max.apply(null, f.members.map(function (m) { return m.s; })) > 0.6; });
+    var picked = [];
+    body.forEach(function (f) {   // skip a family whose final color nearly duplicates one already chosen
+      if (picked.length >= 3) return;
+      var c = rep(f), q = rgb2hsv(c);
+      for (var pi = 0; pi < picked.length; pi++) {
+        var r = rgb2hsv(picked[pi]), dh = Math.abs(r[0] - q[0]); dh = Math.min(dh, 1 - dh);
+        if (dh < 0.045 && Math.abs(r[1] - q[1]) < 0.22) { if (q[1] * q[2] > r[1] * r[2] + 0.04) picked[pi] = c; return; }   // keep the more vivid one
+      }
+      picked.push(c);
+    });
+    var pal = { accents: picked, pop: pops.length ? rep(pops[0]) : null };
+    // the deep/black part of the ball becomes a color too (lifted just enough to show on a dark page)
+    var darks = cols.filter(function (c) { return c.v <= 0.30; }), dw = darks.reduce(function (s, c) { return s + c.w; }, 0);
+    if (pal.accents.length && pal.accents.length < 3 && dw >= 0.07) {
+      var dr = 0, dg = 0, db = 0;
+      darks.forEach(function (c) { dr += c.rgb[0] * c.w; dg += c.rgb[1] * c.w; db += c.rgb[2] * c.w; });
+      var dh = rgb2hsv([dr / dw, dg / dw, db / dw]), dcol = adj([dr / dw, dg / dw, db / dw], { s: Math.min(1, dh[1] * 1.15), v_abs: Math.max(0.36, dh[2] * 1.3) });
+      var dd = rgb2hsv(dcol);
+      if (!pal.accents.some(function (a) { var q = rgb2hsv(a); return cd({ h: q[0], s: q[1], v: q[2] }, { h: dd[0], s: dd[1], v: dd[2] }) < 0.2; })) pal.accents.push(dcol);
+    }
     var greys = cols.filter(function (c) { return c.s <= 0.30 && c.v > 0.40 && c.v < 0.97; });
     pal.silver = greys.length ? adj(greys.reduce(function (a, b) { return b.w * b.v * b.v > a.w * a.v * a.v ? b : a; }).rgb, { s: 0.5, v: 1.1 }) : [0.74, 0.74, 0.77];
     pal.hasSilver = greys.reduce(function (s, c) { return s + c.w; }, 0) > 0.22;   // white logos + glare stay under this
@@ -6121,6 +6169,11 @@ var PIBG = (function () {
     this.open = o; this.edge = Math.min(0.9, Math.max(0.4, 0.57 + (o - 1) * 0.7)); this.shift = this.edge - 0.43;
   };
   // lower bound for |s| when placing bars/lines: corner layout keeps them in the corners, full layout anywhere
+  // Blend slider (0 = hard edge, 1 = very soft) -> width multiplier for the fade into the open center; 0.3 = the original look
+  Flyer.prototype.bf = function () {
+    var b = this.blend == null ? 0.3 : this.blend;
+    return b <= 0.3 ? 0.12 + 0.88 * (b / 0.3) : 1 + (b - 0.3) / 0.7 * 2.2;
+  };
   Flyer.prototype.sLo = function (lo, cap) { return this.layout === 'full' ? 0.02 : Math.min(lo + this.shift, cap); };
   Flyer.prototype.px = function (i) { return ((i % this.W) - this.W / 2) / (this.W / 2); };
   Flyer.prototype.py = function (i) { return (Math.floor(i / this.W) - this.H / 2) / (this.H / 2); };
@@ -6180,7 +6233,8 @@ var PIBG = (function () {
       for (var j = 0; j < this.N_; j++) out[j] = 0.55 + 0.45 * smoothstep(0.2, 0.8, n[j]);
       return out;
     }
-    inner += this.shift; outer = Math.min(outer + this.shift, 1.05);
+    var bfv = this.bf(), span = (outer - inner) * (bfv - 1) * 0.5;
+    inner += this.shift - span; outer = Math.min(outer + this.shift + span, 1.12); if (outer <= inner + 0.004) outer = inner + 0.004;
     for (var i = 0; i < this.N_; i++) {
       var nn = n[i] - 0.5, diag = smoothstep(inner, outer, Math.abs(this.s[i]) + wobble * nn);
       var px = this.px(i), py = this.py(i) * 0.92, e = Math.sqrt(px * px + py * py);
@@ -6262,6 +6316,89 @@ var PIBG = (function () {
       C.R[i] = (color[0] * (1 - sp) + c2[0] * sp) * sh; C.G[i] = (color[1] * (1 - sp) + c2[1] * sp) * sh; C.B[i] = (color[2] * (1 - sp) + c2[2] * sp) * sh;
     }
     this.over(C, A);
+  };
+  // Real bristle brush strokes: each stroke is a bundle of bristles that follow a gently curving path,
+  // with per-bristle streaks, ragged dry-brush ends and a tapered start. Positions/textures are hash-based,
+  // so the small preview matches the full render.
+  Flyer.prototype.brushStrokes = function (mask, colors, o) {
+    o = o || {};
+    var W = this.W, H = this.H, k = this.k, N = this.N_, count = o.count || 30;
+    var rng = new RNG(this.rng.int(1, 2147483647)), seed0 = rng.int(1, 2147483647);
+    var SA = new Float32Array(N), SS = new Float32Array(N), R = this.R, G = this.G, B = this.B;
+    function bnoise(sd, f, freq) {          // smooth 1-D hash noise, f in [0,1]
+      var q = f * freq, i = Math.floor(q), u = q - i; u = u * u * (3 - 2 * u);
+      return hash3(sd, i, 7) * (1 - u) + hash3(sd, i + 1, 7) * u;
+    }
+    for (var si = 0; si < count; si++) {
+      var x0 = 0, y0 = 0, tries = 0;
+      do { x0 = rng.random() * W; y0 = rng.random() * H; tries++; } while (rng.random() > mask[(y0 | 0) * W + (x0 | 0)] && tries < 300);
+      var bw = rng.uniform(55, 190) * k, L = rng.uniform(550, 1500) * k;
+      var th = (rng.random() < 0.8 ? -Math.PI / 4 : Math.PI / 4) + rng.normal() * 0.38, bend = rng.uniform(-0.7, 0.7);
+      var col = colors[rng.choice(o.weights || colors.map(function () { return 1 / colors.length; }))];
+      var sd = seed0 + si * 101, sd2 = sd + 31, sd3 = sd + 57;
+      var nb = Math.max(14, Math.round(bw / Math.max(1, 1.1 * k))), steps = Math.max(40, Math.round(L / Math.max(1, 0.9 * k)));
+      var minx = W, maxx = 0, miny = H, maxy = 0, tilt = rng.uniform(-0.12, 0.12);
+      var bril = [], dry = [], len = [];
+      for (var j = 0; j < nb; j++) {
+        var f = j / (nb - 1), edge = Math.abs(2 * f - 1);
+        bril.push(0.35 + 0.65 * (0.6 * bnoise(sd, f, 40) + 0.4 * bnoise(sd2, f, 9)));
+        dry.push(bnoise(sd3, f, 55));
+        len.push((0.62 + 0.38 * bnoise(sd2 + 5, f, 22)) * (1 - 0.28 * Math.pow(edge, 3)));
+      }
+      for (var s = 0; s < steps; s++) {
+        var t = s / (steps - 1), hd = th + bend * (t - 0.5), cs = Math.cos(hd), sn = Math.sin(hd);
+        // centerline: integrate the heading (closed form for a linear heading change)
+        var a0 = th - bend / 2, small = Math.abs(bend) < 1e-3;
+        var cx = x0 + L * (small ? t * Math.cos(th) : (Math.sin(a0 + bend * t) - Math.sin(a0)) / bend);
+        var cy = y0 + L * (small ? t * Math.sin(th) : (Math.cos(a0) - Math.cos(a0 + bend * t)) / bend);
+        var wid = bw * (0.5 + 0.5 * smoothstep(0, 0.14, t)) * (1 + tilt * (t - 0.5));
+        for (var j2 = 0; j2 < nb; j2++) {
+          var f2 = j2 / (nb - 1), off = (f2 - 0.5) * wid;
+          var lj = len[j2];
+          var press = smoothstep(0, 0.045, t) * (1 - smoothstep(lj - 0.22, lj, t));
+          if (press <= 0) continue;
+          var a = press * (dry[j2] > 0.3 + 0.7 * t * t ? 1 : 0.22 + 0.5 * (1 - t));
+          if (a < 0.04) continue;
+          var px = Math.round(cx - sn * off), py = Math.round(cy + cs * off);
+          if (px < 1 || py < 1 || px >= W - 1 || py >= H - 1) continue;
+          var shade = (0.62 + 0.55 * bril[j2]) * (1.06 - 0.16 * t), o0 = py * W + px;
+          if (a > SA[o0]) { SA[o0] = a; SS[o0] = shade; }
+          var a2 = a * 0.55, nbs = [o0 - 1, o0 + 1, o0 - W, o0 + W];
+          for (var q = 0; q < 4; q++) if (a2 > SA[nbs[q]]) { SA[nbs[q]] = a2; SS[nbs[q]] = shade; }
+          if (px < minx) minx = px; if (px > maxx) maxx = px; if (py < miny) miny = py; if (py > maxy) maxy = py;
+        }
+      }
+      minx = Math.max(0, minx - 1); miny = Math.max(0, miny - 1); maxx = Math.min(W - 1, maxx + 1); maxy = Math.min(H - 1, maxy + 1);
+      for (var yy = miny; yy <= maxy; yy++) for (var xx = minx; xx <= maxx; xx++) {
+        var oo = yy * W + xx, aa = SA[oo]; if (aa <= 0) continue;
+        aa *= Math.min(1, mask[oo] * 1.6) * (o.alpha || 0.95); var sh = SS[oo];
+        R[oo] += (clamp01(col[0] * sh) - R[oo]) * aa; G[oo] += (clamp01(col[1] * sh) - G[oo]) * aa; B[oo] += (clamp01(col[2] * sh) - B[oo]) * aa;
+        SA[oo] = 0;
+      }
+    }
+  };
+  // Hard-edged bokeh orbs: soft glowing discs with a brighter rim
+  Flyer.prototype.orbs = function (weight, colors, o) {
+    o = o || {};
+    var W = this.W, H = this.H, k = this.k, R = this.R, G = this.G, B = this.B;
+    var rng = new RNG(this.rng.int(1, 2147483647)), n = o.count || 60;
+    for (var q = 0; q < n; q++) {
+      var x = 0, y = 0, tries = 0;
+      do { x = rng.random() * W; y = rng.random() * H; tries++; } while (rng.random() > weight[(y | 0) * W + (x | 0)] && tries < 300);
+      var r = (20 + 190 * Math.pow(rng.random(), 2.1)) * k, col = colors[rng.int(0, colors.length)];
+      var fill = rng.uniform(0.07, 0.22), rim = rng.uniform(0.25, 0.7), soft = Math.max(1.2, r * rng.uniform(0.05, 0.22));
+      var x0 = Math.max(0, Math.floor(x - r - soft * 2)), x1 = Math.min(W - 1, Math.ceil(x + r + soft * 2));
+      var y0 = Math.max(0, Math.floor(y - r - soft * 2)), y1 = Math.min(H - 1, Math.ceil(y + r + soft * 2));
+      var wt = weight[Math.min(H - 1, y | 0) * W + Math.min(W - 1, x | 0)];
+      for (var yy = y0; yy <= y1; yy++) for (var xx = x0; xx <= x1; xx++) {
+        var d = Math.sqrt((xx - x) * (xx - x) + (yy - y) * (yy - y));
+        var inside = 1 - smoothstep(r - soft, r + soft, d);
+        var ring = Math.exp(-Math.pow((d - r * 0.93) / (soft * 1.1), 2));
+        var a = clamp01((fill * inside + rim * ring * 0.8) * (0.4 + 0.6 * wt)); if (a <= 0.003) continue;
+        var o2 = yy * W + xx;
+        R[o2] = 1 - (1 - R[o2]) * (1 - col[0] * a); G[o2] = 1 - (1 - G[o2]) * (1 - col[1] * a); B[o2] = 1 - (1 - B[o2]) * (1 - col[2] * a);
+      }
+    }
   };
   Flyer.prototype.band = function (s0, width, color, alpha, erode, tfade, sheen) {
     var soft = 0.002, A = new Float32Array(this.N_), useSheen = sheen > 0;
@@ -6378,13 +6515,14 @@ var PIBG = (function () {
       var dim = Math.min(0.95, Math.max(0.5, 0.86 + (this.open - 1) * 1.2)), rad = 0.95 + (this.open - 1) * 0.8;
       for (var j = 0; j < this.N_; j++) {
         var px = this.px(j), py = this.py(j), e = Math.sqrt(px * px / 0.75 + py * py / 0.8) / rad + 0.08 * (n[j] - 0.5);
-        var kp = dim * (1 - smoothstep(0.32, 1.05, e)); if (kp <= 0) continue;
+        var kp = dim * (1 - smoothstep(Math.max(0.02, 0.685 - 0.365 * this.bf()), 0.685 + 0.365 * this.bf(), e)); if (kp <= 0) continue;
         this.R[j] += (this.baseR[j] - this.R[j]) * kp; this.G[j] += (this.baseG[j] - this.G[j]) * kp; this.B[j] += (this.baseB[j] - this.B[j]) * kp;
       }
       return;
     }
+    var bw = this.bf();
     for (var i = 0; i < this.N_; i++) {
-      var keep = 1 - smoothstep(this.edge - 0.05, this.edge + 0.015, Math.abs(this.s[i]) + 0.06 * (n[i] - 0.5));
+      var keep = 1 - smoothstep(this.edge - 0.05 * bw, this.edge + 0.015 * bw, Math.abs(this.s[i]) + 0.06 * Math.sqrt(bw) * (n[i] - 0.5));
       if (keep <= 0) continue;
       this.R[i] += (this.baseR[i] - this.R[i]) * keep; this.G[i] += (this.baseG[i] - this.G[i]) * keep; this.B[i] += (this.baseB[i] - this.B[i]) * keep;
     }
@@ -6432,7 +6570,8 @@ var PIBG = (function () {
     prog(0.5);
     if (o.fill === 'brush' || o.fill === 'mix') {
       var c2 = p2 || (useSilver ? silver : null);
-      F.brush(reg, p, c2, split, 0.9, o.fill === 'brush' ? 0.62 : 0.45, p3 || null);
+      var bcols = [p, c2 || adj(p, { v: 0.62 }), p3 || mix(p, WHITE, 0.22), adj(p, { v: 0.5 }), DARK];
+      F.brushStrokes(reg, bcols, { count: o.fill === 'brush' ? 34 : 20, weights: [0.38, 0.2, 0.12, 0.18, 0.12], alpha: 0.95 });
     }
     prog(0.6);
     if (o.hex) {
@@ -6519,21 +6658,41 @@ var PIBG = (function () {
           F.line(s0, mix(p, WHITE, 0.5), 1.6, 0.3, 5, [t0, t0 + side * 0.35]);
         }
       });
-    } else {
-      var waveStops = function (c) {
-        var light = mix(hot(c, 0.85), WHITE, 0.12);
-        return [[0, hot(c)], [0.02, light], [0.05, hot(c)], [0.10, c], [0.112, DARK], [0.17, DARK], [0.182, c], [0.25, hot(c)], [0.29, light], [0.35, c],
-          [0.362, DARK], [0.41, DARK], [0.422, adj(c, { v: 0.6 })], [0.55, c], [0.62, light], [0.70, c], [0.8, adj(c, { v: 0.45 })], [1, c]];
-      };
-      [-1, 1].forEach(function (side, j) {
-        var se = rng.uniform(0.50, 0.60);
-        F.waves(side, full ? se - 0.57 : se + F.shift, waveStops(side > 0 ? pB : p), 0.5, rng.uniform(0.04, 0.07), rng.uniform(1.0, 1.6)); prog(0.35 + 0.25 * j);
+    } else if (o.motif === 'orbs') {
+      var oreg = F.region(0.28, 0.7, 0.3, 0.3), orbCols = [p, hot(p), mix(p, WHITE, 0.45)];
+      if (pB !== p) orbCols.push(pB, hot(pB));
+      if (pal.third) orbCols.push(pal.third);
+      F.orbs(oreg, orbCols, { count: 70 }); prog(0.55);
+      [-1, 1].forEach(function (side) {
+        var nl = rng.int(1, 3);
+        for (var j = 0; j < nl; j++) {
+          var s0 = side * rng.uniform(F.sLo(0.35, 0.9), 0.98), t0 = rng.uniform(-0.4, 0.4);
+          F.line(s0, side > 0 ? pB : p, 1.8, 0.5, 8, [t0, t0 + rng.sign() * 0.3]);
+        }
       });
+    } else {
+      // LIGHT RAYS: soft fans of light radiating in from the two corners
+      var rayN = F.N.fbm(F.W / 4, 3, 0.5, 4), rA = new Float32Array(n), rC = { R: new Float32Array(n), G: new Float32Array(n), B: new Float32Array(n) }, diag = Math.hypot(W, H);
+      var srcs = [[0, 0, p, rng.uniform(0, 6.28)], [W, H, pB, rng.uniform(0, 6.28)]], rcnt = rng.uniform(9, 14);
+      for (i = 0; i < n; i++) {
+        var rx = i % W, ry = (i - rx) / W, best = 0, br = 0, bg = 0, bb = 0;
+        for (var si = 0; si < 2; si++) {
+          var sx = srcs[si][0], sy = srcs[si][1], dxs = rx - sx, dys = ry - sy, dist = Math.sqrt(dxs * dxs + dys * dys) + 1;
+          var ang = Math.atan2(dys, dxs), wob = 0.55 * (rayN[i] - 0.5), v = Math.sin(ang * rcnt * (si ? 1.15 : 1) + srcs[si][3] + wob * 6) * 0.5 + 0.5;
+          var fall = Math.pow(clamp01(1 - dist / (diag * 0.82)), 1.6), a = smoothstep(0.5, 0.92, v) * fall;
+          if (a > best) { best = a; var hc = hot(srcs[si][2], 0.9), cm = mix(srcs[si][2], hc, clamp01(fall * 1.3)); br = cm[0]; bg = cm[1]; bb = cm[2]; }
+        }
+        rA[i] = best * 0.75; rC.R[i] = br; rC.G[i] = bg; rC.B[i] = bb;
+      }
+      F.over(rC, rA);
+      var glow = new Float32Array(n);
+      for (i = 0; i < n; i++) { var gx = i % W, gy = (i - gx) / W; glow[i] = 0.5 * Math.exp(-Math.pow(Math.min(Math.hypot(gx, gy), Math.hypot(W - gx, H - gy)) / (diag * 0.18), 1.5)); }
+      F.screen(hot(p), glow); prog(0.6);
       [-1, 1].forEach(function (side) {
         var nl = rng.int(2, 4);
         for (var j = 0; j < nl; j++) {
           var s0 = side * rng.uniform(F.sLo(0.35, 0.9), 0.98), t0 = rng.uniform(-0.4, 0.4);
-          F.line(s0, side > 0 ? pB : p, 2.5, 0.75, 10, [t0, t0 + rng.sign() * 0.3]);
+          F.line(s0, side > 0 ? pB : p, 2, 0.6, 9, [t0, t0 + rng.sign() * 0.3]);
         }
       });
     }
@@ -6541,7 +6700,7 @@ var PIBG = (function () {
     var sw = F.region(0.30, 0.75, 0.3, 0.3), mx = 0;
     for (i = 0; i < n; i++) { sw[i] = Math.pow(clamp01(sw[i] * (1.2 - sw[i]) * 2.4), 1.5) + 0.01; if (sw[i] > mx) mx = sw[i]; }
     for (i = 0; i < n; i++) sw[i] /= mx;
-    F.splatter(sw, pB !== p ? [p, DARK, hot(p), pB] : [p, DARK, hot(p)], { clusters: o.motif === 'waves' ? 18 : 12, per: [8, 30], rmax: 9, spray: 4500, alpha: 0.85 });
+    F.splatter(sw, pB !== p ? [p, DARK, hot(p), pB] : [p, DARK, hot(p)], { clusters: 12, per: [8, 30], rmax: 9, spray: 4500, alpha: 0.85 });
     prog(0.92);
     F.finish(0.022, 0.32);
   }
@@ -6635,6 +6794,383 @@ var PIBG = (function () {
     F.finish(0.016, 0.3);
   }
 
+  // ---- new styles ----
+  function pickColors(pal) {
+    var p = pal.primary;
+    return [p, pal.second || hueShift(p, 0.06, 0.9), pal.third || (pal.second ? mix(pal.second, WHITE, 0.25) : mix(p, WHITE, 0.3))];
+  }
+  // WATERCOLOR: translucent pigment washes with darker pooled edges and paper grain
+  function recipeWatercolor(F, pal, o, prog) {
+    var rng = F.rng, n = F.N_, W = F.W, H = F.H, i, cols = pickColors(pal), bleed = o.sub === 'bleed';
+    F.base(o.base, 0.35); prog(0.12);
+    F.grit = F.N.fbm(14 * F.k, 4, 0.62);
+    var reg = F.region(0.26, 0.66, 0.4, 0.28), paper = F.N.fbm(5 * F.k, 2, 0.5), fl = F.flowField(0.5, 7, 0.7);
+    var nWash = bleed ? 5 : 4;
+    for (var wI = 0; wI < nWash; wI++) {
+      var c = cols[wI % cols.length], f0 = F.N.fbm(W * (bleed ? 0.28 : 0.4), 5, 0.55, 2), thr = rng.uniform(0.5, 0.62), soft = bleed ? 0.035 : 0.16;
+      var A = new Float32Array(n), CC = { R: new Float32Array(n), G: new Float32Array(n), B: new Float32Array(n) };
+      var dark = adj(c, { v: 0.5, s: 1.15 }), light = adj(c, { v: 0.92, s: 1.0 });
+      for (i = 0; i < n; i++) {
+        var v = sampleBilinear(f0, W, H, fl.X[i], fl.Y[i], 'reflect') + (reg[i] - 0.5) * 0.7;
+        var m = smoothstep(thr, thr + soft, v), ring = Math.exp(-Math.pow((v - thr - soft * 0.5) / (soft * (bleed ? 0.9 : 0.7) + 0.01), 2));
+        var gran = 0.9 + 0.3 * paper[i] + 0.12 * (F.grit[i] - 0.5);
+        var q = clamp01(ring * 0.85);
+        CC.R[i] = light[0] + (dark[0] - light[0]) * q; CC.G[i] = light[1] + (dark[1] - light[1]) * q; CC.B[i] = light[2] + (dark[2] - light[2]) * q;
+        var depth = smoothstep(thr, thr + (bleed ? 0.22 : 0.35), v);
+        A[i] = m * clamp01(((bleed ? 0.8 : 0.7) * (0.5 + 0.5 * depth)) * gran + q * 0.3) * (0.35 + 0.65 * smoothstep(0.1, 0.6, reg[i] + 0.25));
+      }
+      F.over(CC, A); prog(0.15 + 0.14 * wI);
+    }
+    var sw = new Float32Array(n), mx = 0;
+    for (i = 0; i < n; i++) { sw[i] = Math.pow(clamp01(reg[i] * (1.2 - reg[i]) * 2.4), 1.4) + 0.01; if (sw[i] > mx) mx = sw[i]; }
+    for (i = 0; i < n; i++) sw[i] /= mx;
+    F.splatter(sw, [cols[0], adj(cols[0], { v: 0.55 }), cols[1]], { clusters: bleed ? 26 : 12, per: [6, 26], rmax: bleed ? 11 : 7, spray: bleed ? 7000 : 2500, alpha: 0.8 });
+    prog(0.9); F.finish(0.03, 0.3);
+  }
+  // SMOKE / NEBULA: swirling, wispy plumes in the ball colors
+  function recipeSmoke(F, pal, o, prog) {
+    var n = F.N_, W = F.W, H = F.H, i, cols = pickColors(pal), nebula = o.sub === 'nebula', p = cols[0];
+    F.base(o.base, 0.4); prog(0.12);
+    F.grit = F.N.fbm(14 * F.k, 4, 0.62);
+    var reg = F.region(0.22, 0.62, 0.45, 0.3), f = F.N.fbm(W * 0.34, 6, 0.56, 2), fl = F.flowField(0.45, 12, 1.1), f2 = F.N.fbm(W * 0.2, 4, 0.5, 2), cn = F.N.fbm(W * 0.5, 3, 0.5, 4);
+    prog(0.45);
+    var L1 = makeLUT([[0, DARK], [0.25, adj(p, { v: 0.3 })], [0.55, p], [0.82, mix(p, WHITE, 0.3)], [1, mix(p, WHITE, 0.7)]]);
+    var A = new Float32Array(n), C = { R: new Float32Array(n), G: new Float32Array(n), B: new Float32Array(n) }, Gl = new Float32Array(n);
+    for (i = 0; i < n; i++) {
+      var v = sampleBilinear(f, W, H, fl.X[i], fl.Y[i], 'reflect'), ridge = 1 - Math.abs(2 * v - 1), wisp = Math.pow(ridge, nebula ? 2.2 : 3.0);
+      var d = smoothstep(0.15, 0.85, wisp) * (0.4 + 0.6 * sampleBilinear(f2, W, H, fl.X[i], fl.Y[i], 'reflect'));
+      var q = Math.round(clamp01(d * 1.15) * 1023) * 3, r = L1[q], g = L1[q + 1], b = L1[q + 2];
+      if (nebula) {
+        var u = smoothstep(-0.5, 0.5, F.t[i] + 0.6 * (cn[i] - 0.5)), c2 = u < 0.5 ? cols[1] : cols[2], k2 = smoothstep(0.1, 0.9, Math.abs(u - 0.5) * 2) * 0.55;
+        r += (c2[0] * d - r) * k2; g += (c2[1] * d - g) * k2; b += (c2[2] * d - b) * k2;
+      }
+      C.R[i] = r; C.G[i] = g; C.B[i] = b; A[i] = clamp01(d * 1.25) * reg[i] * 0.92;
+      Gl[i] = reg[i] * smoothstep(0.2, 0.9, v) * 0.22;
+    }
+    F.screen(adj(p, { v: 0.8 }), Gl); F.over(C, A); prog(0.8);
+    if (nebula) {
+      var sw = new Float32Array(n); for (i = 0; i < n; i++) sw[i] = reg[i] * 0.9 + 0.02;
+      F.splatter(sw, [[1, 1, 0.95], mix(p, WHITE, 0.6), cols[1]], { clusters: 0, spray: 9000, alpha: 0.9 });
+    }
+    prog(0.9); F.finish(0.022, 0.32);
+  }
+  // LIGHT TRAILS: long-exposure light streaks (fine trails) or wide glowing beams
+  function recipeStreaks(F, pal, o, prog) {
+    var rng = F.rng, n = F.N_, i, cols = pickColors(pal), beams = o.sub === 'beams', p = cols[0];
+    F.base(o.base, 0.3); prog(0.12);
+    F.grit = F.N.fbm(14 * F.k, 4, 0.62);
+    var hotC = [hot(p), hot(cols[1]), mix(cols[2], WHITE, 0.35)];
+    [-1, 1].forEach(function (side, si) {
+      var lines = beams ? rng.int(5, 8) : rng.int(30, 46);
+      for (var l = 0; l < lines; l++) {
+        var s0 = side * rng.uniform(F.sLo(beams ? 0.3 : 0.22, 0.9), 1.0), t0 = rng.uniform(-0.55, 0.55), span = rng.uniform(0.25, 0.9);
+        var c = hotC[rng.int(0, 3)], tf = [t0 - span / 2, t0 - span / 2 + span * 0.35], tf2 = [t0 + span / 2, t0 + span / 2 - span * 0.35];
+        if (beams) {
+          F.band(s0, rng.uniform(0.025, 0.09), mix(c, DARK, 0.2), rng.uniform(0.22, 0.4), 0, [t0, t0 + rng.sign() * rng.uniform(0.5, 1.0)], 0.3);
+          F.line(s0, c, rng.uniform(4, 9), rng.uniform(0.7, 1.0), rng.uniform(40, 90), [t0, t0 + rng.sign() * rng.uniform(0.5, 1.0)]);
+        } else {
+          F.line(s0, c, rng.uniform(1.2, 4.5), rng.uniform(0.6, 1.0), rng.uniform(6, 22), [t0, t0 + rng.sign() * rng.uniform(0.3, 0.9)]);
+        }
+      }
+      prog(0.3 + 0.3 * si);
+    });
+    var reg = F.region(0.3, 0.7, 0.3, 0.3), sw = new Float32Array(n), mx = 0;
+    for (i = 0; i < n; i++) { sw[i] = Math.pow(clamp01(reg[i] * (1.2 - reg[i]) * 2.4), 1.5) + 0.01; if (sw[i] > mx) mx = sw[i]; }
+    for (i = 0; i < n; i++) sw[i] /= mx;
+    F.splatter(sw, [mix(p, WHITE, 0.55), hotC[1], hotC[0]], { clusters: 8, per: [4, 14], rmax: 4, spray: 4000, alpha: 0.9 });
+    prog(0.9); F.finish(0.02, 0.34);
+  }
+  // STRIPES: bold racing stripes or layered chevrons, eroded for a printed/worn look
+  function recipeStripes(F, pal, o, prog) {
+    var rng = F.rng, n = F.N_, i, cols = pickColors(pal), p = cols[0], chev = o.sub === 'chevron';
+    F.base(o.base, 0.55); prog(0.12);
+    F.grit = F.N.fbm(14 * F.k, 4, 0.62);
+    var tone = [p, cols[1], adj(p, { v: 0.45 }), mix(p, WHITE, 0.25), cols[2]];
+    if (!chev) {
+      [-1, 1].forEach(function (side, si) {
+        var s0 = F.sLo(0.36, 0.9), order = [0, 3, 1, 2, 0, 3];
+        for (var b = 0; b < 6; b++) {
+          var wd = [0.09, 0.012, 0.05, 0.02, 0.035, 0.008][b], gap = rng.uniform(0.012, 0.03);
+          var c = tone[order[b] % tone.length];
+          s0 += wd / 2; if (s0 > 1.02) break;
+          F.band(side * s0, wd, c, rng.uniform(0.82, 0.95), rng.uniform(0.04, 0.2), null, c === tone[0] ? 0.4 : 0.15);
+          s0 += wd / 2 + gap;
+        }
+        F.line(side * rng.uniform(F.sLo(0.3, 0.8), 0.97), mix(p, WHITE, 0.5), 1.6, 0.5, 8, [-0.3, 0.3]);
+        prog(0.35 + 0.25 * si);
+      });
+    } else {
+      var A = new Float32Array(n), C = { R: new Float32Array(n), G: new Float32Array(n), B: new Float32Array(n) }, per = rng.uniform(0.15, 0.2), start = F.layout === 'full' ? 0.0 : F.edge - 0.03;
+      var lean = rng.uniform(0.45, 0.8), ph = rng.random();
+      for (i = 0; i < n; i++) {
+        var sd = F.s[i] >= 0 ? 1 : -1, u = sd * F.s[i] + lean * Math.abs(F.t[i]) * 0.55 - start;
+        if (u < 0) continue;
+        var pos = u / per + ph, id = Math.floor(pos), fr = pos - id, duty = 0.46 + 0.1 * hash3(77, id, 3);
+        var cov = (1 - smoothstep(duty, duty + 0.02, fr)) * smoothstep(0, 0.02, fr);
+        if (cov <= 0) continue;
+        var er = smoothstep(0.2, 0.5, F.grit[i] + 0.35 * (1 - Math.min(1, u * 1.4)));
+        var c = tone[((id % 3) + 3) % 3 === 0 ? 0 : (((id % 3) + 3) % 3 === 1 ? 1 : 2)], sh = 0.75 + 0.4 * (1 - fr);
+        C.R[i] = c[0] * sh; C.G[i] = c[1] * sh; C.B[i] = c[2] * sh; A[i] = cov * er * 0.92;
+      }
+      F.over(C, A); prog(0.6);
+    }
+    prog(0.8);
+    var reg = F.region(0.3, 0.7, 0.3, 0.3), sw = new Float32Array(n), mx = 0;
+    for (i = 0; i < n; i++) { sw[i] = Math.pow(clamp01(reg[i] * (1.2 - reg[i]) * 2.4), 1.5) + 0.01; if (sw[i] > mx) mx = sw[i]; }
+    for (i = 0; i < n; i++) sw[i] /= mx;
+    F.splatter(sw, [p, DARK, mix(p, WHITE, 0.3)], { clusters: 10, per: [6, 22], rmax: 8, spray: 4000, alpha: 0.85 });
+    prog(0.92); F.finish(0.026, 0.32);
+  }
+
+  // ---- six more styles ----
+  function weightFromReg(reg, n) {
+    var sw = new Float32Array(n), mx = 0, i;
+    for (i = 0; i < n; i++) { sw[i] = Math.pow(clamp01(reg[i] * (1.2 - reg[i]) * 2.4), 1.4) + 0.01; if (sw[i] > mx) mx = sw[i]; }
+    for (i = 0; i < n; i++) sw[i] /= mx;
+    return sw;
+  }
+  // TOPO: map-style contour lines, or banded elevation fills
+  function recipeTopo(F, pal, o, prog) {
+    var n = F.N_, W = F.W, H = F.H, i, cols = pickColors(pal), p = cols[0], filled = o.sub === 'filled';
+    F.base(o.base, 0.4); prog(0.12);
+    F.grit = F.N.fbm(14 * F.k, 4, 0.62);
+    var reg = F.region(0.24, 0.64, 0.35, 0.25), f = F.N.fbm(W * 0.55, 5, 0.5, 2), levels = filled ? 11 : 16, lw = Math.max(1, 2.1 * F.k);
+    var fl = F.flowField(0.5, 3, 0.35); prog(0.4);
+    var g = new Float32Array(n);
+    for (i = 0; i < n; i++) g[i] = sampleBilinear(f, W, H, fl.X[i], fl.Y[i], 'reflect');
+    var L = makeLUT([[0, adj(p, { v: 0.25 })], [0.4, p], [0.7, cols[1]], [1, mix(cols[2], WHITE, 0.35)]]);
+    var A = new Float32Array(n), C = { R: new Float32Array(n), G: new Float32Array(n), B: new Float32Array(n) };
+    for (i = 0; i < n; i++) {
+      var x = i % W, y = (i - x) / W, xa = x > 0 ? i - 1 : i, xb = x < W - 1 ? i + 1 : i, ya = y > 0 ? i - W : i, yb = y < H - 1 ? i + W : i;
+      var gm = Math.hypot((g[xb] - g[xa]) / Math.max(1, xb - xa), (g[yb] - g[ya]) / Math.max(1, (yb - ya) / W)) * levels + 1e-6;
+      var val = g[i] * levels, id = Math.floor(val), fr = val - id, dpx = Math.min(fr, 1 - fr) / gm;
+      var major = (id % 4 === 0), line = 1 - smoothstep(lw * (major ? 0.9 : 0.5), lw * (major ? 1.9 : 1.3), dpx);
+      var m = reg[i];
+      if (filled) {
+        var q = Math.round(clamp01(id / levels) * 1023) * 3, sh = 0.75 + 0.35 * fr;
+        C.R[i] = L[q] * sh; C.G[i] = L[q + 1] * sh; C.B[i] = L[q + 2] * sh;
+        var edge = 1 - smoothstep(lw * 0.4, lw * 1.2, Math.min(fr / gm, (1 - fr) / gm));
+        C.R[i] *= 1 - 0.7 * edge; C.G[i] *= 1 - 0.7 * edge; C.B[i] *= 1 - 0.7 * edge;
+        A[i] = smoothstep(0.1, 0.5, m) * 0.9;
+      } else {
+        var c = mix(p, cols[1], clamp01(g[i] * 1.2 - 0.1)), lt = major ? mix(c, WHITE, 0.45) : c;
+        C.R[i] = lt[0]; C.G[i] = lt[1]; C.B[i] = lt[2];
+        A[i] = line * smoothstep(0.08, 0.5, m) * (major ? 1 : 0.7);
+      }
+    }
+    F.over(C, A); prog(0.8);
+    F.splatter(weightFromReg(reg, n), [p, mix(p, WHITE, 0.4)], { clusters: 8, per: [4, 14], rmax: 5, spray: 3000, alpha: 0.8 });
+    prog(0.92); F.finish(0.022, 0.3);
+  }
+  // HALFTONE: print-style dot or line screens that swell toward the corners
+  function recipeHalftone(F, pal, o, prog) {
+    var n = F.N_, W = F.W, i, cols = pickColors(pal), p = cols[0], lines = o.sub === 'lines';
+    F.base(o.base, 0.3); prog(0.12);
+    F.grit = F.N.fbm(14 * F.k, 4, 0.62);
+    var reg = F.region(0.2, 0.7, 0.2, 0.2), ramp = new Float32Array(n);
+    var wash = new Float32Array(n);
+    for (i = 0; i < n; i++) { ramp[i] = clamp01(Math.pow(reg[i], 1.25) * 1.05); wash[i] = reg[i] * 0.22; }
+    F.over(adj(p, { v: 0.7 }), wash);
+    if (!lines) {
+      F.halftone(ramp, p, 30, 0.95); prog(0.45);
+      var r2 = new Float32Array(n); for (i = 0; i < n; i++) r2[i] = ramp[i] * ramp[i] * 0.9;
+      F.halftone(r2, cols[1], 62, 0.8); prog(0.7);
+      var r3 = new Float32Array(n); for (i = 0; i < n; i++) r3[i] = Math.max(0, ramp[i] - 0.55) * 1.6;
+      F.halftone(r3, mix(p, WHITE, 0.35), 15, 0.9);
+    } else {
+      var sp = 34 * F.k, A = new Float32Array(n), A2 = new Float32Array(n), sp2 = 70 * F.k;
+      for (i = 0; i < n; i++) {
+        var sPx = F.s[i] * F.D, m = ramp[i]; if (m <= 0.02) continue;
+        var d = Math.abs((((sPx % sp) + sp) % sp) - sp / 2), r = sp * 0.5 * m * 1.05;
+        A[i] = (1 - smoothstep(r - 1, r + 1, d)) * 0.95;
+        var d2 = Math.abs((((F.t[i] * F.D) % sp2) + sp2) % sp2 - sp2 / 2), r2b = sp2 * 0.5 * m * m * 0.9;
+        A2[i] = (1 - smoothstep(r2b - 1, r2b + 1, d2)) * 0.5 * smoothstep(0.35, 0.8, m);
+      }
+      F.over(p, A); F.over(cols[1], A2); prog(0.7);
+    }
+    var sw = weightFromReg(reg, n);
+    F.splatter(sw, [p, mix(p, WHITE, 0.3)], { clusters: 8, per: [4, 12], rmax: 5, spray: 2500, alpha: 0.8 });
+    prog(0.92); F.finish(0.024, 0.3);
+  }
+  // GLOW: big soft color blobs (mesh gradient) or volumetric spotlight cones
+  function recipeGlow(F, pal, o, prog) {
+    var n = F.N_, W = F.W, H = F.H, i, cols = pickColors(pal), p = cols[0], spot = o.sub === 'spot', rng = F.rng;
+    F.base(o.base, 0.3); prog(0.12);
+    F.grit = F.N.fbm(14 * F.k, 4, 0.62);
+    var reg = F.region(0.18, 0.62, 0.3, 0.25), R = F.R, G = F.G, B = F.B;
+    if (!spot) {
+      var blobs = 9;
+      for (var b = 0; b < blobs; b++) {
+        var x = 0, y = 0, tries = 0;
+        do { x = rng.random() * W; y = rng.random() * H; tries++; } while (rng.random() > reg[(y | 0) * W + (x | 0)] && tries < 300);
+        var sg = rng.uniform(220, 520) * F.k, col = b % 3 === 0 ? hot(cols[0], 0.9) : (b % 3 === 1 ? hot(cols[1], 0.9) : mix(cols[2], WHITE, 0.15)), amp = rng.uniform(0.55, 1.0);
+        var x0 = Math.max(0, Math.floor(x - sg * 3)), x1 = Math.min(W - 1, Math.ceil(x + sg * 3)), y0 = Math.max(0, Math.floor(y - sg * 3)), y1 = Math.min(H - 1, Math.ceil(y + sg * 3));
+        for (var yy = y0; yy <= y1; yy++) for (var xx = x0; xx <= x1; xx++) {
+          var a = amp * Math.exp(-((xx - x) * (xx - x) + (yy - y) * (yy - y)) / (2 * sg * sg)) * (0.35 + 0.65 * reg[yy * W + xx]); if (a < 0.004) continue;
+          var o2 = yy * W + xx; R[o2] = 1 - (1 - R[o2]) * (1 - col[0] * a); G[o2] = 1 - (1 - G[o2]) * (1 - col[1] * a); B[o2] = 1 - (1 - B[o2]) * (1 - col[2] * a);
+        }
+        prog(0.15 + 0.05 * b);
+      }
+    } else {
+      var vn = F.N.fbm(W * 0.2, 4, 0.5, 4), diag = Math.hypot(W, H), srcs = [[0, 0, hot(cols[0]), Math.atan2(H, W)], [W, H, hot(cols[1]), Math.atan2(-H, -W)]];
+      var A = new Float32Array(n), C = { R: new Float32Array(n), G: new Float32Array(n), B: new Float32Array(n) };
+      for (i = 0; i < n; i++) {
+        var px = i % W, py = (i - px) / W, best = 0, cr = 0, cg = 0, cb = 0;
+        for (var s = 0; s < 2; s++) {
+          var dx = px - srcs[s][0], dy = py - srcs[s][1], dist = Math.sqrt(dx * dx + dy * dy) + 1, ang = Math.atan2(dy, dx), da = Math.abs(Math.atan2(Math.sin(ang - srcs[s][3]), Math.cos(ang - srcs[s][3])));
+          var cone = 1 - smoothstep(0.1, 0.62 + 0.25 * (vn[i] - 0.5), da), fall = Math.pow(clamp01(1 - dist / (diag * 0.9)), 1.4);
+          var a = cone * fall * (0.55 + 0.6 * vn[i]);
+          if (a > best) { best = a; cr = srcs[s][2][0]; cg = srcs[s][2][1]; cb = srcs[s][2][2]; }
+        }
+        A[i] = clamp01(best * 0.85); C.R[i] = cr; C.G[i] = cg; C.B[i] = cb;
+      }
+      F.screen(p, (function () { var Z = new Float32Array(n); for (i = 0; i < n; i++) Z[i] = 0; return Z; })());
+      F.over(C, A); prog(0.6);
+      var glow = new Float32Array(n);
+      for (i = 0; i < n; i++) { var gx = i % W, gy = (i - gx) / W; glow[i] = 0.55 * Math.exp(-Math.pow(Math.min(Math.hypot(gx, gy), Math.hypot(W - gx, H - gy)) / (diag * 0.14), 1.5)); }
+      F.screen(hot(p), glow);
+      F.splatter(weightFromReg(reg, n), [[1, 1, 0.95], mix(p, WHITE, 0.5)], { clusters: 0, spray: 6000, alpha: 0.7 });
+    }
+    prog(0.92); F.finish(0.022, 0.32);
+  }
+  // SHATTER: broken-glass shards or a network of glowing cracks
+  function recipeShatter(F, pal, o, prog) {
+    var n = F.N_, W = F.W, H = F.H, i, cols = pickColors(pal), p = cols[0], cracks = o.sub === 'cracks', rng = F.rng;
+    F.base(o.base, 0.45); prog(0.12);
+    F.grit = F.N.fbm(14 * F.k, 4, 0.62);
+    var reg = F.region(0.26, 0.66, 0.25, 0.25), S = (cracks ? 190 : 150) * F.k, gw = Math.ceil(W / S) + 3, gh = Math.ceil(H / S) + 3, seed = rng.int(1, 2147483647);
+    var fx = new Float32Array(gw * gh), fy = new Float32Array(gw * gh), ox = (rng.random() * 0.7) * S, oy = (rng.random() * 0.7) * S;
+    for (var gy = 0; gy < gh; gy++) for (var gx = 0; gx < gw; gx++) { fx[gy * gw + gx] = (gx - 1 + 0.15 + 0.7 * hash3(seed, gx, gy)) * S - ox; fy[gy * gw + gx] = (gy - 1 + 0.15 + 0.7 * hash3(seed + 5, gx, gy)) * S - oy; }
+    var C = { R: new Float32Array(n), G: new Float32Array(n), B: new Float32Array(n) }, A = new Float32Array(n), Ln = new Float32Array(n), lw = Math.max(1, (cracks ? 2.6 : 2.0) * F.k);
+    var tone = [p, cols[1], adj(p, { v: 0.5 }), mix(p, WHITE, 0.3), adj(cols[1], { v: 0.5 })];
+    for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) {
+      var cx = Math.floor((x + ox) / S) + 1, cy = Math.floor((y + oy) / S) + 1, d1 = 1e9, d2 = 1e9, id1 = 0, id1x = 0, id1y = 0;
+      for (var jy = cy - 1; jy <= cy + 1; jy++) for (var jx = cx - 1; jx <= cx + 1; jx++) {
+        if (jx < 0 || jy < 0 || jx >= gw || jy >= gh) continue;
+        var q = jy * gw + jx, dx = x - fx[q], dy = y - fy[q], d = dx * dx + dy * dy;
+        if (d < d1) { d2 = d1; d1 = d; id1x = jx; id1y = jy; } else if (d < d2) d2 = d;
+      }
+      i = y * W + x;
+      var edge = (Math.sqrt(d2) - Math.sqrt(d1)) * 0.5, rv = reg[i], h1 = hash3(seed + 11, id1x, id1y), h2 = hash3(seed + 23, id1x, id1y);
+      var filled = rv > 0.1 + 0.8 * h1;
+      if (!cracks && filled) {
+        var c = tone[Math.floor(h2 * 5) % 5], sh = 0.6 + 0.6 * hash3(seed + 31, id1x, id1y);
+        C.R[i] = Math.min(1, c[0] * sh); C.G[i] = Math.min(1, c[1] * sh); C.B[i] = Math.min(1, c[2] * sh); A[i] = 0.8;
+      }
+      var e = 1 - smoothstep(lw * 0.5, lw * 1.4, edge);
+      Ln[i] = e * (cracks ? smoothstep(0.05, 0.55, rv) * 0.95 : (filled ? 0.5 : (rv > 0.04 ? 0.35 : 0)));
+    }
+    prog(0.6);
+    if (!cracks) F.over(C, A);
+    F.screen(mix(p, WHITE, cracks ? 0.35 : 0.5), Ln); prog(0.75);
+    if (cracks) {
+      var glow = gaussBlur(Ln, W, H, Math.max(2, 7 * F.k)); for (i = 0; i < n; i++) glow[i] = Math.min(1, glow[i] * 1.8);
+      F.screen(hot(p), glow);
+    }
+    F.splatter(weightFromReg(reg, n), [p, mix(p, WHITE, 0.4), DARK], { clusters: 8, per: [4, 12], rmax: 5, spray: 3000, alpha: 0.8 });
+    prog(0.92); F.finish(0.022, 0.32);
+  }
+  // PAINT: dripping paint hanging from the top edge, or big splash bursts
+  function recipePaint(F, pal, o, prog) {
+    var n = F.N_, W = F.W, H = F.H, i, cols = pickColors(pal), p = cols[0], rng = F.rng, drips = o.sub === 'drips', k = F.k;
+    F.base(o.base, 0.5); prog(0.12);
+    F.grit = F.N.fbm(14 * F.k, 4, 0.62);
+    var reg = F.region(0.22, 0.62, 0.3, 0.25), masks = [new Float32Array(n), new Float32Array(n), new Float32Array(n)], hi = new Float32Array(n);
+    function pickPt() { var x = 0, y = 0, t = 0; do { x = rng.random() * W; y = rng.random() * H; t++; } while (rng.random() > reg[(y | 0) * W + (x | 0)] && t < 300); return [x, y]; }
+    function capsule(M, x, y0, y1, w) {          // vertical drip: a column with a round bulb at the bottom
+      var r = w / 2;
+      for (var yy = Math.max(0, Math.floor(y0)); yy <= Math.min(H - 1, Math.ceil(y1 + r * 1.8)); yy++) {
+        var tt = (yy - y0) / Math.max(1, y1 - y0), rr = tt < 1 ? r * (0.75 + 0.25 * (1 - tt)) : r * 1.35;
+        var cyb = y1 + r * 0.2, hh = yy > y1 ? Math.sqrt(Math.max(0, 1 - Math.pow((yy - cyb) / (r * 1.5), 2))) : 1; rr = rr * hh;
+        for (var xx = Math.max(0, Math.floor(x - rr - 1)); xx <= Math.min(W - 1, Math.ceil(x + rr + 1)); xx++) {
+          var cov = clamp01(rr - Math.abs(xx - x) + 0.5), oo = yy * W + xx;
+          if (cov > M[oo]) M[oo] = cov;
+          var hl = Math.exp(-Math.pow((xx - (x - rr * 0.35)) / (rr * 0.28 + 1), 2)) * cov; if (hl > hi[oo]) hi[oo] = hl;
+        }
+      }
+    }
+    if (drips) {
+      var cnt = 22 + rng.int(0, 10);
+      for (var d = 0; d < cnt; d++) {
+        var pt = pickPt(), x = pt[0], len = rng.uniform(150, 1300) * k, w = rng.uniform(16, 58) * k, ci = rng.choice([0.55, 0.28, 0.17]);
+        capsule(masks[ci], x, Math.max(0, pt[1] - rng.uniform(0, 200) * k), pt[1] + len * 0.4, w);
+      }
+      // paint pooling along the top edge
+      var pool = F.N.fbm(W * 0.25, 3, 0.5, 4);
+      for (i = 0; i < n; i++) { var py = (i / W) | 0, ph = (60 + 160 * pool[i]) * k; if (py < ph) { var a = reg[i] > 0.1 ? smoothstep(ph, ph - 3 * k, py) : 0; if (a > masks[0][i]) masks[0][i] = a; } }
+    } else {
+      for (var s = 0; s < 5; s++) {
+        var c0 = pickPt(), R0 = rng.uniform(60, 150) * k, ci2 = rng.choice([0.55, 0.28, 0.17]), M = masks[ci2], arms = rng.int(14, 26), phs = rng.random() * 6.28;
+        drawEllipse(M, W, H, c0[0], c0[1], R0, R0 * rng.uniform(0.8, 1.1), 1);
+        for (var a2 = 0; a2 < arms; a2++) {
+          var ang = phs + a2 / arms * 6.283 + rng.normal() * 0.1, L = R0 * rng.uniform(1.2, 4.2), w2 = R0 * rng.uniform(0.08, 0.2);
+          for (var st = 0; st < 44; st++) {
+            var tt2 = st / 43, rr2 = R0 * 0.7 + L * tt2, wd = w2 * (1 - tt2 * 0.9);
+            drawEllipse(M, W, H, c0[0] + Math.cos(ang) * rr2, c0[1] + Math.sin(ang) * rr2, Math.max(0.6, wd), Math.max(0.6, wd), 1);
+          }
+          var rE = R0 * 0.7 + L * 1.12; drawEllipse(M, W, H, c0[0] + Math.cos(ang) * rE, c0[1] + Math.sin(ang) * rE, w2 * 1.3, w2 * 1.3, 1);
+        }
+        prog(0.15 + 0.1 * s);
+      }
+    }
+    prog(0.6);
+    var paint = [p, cols[1], mix(p, WHITE, 0.25)], grain = F.N.fbm(4 * F.k, 2, 0.5);
+    for (var c = 0; c < 3; c++) {
+      var col = paint[c], CC = { R: new Float32Array(n), G: new Float32Array(n), B: new Float32Array(n) }, AA = new Float32Array(n);
+      for (i = 0; i < n; i++) {
+        var m = masks[c][i]; if (m <= 0) continue;
+        var shade = 0.82 + 0.3 * hi[i] + 0.1 * (grain[i] - 0.5);
+        CC.R[i] = Math.min(1, col[0] * shade + 0.25 * hi[i]); CC.G[i] = Math.min(1, col[1] * shade + 0.25 * hi[i]); CC.B[i] = Math.min(1, col[2] * shade + 0.25 * hi[i]);
+        AA[i] = m * 0.96;
+      }
+      F.over(CC, AA);
+    }
+    F.splatter(weightFromReg(reg, n), [p, cols[1], DARK], { clusters: 14, per: [6, 22], rmax: 10, spray: 5000, alpha: 0.9 });
+    prog(0.92); F.finish(0.026, 0.3);
+  }
+  // ELECTRIC: glowing plasma veins or forked lightning
+  function recipeElectric(F, pal, o, prog) {
+    var n = F.N_, W = F.W, H = F.H, i, cols = pickColors(pal), p = cols[0], bolts = o.sub === 'lightning', rng = F.rng, k = F.k;
+    F.base(o.base, 0.3); prog(0.12);
+    F.grit = F.N.fbm(14 * F.k, 4, 0.62);
+    var reg = F.region(0.2, 0.64, 0.3, 0.25), core = mix(hot(p, 0.5), WHITE, 0.75);
+    if (!bolts) {
+      var fl = F.flowField(0.5, 9, 0.9);
+      [[0.3, cols[0], 0.9], [0.5, cols[1], 0.6]].forEach(function (cfg, li) {
+        var f = F.N.fbm(W * cfg[0], 5, 0.55, 2), V = new Float32Array(n), Gl = new Float32Array(n);
+        for (i = 0; i < n; i++) {
+          var v = sampleBilinear(f, W, H, fl.X[i], fl.Y[i], 'reflect'), r = 1 - Math.abs(2 * v - 1);
+          V[i] = smoothstep(0.955, 0.995, r) * reg[i] * cfg[2]; Gl[i] = Math.pow(r, 18) * reg[i] * 0.9;
+        }
+        F.screen(hot(cfg[1]), Gl); F.screen(core, V); prog(0.4 + 0.25 * li);
+      });
+    } else {
+      var M = new Float32Array(n);
+      function bolt(x, y, ang, len, wpx, depth) {
+        var step = 14 * k, steps = Math.max(8, Math.round(len / step));
+        for (var s = 0; s < steps; s++) {
+          ang += rng.normal() * 0.26; x += Math.cos(ang) * step; y += Math.sin(ang) * step;
+          var rr = Math.max(0.7, wpx * (1 - 0.5 * s / steps));
+          drawEllipse(M, W, H, x, y, rr, rr, 1);
+          if (depth < 2 && rng.random() < 0.06) bolt(x, y, ang + rng.sign() * rng.uniform(0.4, 0.9), len * rng.uniform(0.25, 0.55), wpx * 0.6, depth + 1);
+          if (x < -50 || y < -50 || x > W + 50 || y > H + 50) break;
+        }
+      }
+      var starts = [[0, 0, Math.atan2(H, W)], [W, H, Math.atan2(-H, -W)]];
+      starts.forEach(function (s0, si) {
+        var nb = rng.int(4, 7);
+        for (var b = 0; b < nb; b++) bolt(s0[0] + rng.uniform(-40, 200) * k * (si ? -1 : 1), s0[1] + rng.uniform(-40, 200) * k * (si ? -1 : 1), s0[2] + rng.uniform(-0.55, 0.55), Math.hypot(W, H) * rng.uniform(0.3, 0.55), rng.uniform(2.2, 4.2) * k, 0);
+        prog(0.3 + 0.2 * si);
+      });
+      for (i = 0; i < n; i++) M[i] *= smoothstep(0.02, 0.35, reg[i] + 0.15);
+      var glow = gaussBlur(M, W, H, Math.max(2, 11 * k)), glow2 = gaussBlur(M, W, H, Math.max(4, 34 * k));
+      for (i = 0; i < n; i++) { glow[i] = Math.min(1, glow[i] * 2.4); glow2[i] = Math.min(1, glow2[i] * 2.2) * 0.6; }
+      F.screen(hot(p), glow2); F.screen(hot(p), glow); F.screen(core, M); prog(0.8);
+    }
+    F.splatter(weightFromReg(reg, n), [core, hot(p)], { clusters: 0, spray: 4500, alpha: 0.85 });
+    prog(0.92); F.finish(0.022, 0.34);
+  }
+
   // opts: {palette (hex form), accents?: [hex,...], style, fill, motif, base, hex, pop, seed, open, width, height}
   function render(opts, onProgress) {
     var prog = onProgress || function () {};
@@ -6643,11 +7179,22 @@ var PIBG = (function () {
     pal.primary = pal.accents[0]; pal.second = pal.accents[1] || null; pal.third = pal.accents[2] || null;
     var F = new Flyer(pal, opts.width || 2550, opts.height || 3300, opts.seed || 1);
     F.setOpen(opts.open == null ? 1 : opts.open);
+    F.blend = opts.blend == null ? 0.3 : opts.blend;
     if (opts.base === 'custom' && opts.baseColor) F.baseColor = hex2rgb(opts.baseColor);
     F.layout = opts.layout === 'full' ? 'full' : 'corners';
     prog(0.05);
     if (opts.style === 'minimal') recipeMinimal(F, pal, { base: opts.base || 'dark', motif: opts.motif || 'arcs', pop: !!opts.pop, multi: (opts.balls || 1) > 1 }, prog);
     else if (opts.style === 'flame') recipeFlame(F, pal, { base: opts.base || 'dark' }, prog);
+    else if (opts.style === 'topo') recipeTopo(F, pal, { base: opts.base || 'dark', sub: opts.sub || 'lines' }, prog);
+    else if (opts.style === 'halftone') recipeHalftone(F, pal, { base: opts.base || 'dark', sub: opts.sub || 'dots' }, prog);
+    else if (opts.style === 'glow') recipeGlow(F, pal, { base: opts.base || 'dark', sub: opts.sub || 'mesh' }, prog);
+    else if (opts.style === 'shatter') recipeShatter(F, pal, { base: opts.base || 'dark', sub: opts.sub || 'shards' }, prog);
+    else if (opts.style === 'paint') recipePaint(F, pal, { base: opts.base || 'dark', sub: opts.sub || 'drips' }, prog);
+    else if (opts.style === 'electric') recipeElectric(F, pal, { base: opts.base || 'dark', sub: opts.sub || 'plasma' }, prog);
+    else if (opts.style === 'watercolor') recipeWatercolor(F, pal, { base: opts.base || 'dark', sub: opts.sub || 'wash' }, prog);
+    else if (opts.style === 'smoke') recipeSmoke(F, pal, { base: opts.base || 'dark', sub: opts.sub || 'smoke' }, prog);
+    else if (opts.style === 'streaks') recipeStreaks(F, pal, { base: opts.base || 'dark', sub: opts.sub || 'trails' }, prog);
+    else if (opts.style === 'stripes') recipeStripes(F, pal, { base: opts.base || 'dark', sub: opts.sub || 'racing' }, prog);
     else if (opts.style === 'geo') recipeGeo(F, pal, { base: opts.base || 'dark', pattern: opts.pattern || 'triangles' }, prog);
     else recipeGrunge(F, pal, { base: opts.base || 'dark', fill: opts.fill || 'mix', hex: !!opts.hex, pop: !!opts.pop }, prog);
     var out = F.toRGBA(); prog(1);
@@ -6673,7 +7220,7 @@ var PIBG = (function () {
     return { accents: acc, pop: (list.filter(function (p) { return p.pop; })[0] || {}).pop || null,
              silver: (withSilver[0] || list[0]).silver, hasSilver: withSilver.length > 0, mono: colored.length === 0 };
   }
-  return { extractPalette: function (rgba, w, h) { return paletteToHex(extractPalette(rgba, w, h)); }, mergePalettes: mergePalettes, render: render, version: '1.1' };
+  return { extractPalette: function (rgba, w, h) { return paletteToHex(extractPalette(rgba, w, h)); }, mergePalettes: mergePalettes, render: render, version: '1.2' };
 })();
 if (typeof module !== 'undefined') module.exports = PIBG;
 
@@ -6689,7 +7236,7 @@ if (typeof module !== 'undefined') module.exports = PIBG;
   var FULL_W = 2550, FULL_H = 3300;            // 8.5 x 11 in at 300 dpi
   var PREV_W = 765, PREV_H = 990; // larger preview for the full-screen view
   var st = {
-    balls: [], palette: null, ballName: 'ball', seed: 1, style: 'grunge', fill: 'marble', motif: 'arcs',
+    balls: [], palette: null, ballName: 'ball', seed: 1, style: 'grunge', fill: 'marble', motif: 'arcs', sub: '', blend: 0.3,
     layout: 'corners', pattern: 'triangles', base: 'dark', baseColor: '#1c1c22', hex: false, pop: false, open: 1, colors: null, use: [true, true, false],
     jobId: 0, busy: false, lastFull: null
   };
@@ -6741,7 +7288,7 @@ if (typeof module !== 'undefined') module.exports = PIBG;
   function currentOpts(w, h) {
     var accents = null;
     if (st.colors) accents = st.colors.filter(function (c, i) { return c && (i === 0 || st.use[i]); });
-    return { palette: st.palette, accents: accents, balls: st.balls.length, style: st.style, layout: st.layout, pattern: st.pattern, fill: st.fill, motif: st.motif, base: st.base, baseColor: st.baseColor,
+    return { palette: st.palette, accents: accents, balls: st.balls.length, style: st.style, layout: st.layout, pattern: st.pattern, fill: st.fill, motif: st.motif, sub: st.sub, blend: st.blend, base: st.base, baseColor: st.baseColor,
              hex: st.hex, pop: st.pop, seed: st.seed, open: st.open, width: w, height: h };
   }
   function putRGBA(canvas, rgba, w, h) {
@@ -6860,7 +7407,7 @@ if (typeof module !== 'undefined') module.exports = PIBG;
   function resetColors() {
     st.colors = st.palette.accents.slice(0, 3);
     // one ball keeps its approved two-color look; several balls use all three colors
-    st.use = [true, st.colors.length > 1, st.balls.length > 1 && st.colors.length > 2];
+    st.use = [true, st.colors.length > 1, st.colors.length > 2];   // use every detected color (up to 3) by default
   }
   function syncColorInputs() {
     var c = st.colors || [];
@@ -6873,11 +7420,33 @@ if (typeof module !== 'undefined') module.exports = PIBG;
     $('pibgPopWrap').style.display = pop ? 'flex' : 'none';
     if (pop) $('pibgPopSwatch').innerHTML = '<span style="display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;background:' + pop + ';border:1px solid #ccc;"></span>';
   }
+  var SUBSTYLES = {
+    watercolor: [['wash', 'Soft Wash'], ['bleed', 'Ink Bleed']],
+    smoke: [['smoke', 'Wisps'], ['nebula', 'Nebula']],
+    streaks: [['trails', 'Fine Trails'], ['beams', 'Glow Beams']],
+    stripes: [['racing', 'Racing Stripes'], ['chevron', 'Chevrons']],
+    topo: [['lines', 'Contour Lines'], ['filled', 'Filled Bands']],
+    halftone: [['dots', 'Dot Screen'], ['lines', 'Line Screen']],
+    glow: [['mesh', 'Soft Mesh'], ['spot', 'Spotlights']],
+    shatter: [['shards', 'Glass Shards'], ['cracks', 'Glowing Cracks']],
+    paint: [['drips', 'Drips'], ['splash', 'Splash']],
+    electric: [['plasma', 'Plasma Veins'], ['lightning', 'Lightning']]
+  };
   function syncVisibility() {
     var g = st.style === 'grunge', full = st.layout === 'full';
     $('pibgFillWrap').style.display = g ? '' : 'none';
     $('pibgMotifWrap').style.display = st.style === 'minimal' ? '' : 'none';
     $('pibgPatternWrap').style.display = st.style === 'geo' ? '' : 'none';
+    var subs = SUBSTYLES[st.style];
+    $('pibgSubWrap').style.display = subs ? '' : 'none';
+    if (subs) {
+      var sel = $('pibgSub');
+      if (sel.dataset.style !== st.style) {
+        sel.innerHTML = subs.map(function (s) { return '<option value="' + s[0] + '">' + s[1] + '</option>'; }).join('');
+        sel.dataset.style = st.style; st.sub = subs[0][0];
+      }
+      sel.value = st.sub;
+    }
     $('pibgGrungeExtras').style.display = g ? '' : 'none';
     $('pibgFillWrap').querySelector('.pibg-label').textContent = full ? 'Texture' : 'Corner Style';
     Array.prototype.forEach.call($('pibgStyleSeg').children, function (b) { b.classList.toggle('active', b.dataset.v === st.style); });
@@ -6885,6 +7454,7 @@ if (typeof module !== 'undefined') module.exports = PIBG;
     $('pibgOpenLbl').textContent = full ? 'Center Fade' : 'Open Center';
     var o = st.open, lbl = o === 1 ? 'Default' : (full ? (o > 1 ? 'Stronger' : 'Lighter') : (o > 1 ? 'Roomier' : 'Tighter'));
     $('pibgOpenVal').textContent = lbl;
+    var bl = st.blend; $('pibgBlendVal').textContent = Math.abs(bl - 0.3) < 0.01 ? 'Default' : (bl < 0.15 ? 'Hard' : (bl < 0.3 ? 'Crisper' : (bl < 0.6 ? 'Softer' : 'Very soft')));
   }
 
   function applyToFlyer() {
@@ -6936,6 +7506,7 @@ if (typeof module !== 'undefined') module.exports = PIBG;
     });
     $('pibgPattern').addEventListener('change', function (e) { st.pattern = e.target.value; schedulePreview(); });
     $('pibgFill').addEventListener('change', function (e) { st.fill = e.target.value; schedulePreview(); });
+    $('pibgSub').addEventListener('change', function (e) { st.sub = e.target.value; schedulePreview(); });
     $('pibgMotif').addEventListener('change', function (e) { st.motif = e.target.value; schedulePreview(); });
     $('pibgBase').addEventListener('change', function (e) {
       st.base = e.target.value;
@@ -6945,6 +7516,9 @@ if (typeof module !== 'undefined') module.exports = PIBG;
     $('pibgBaseColor').addEventListener('input', function (e) { st.baseColor = e.target.value; if (st.base === 'custom') schedulePreview(); });
     $('pibgHex').addEventListener('change', function (e) { st.hex = e.target.checked; schedulePreview(); });
     $('pibgPop').addEventListener('change', function (e) { st.pop = e.target.checked; schedulePreview(); });
+    $('pibgBlend').addEventListener('input', function (e) {
+      st.blend = parseFloat(e.target.value); syncVisibility(); schedulePreview();
+    });
     $('pibgOpen').addEventListener('input', function (e) { st.open = parseFloat(e.target.value); syncVisibility(); schedulePreview(); });
     [1, 2, 3].forEach(function (n) {
       var i = n - 1;
