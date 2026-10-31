@@ -456,7 +456,7 @@
 <div id="appLayout">
 <div id="toolsPane">
 
-<div class="page-title">Pure It Bowling — Flyer Generator <span id="appVersion" title="Tool version" style="font-size:10px;font-weight:600;letter-spacing:.04em;color:#aaa;text-transform:none;margin-left:6px;">v2.1 · Oct 30, 2026</span></div>
+<div class="page-title">Pure It Bowling — Flyer Generator <span id="appVersion" title="Tool version" style="font-size:10px;font-weight:600;letter-spacing:.04em;color:#aaa;text-transform:none;margin-left:6px;">v2.3 · Oct 30, 2026</span></div>
 
 <div class="card collapsible" id="colorSection">
   <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')">
@@ -550,6 +550,8 @@
           <div id="pibgAiPanel" style="display:none;">
             <span class="pibg-label">AI Prompt</span>
             <textarea id="pibgAiPrompt" rows="6" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px;font-size:13px;font-family:'Barlow',sans-serif;resize:vertical;"></textarea>
+            <label class="pibg-check"><input type="checkbox" id="pibgAiRef"/> Use my ball image as a reference</label>
+            <div class="ctrl-hint" id="pibgAiRefHint" style="display:none;">When this is on, your whole main ball image is uploaded to Hugging Face when you press Generate. It is slower and uses more of the free limit. Leave it off to send only text.</div>
             <label class="pibg-check"><input type="checkbox" id="pibgAiFade" checked/> Fade the center so text stays readable</label>
             <span class="pibg-label">Hugging Face Token <span style="text-transform:none;color:#aaa;font-weight:600;">(optional)</span></span>
             <input type="password" id="pibgAiToken" autocomplete="off" placeholder="hf_… — a free account token raises the daily limit" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:7px 8px;font-size:13px;font-family:'Barlow',sans-serif;"/>
@@ -7247,7 +7249,7 @@ if (typeof module !== 'undefined') module.exports = PIBG;
   var FULL_W = 2550, FULL_H = 3300;            // 8.5 x 11 in at 300 dpi
   var PREV_W = 765, PREV_H = 990; // larger preview for the full-screen view
   var st = {
-    balls: [], palette: null, ballName: 'ball', seed: 1, style: 'grunge', fill: 'marble', motif: 'arcs', sub: '', blend: 0.3, ai: null, aiFade: true, aiEdited: false,
+    balls: [], palette: null, ballName: 'ball', seed: 1, style: 'grunge', fill: 'marble', motif: 'arcs', sub: '', blend: 0.3, ai: null, aiFade: true, aiEdited: false, aiRef: false,
     layout: 'corners', pattern: 'triangles', base: 'dark', baseColor: '#1c1c22', hex: false, pop: false, open: 1, colors: null, use: [true, true, false],
     jobId: 0, busy: false, lastFull: null
   };
@@ -7323,7 +7325,13 @@ if (typeof module !== 'undefined') module.exports = PIBG;
     else if (h < 165) n = 'green'; else if (h < 200) n = 'teal'; else if (h < 255) n = 'blue'; else if (h < 292) n = 'purple'; else n = 'magenta pink';
     return (l < 0.3 ? 'deep ' : (l > 0.78 ? 'pale ' : '')) + n;
   }
+  function defaultRefPrompt() {
+    return st.layout === 'full'
+      ? 'Turn this into an abstract modern grunge background for a bowling flyer. Remove the ball and any logo or text, and fill the whole page with the same colors and swirling marbled paint like a textured paint wash with splatter, with a calmer darker area in the middle.'
+      : 'Turn this into an abstract modern grunge background for a bowling flyer. Remove the ball and any logo or text, and use the same colors and swirling marbled paint in two opposite diagonal corners with a dark charcoal empty center and subtle splatter.';
+  }
   function defaultAiPrompt() {
+    if (st.aiRef) return defaultRefPrompt();
     var names = [], seen = {};
     (st.colors || []).forEach(function (c, i) { if (c && (i === 0 || st.use[i])) { var n = colorName(c); if (!seen[n]) { seen[n] = 1; names.push(n); } } });
     var cols = names.length ? names.slice(0, 3).join(', ').replace(/, ([^,]*)$/, names.length > 1 ? ' and $1' : '$1') : 'bold orange and deep purple';
@@ -7335,13 +7343,15 @@ if (typeof module !== 'undefined') module.exports = PIBG;
     var ta = $('pibgAiPrompt'); if (!ta || st.aiEdited) return;
     ta.value = defaultAiPrompt();
   }
-  function hfGenerate(prompt, token) {
-    var ctl = new AbortController(), timer = setTimeout(function () { ctl.abort(); }, 150000);
-    var headers = { 'Content-Type': 'application/json' }; if (token) headers.Authorization = 'Bearer ' + token;
-    return fetch(HF_HOST + '/gradio_api/call/infer', { method: 'POST', headers: headers, signal: ctl.signal,
-      body: JSON.stringify({ data: [prompt, 0, true, AI_W, AI_H, 4] }) })
+  var HF_KONTEXT = 'https://mcp-tools-flux-1-kontext-dev.hf.space';   // image-guided (edit) Space
+  // Calls a Gradio Space endpoint over its public REST API and resolves to an ImageBitmap of the first output.
+  function hfRun(host, endpoint, dataArr, token) {
+    var ctl = new AbortController(), timer = setTimeout(function () { ctl.abort(); }, 180000);
+    var auth = token ? { Authorization: 'Bearer ' + token } : {};
+    return fetch(host + '/gradio_api/call/' + endpoint, { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, auth), signal: ctl.signal,
+      body: JSON.stringify({ data: dataArr }) })
       .then(function (r) { if (!r.ok) throw new Error('The image service answered ' + r.status + '. It may be busy or asleep — try again in a minute.'); return r.json(); })
-      .then(function (j) { return fetch(HF_HOST + '/gradio_api/call/infer/' + j.event_id, { headers: token ? { Authorization: 'Bearer ' + token } : {}, signal: ctl.signal }); })
+      .then(function (j) { return fetch(host + '/gradio_api/call/' + endpoint + '/' + j.event_id, { headers: auth, signal: ctl.signal }); })
       .then(function (r) { return r.text(); })
       .then(function (txt) {
         clearTimeout(timer);
@@ -7360,6 +7370,35 @@ if (typeof module !== 'undefined') module.exports = PIBG;
         return fetch(url).then(function (r) { return r.blob(); }).then(function (b) { return createImageBitmap(b); });
       })
       .catch(function (e) { clearTimeout(timer); if (e.name === 'AbortError') throw new Error('That took too long. The free service may be busy — try again.'); throw e; });
+  }
+  function hfGenerate(prompt, token) { return hfRun(HF_HOST, 'infer', [prompt, 0, true, AI_W, AI_H, 4], token); }
+  // Fits the whole main ball image onto a portrait page, uploads it, and asks the image-edit model to turn it into a background.
+  function referenceBlob() {
+    return new Promise(function (resolve, reject) {
+      var ball = st.balls[0]; if (!ball) { reject(new Error('Upload a ball image first.')); return; }
+      var img = new Image();
+      img.onload = function () {
+        // the whole image, fitted onto a portrait page over a dark background (nothing cropped out)
+        var sc = Math.min(AI_W / img.naturalWidth, AI_H / img.naturalHeight), dw = img.naturalWidth * sc, dh = img.naturalHeight * sc;
+        var c = document.createElement('canvas'); c.width = AI_W; c.height = AI_H;
+        var x = c.getContext('2d'); x.fillStyle = '#141416'; x.fillRect(0, 0, AI_W, AI_H);
+        x.imageSmoothingQuality = 'high'; x.drawImage(img, (AI_W - dw) / 2, (AI_H - dh) / 2, dw, dh);
+        c.toBlob(function (b) { b ? resolve(b) : reject(new Error('Could not prepare the reference image.')); }, 'image/jpeg', 0.9);
+      };
+      img.onerror = function () { reject(new Error('Could not read the ball image.')); };
+      img.src = ball.url;
+    });
+  }
+  function hfGenerateFromRef(prompt, token) {
+    var auth = token ? { Authorization: 'Bearer ' + token } : {};
+    return referenceBlob().then(function (blob) {
+      var fd = new FormData(); fd.append('files', blob, 'reference.jpg');
+      return fetch(HF_KONTEXT + '/gradio_api/upload', { method: 'POST', headers: auth, body: fd });
+    }).then(function (r) { if (!r.ok) throw new Error('Could not upload the reference image (' + r.status + '). Try again, or turn the reference option off.'); return r.json(); })
+      .then(function (paths) {
+        var p = paths && paths[0]; if (!p) throw new Error('The upload did not return a file.');
+        return hfRun(HF_KONTEXT, 'infer', [{ path: p, orig_name: 'reference.jpg', meta: { _type: 'gradio.FileData' } }, prompt, 0, true, 2.5, 20], token);
+      });
   }
   function smooth(e0, e1, x) { var t = (x - e0) / (e1 - e0); t = t < 0 ? 0 : (t > 1 ? 1 : t); return t * t * (3 - 2 * t); }
   function aiBaseRgb() {
@@ -7405,7 +7444,7 @@ if (typeof module !== 'undefined') module.exports = PIBG;
     var prompt = $('pibgAiPrompt').value.trim(), btn = $('pibgAiBtn');
     if (!prompt) { setStatus('Type a prompt first.'); return; }
     btn.disabled = true; btn.textContent = 'Generating…'; setBusy(true, 0.4); setStatus('Generating with Hugging Face (free queue — can take 10–60 seconds)…');
-    hfGenerate(prompt, $('pibgAiToken').value.trim()).then(function (bm) {
+    (st.aiRef ? hfGenerateFromRef(prompt, $('pibgAiToken').value.trim()) : hfGenerate(prompt, $('pibgAiToken').value.trim())).then(function (bm) {
       st.ai = bm; st.lastFull = null; renderAiPreview();
       if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: 'bg-ai-generated', title: 'AI background generated', event: true });
     }).catch(function (e) { setStatus(e.message || 'Something went wrong.'); })
@@ -7629,6 +7668,11 @@ if (typeof module !== 'undefined') module.exports = PIBG;
     $('pibgFill').addEventListener('change', function (e) { st.fill = e.target.value; schedulePreview(); });
     $('pibgAiBtn').addEventListener('click', runAiGenerate);
     $('pibgAiPrompt').addEventListener('input', function () { st.aiEdited = true; });
+    $('pibgAiRef').addEventListener('change', function (e) {
+      st.aiRef = e.target.checked; $('pibgAiRefHint').style.display = st.aiRef ? '' : 'none';
+      if (st.aiRef && !st.balls.length) { setStatus('Upload a ball image first to use it as a reference.'); st.aiRef = false; e.target.checked = false; $('pibgAiRefHint').style.display = 'none'; return; }
+      st.aiEdited = false; maybeFillAiPrompt();
+    });
     $('pibgAiFade').addEventListener('change', function (e) { st.aiFade = e.target.checked; schedulePreview(); });
     $('pibgSub').addEventListener('change', function (e) { st.sub = e.target.value; schedulePreview(); });
     $('pibgMotif').addEventListener('change', function (e) { st.motif = e.target.value; schedulePreview(); });
